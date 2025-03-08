@@ -4,6 +4,8 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
 from app.config import Config
+from datetime import datetime
+
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -47,6 +49,10 @@ def create_app(config_class=Config):
     def home():
         from flask import render_template
         return render_template('home.html')
+
+    @app.context_processor
+    def inject_now():
+        return {'now': datetime.utcnow()}
 
     # Create database tables
     with app.app_context():
