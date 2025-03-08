@@ -13,6 +13,9 @@ def list_todos():
     # Get the active tab from the query parameter, default to 'pending'
     active_tab = request.args.get('tab', 'pending')
 
+    # Add this line to create a form for the checkboxes
+    status_form = TodoStatusForm()
+
     # Filter todos based on the active tab
     if active_tab == 'completed':
         todos = Todo.query.filter_by(
@@ -44,7 +47,8 @@ def list_todos():
         active_tab=active_tab,
         pending_count=pending_count,
         completed_count=completed_count,
-        deleted_count=deleted_count
+        deleted_count=deleted_count,
+        form=status_form  # Add this line to pass the form to the template
     )
 
 

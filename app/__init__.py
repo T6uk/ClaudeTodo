@@ -68,23 +68,72 @@ def create_app(config_class=Config):
             conn = sqlite3.connect(database_path)
             cursor = conn.cursor()
 
-            # Check if the columns already exist
-            cursor.execute("PRAGMA table_info(todos)")
-            columns = [column[1] for column in cursor.fetchall()]
+            # Check if the todos table exists
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='todos'")
+            table_exists = cursor.fetchone() is not None
 
-            # Add 'deleted' column if it doesn't exist
-            if 'deleted' not in columns:
-                cursor.execute("ALTER TABLE todos ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT 0")
+            if table_exists:
+                # Check if the columns already exist
+                cursor.execute("PRAGMA table_info(todos)")
+                columns = [column[1] for column in cursor.fetchall()]
 
-            # Add 'deleted_at' column if it doesn't exist
-            if 'deleted_at' not in columns:
-                cursor.execute("ALTER TABLE todos ADD COLUMN deleted_at DATETIME")
+                # Add 'deleted' column if it doesn't exist
+                if 'deleted' not in columns:
+                    cursor.execute("ALTER TABLE todos ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT 0")
+                    app.logger.info("Added 'deleted' column to todos table")
+
+                # Add 'deleted_at' column if it doesn't exist
+                if 'deleted_at' not in columns:
+                    cursor.execute("ALTER TABLE todos ADD COLUMN deleted_at DATETIME")
+                    app.logger.info("Added 'deleted_at' column to todos table")
 
             conn.commit()
             conn.close()
-            app.logger.info("Database schema updated successfully.")
+            app.logger.info("Database schema update check completed successfully.")
 
         except Exception as e:
             app.logger.error(f"Error updating database schema: {str(e)}")
+
+    # Add a CLI command to update schema (can be useful in case of problems)
+    @app.cli.command("update_todos_schema")
+    def update_todos_schema():
+        """Update the todos table schema to add deleted columns."""
+        try:
+            with app.app_context():
+                db_uri = app.config['SQLALCHEMY_DATABASE_URI']
+                if db_uri.startswith('sqlite:///'):
+                    db_path = db_uri.replace('sqlite:///', '')
+
+                    import sqlite3
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+
+                    # Check if the todos table exists
+                    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='todos'")
+                    table_exists = cursor.fetchone() is not None
+
+                    if table_exists:
+                        # Check if the columns already exist
+                        cursor.execute("PRAGMA table_info(todos)")
+                        columns = [column[1] for column in cursor.fetchall()]
+
+                        # Add 'deleted' column if it doesn't exist
+                        if 'deleted' not in columns:
+                            cursor.execute("ALTER TABLE todos ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT 0")
+                            print("Added 'deleted' column to todos table")
+
+                        # Add 'deleted_at' column if it doesn't exist
+                        if 'deleted_at' not in columns:
+                            cursor.execute("ALTER TABLE todos ADD COLUMN deleted_at DATETIME")
+                            print("Added 'deleted_at' column to todos table")
+
+                        conn.commit()
+                        print("Database schema updated successfully.")
+                    else:
+                        print("Todos table does not exist yet. It will be created with all columns by SQLAlchemy.")
+
+                    conn.close()
+        except Exception as e:
+            print(f"Error updating database schema: {str(e)}")
 
     return app
