@@ -30,8 +30,16 @@ def new_todo():
         flash('Task created successfully!', 'success')
         return redirect(url_for('todo.list_todos'))
 
-    return render_template('todo/item.html', title='New Task', form=form, is_update=False)
+    # Create a dummy todo object to pass to the template
+    dummy_todo = Todo(
+        title="",
+        description="",
+        priority=0,
+        user_id=current_user.id,
+        completed=False
+    )
 
+    return render_template('todo/item.html', title='New Task', form=form, is_update=False, todo=dummy_todo)
 
 @todo_bp.route('/<int:todo_id>', methods=['GET', 'POST'])
 @login_required
