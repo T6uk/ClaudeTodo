@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}Memory Match Game - Personal Dashboard{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+<style>
+    .memory-game-container {
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .memory-card {
+        aspect-ratio: 1 / 1;
+        perspective: 1000px;
+        cursor: pointer;
+    }
+
+    .memory-card-inner {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+    }
+
+    .memory-card.flipped .memory-card-inner {
+        transform: rotateY(180deg);
+    }
+
+    .memory-card-front, .memory-card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 0.5rem;
+    }
+
+    .memory-card-front {
+        background-color: #4e73df;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .memory-card-back {
+        background-color: white;
+        border: 2px solid #e3e6f0;
+        transform: rotateY(180deg);
+        font-size: 2.5rem;
+    }
+
+    .memory-card.matched .memory-card-back {
+        background-color: #1cc88a;
+        color: white;
+        border-color: #1cc88a;
+    }
+
+    .game-controls {
+        margin-bottom: 2rem;
+    }
+
+    .game-stats {
+        background-color: #f8f9fc;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Memory Match Game</h2>
+    <a href="{{ url_for('games.list_games') }}" class="btn btn-outline-primary">
+        <i class="bi bi-grid-3x3-gap"></i> All Games
+    </a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="text-center mb-4">
+            <h4>Flip cards and match pairs</h4>
+            <p class="text-muted">Test your memory by finding all matching pairs.</p>
+        </div>
+
+        <div class="game-controls d-flex justify-content-between">
+            <div class="game-stats">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="fw-bold">Moves</div>
+                        <div id="moveCounter">0</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold">Pairs</div>
+                        <div id="pairCounter">0 / 8</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold">Time</div>
+                        <div id="gameTimer">00:00</div>
+                    </div>
+                </div>
+            </div>
+            <button id="resetButton" class="btn btn-primary">
+                <i class="bi bi-arrow-repeat"></i> New Game
+            </button>
+        </div>
+
+        <div class="memory-game-container">
+            <div class="row g-3" id="gameBoard">
+                <!-- Game cards will be generated here -->
+            </div>
+        </div>
+
+        <!-- Game Complete Modal -->
+        <div class="modal fade" id="gameCompleteModal" tabindex="-1" aria-labelledby="gameCompleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="gameCompleteModalLabel">Game Complete!</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-trophy text-warning" style="font-size: 3rem;"></i>
+                        </div>
+                        <h4>Congratulations!</h4>
+                        <p class="lead">You've completed the memory match game!</p>
+                        <div class="row mt-4">
+                            <div class="col-6">
+                                <p class="fw-bold">Total Moves</p>
+                                <p id="finalMoves" class="h4">0</p>
+                            </div>
+                            <div class="col-6">
+                                <p class="fw-bold">Time</p>
+                                <p id="finalTime" class="h4">00:00</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="playAgainBtn">Play Again</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Game variables
+        let cards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let timeElapsed = 0;
+        let timerInterval;
+        let isGameActive = false;
+
+        // Card emojis for the game
+        const emojis = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼'];
+
+        // DOM elements
+        const gameBoard = document.getElementById('gameBoard');
+        const moveCounter = document.getElementById('moveCounter');
+        const pairCounter = document.getElementById('pairCounter');
+        const gameTimer = document.getElementById('gameTimer');
+        const resetButton = document.getElementById('resetButton');
+        const playAgainBtn = document.getElementById('playAgainBtn');
+        const finalMoves = document.getElementById('finalMoves');
+        const finalTime = document.getElementById('finalTime');
+
+        // Initialize game
+        initGame();
+
+        // Event listeners
+        resetButton.addEventListener('click', resetGame);
+        playAgainBtn.addEventListener('click', function() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('gameCompleteModal'));
+            modal.hide();
+            resetGame();
+        });
+
+        // Initialize the game
+        function initGame() {
+            // Create the deck of cards (pairs of emojis)
+            const deck = [...emojis, ...emojis];
+
+            // Shuffle the deck
+            shuffle(deck);
+
+            // Clear the game board
+            gameBoard.innerHTML = '';
+
+            // Create the card elements
+            for (let i = 0; i < deck.length; i++) {
+                const cardHTML = `
+                    <div class="col-3">
+                        <div class="memory-card" data-card-index="${i}">
+                            <div class="memory-card-inner">
+                                <div class="memory-card-front">
+                                    <i class="bi bi-question-lg"></i>
+                                </div>
+                                <div class="memory-card-back">
+                                    ${deck[i]}
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                gameBoard.innerHTML += cardHTML;
+            }
+
+            // Add click event to all cards
+            cards = document.querySelectorAll('.memory-card');
+            cards.forEach(card => {
+                card.addEventListener('click', flipCard);
+            });
+
+            // Reset game state
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            timeElapsed = 0;
+
+            // Update UI
+            moveCounter.textContent = moves;
+            pairCounter.textContent = `${matchedPairs} / 8`;
+            gameTimer.textContent = '00:00';
+
+            // Clear any existing timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            isGameActive = true;
+        }
+
+        // Flip a card when clicked
+        function flipCard() {
+            // Start the timer on first card flip
+            if (!timerInterval && isGameActive) {
+                startTimer();
+            }
+
+            // Don't allow more than 2 cards to be flipped at once
+            if (flippedCards.length >= 2) return;
+
+            // Don't allow already matched cards or the same card to be flipped again
+            if (this.classList.contains('matched') || flippedCards.includes(this)) return;
+
+            // Flip the card
+            this.classList.add('flipped');
+            flippedCards.push(this);
+
+            // Check for a match if two cards are flipped
+            if (flippedCards.length === 2) {
+                // Increment moves
+                moves++;
+                moveCounter.textContent = moves;
+
+                // Get the indices of the flipped cards
+                const index1 = flippedCards[0].getAttribute('data-card-index');
+                const index2 = flippedCards[1].getAttribute('data-card-index');
+
+                // Get the card faces
+                const card1Face = flippedCards[0].querySelector('.memory-card-back').textContent.trim();
+                const card2Face = flippedCards[1].querySelector('.memory-card-back').textContent.trim();
+
+                // Check if the cards match
+                if (card1Face === card2Face) {
+                    // Cards match
+                    setTimeout(() => {
+                        flippedCards[0].classList.add('matched');
+                        flippedCards[1].classList.add('matched');
+                        flippedCards = [];
+
+                        // Increment matched pairs
+                        matchedPairs++;
+                        pairCounter.textContent = `${matchedPairs} / 8`;
+
+                        // Check if all pairs are matched
+                        if (matchedPairs === 8) {
+                            endGame();
+                        }
+                    }, 500);
+                } else {
+                    // Cards don't match, flip them back
+                    setTimeout(() => {
+                        flippedCards[0].classList.remove('flipped');
+                        flippedCards[1].classList.remove('flipped');
+                        flippedCards = [];
+                    }, 1000);
+                }
+            }
+        }
+
+        // Start the game timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+
+                // Format the time
+                const minutes = Math.floor(timeElapsed / 60).toString().padStart(2, '0');
+                const seconds = (timeElapsed % 60).toString().padStart(2, '0');
+
+                gameTimer.textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        // End the game
+        function endGame() {
+            isGameActive = false;
+            clearInterval(timerInterval);
+
+            // Update final stats
+            finalMoves.textContent = moves;
+            finalTime.textContent = gameTimer.textContent;
+
+            // Show the game complete modal
+            setTimeout(() => {
+                const gameCompleteModal = new bootstrap.Modal(document.getElementById('gameCompleteModal'));
+                gameCompleteModal.show();
+            }, 500);
+        }
+
+        // Reset the game
+        function resetGame() {
+            // Clear any existing timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+
+            // Reset the game
+            initGame();
+        }
+
+        // Shuffle array (Fisher-Yates algorithm)
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+    });
+</script>
+{% endblock %}

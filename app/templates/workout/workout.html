@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if is_update %}Edit{% else %}New{% endif %} Workout - Personal Dashboard
+{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{% if is_update %}Edit{% else %}New{% endif %} Workout</h2>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.workout_type.label(class="form-label") }}
+                {% if form.workout_type.errors %}
+                    {{ form.workout_type(class="form-select is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.workout_type.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.workout_type(class="form-select") }}
+                {% endif %}
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    {{ form.date.label(class="form-label") }}
+                    {% if form.date.errors %}
+                        {{ form.date(class="form-control is-invalid", type="date") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.date.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.date(class="form-control", type="date") }}
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form.duration.label(class="form-label") }}
+                    {% if form.duration.errors %}
+                        {{ form.duration(class="form-control is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.duration.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.duration(class="form-control") }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.calories_burned.label(class="form-label") }}
+                {% if form.calories_burned.errors %}
+                    {{ form.calories_burned(class="form-control is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.calories_burned.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.calories_burned(class="form-control") }}
+                {% endif %}
+                <small class="form-text text-muted">Optional: Estimated calories burned during this workout</small>
+            </div>
+
+            <div class="mb-3">
+                {{ form.notes.label(class="form-label") }}
+                {% if form.notes.errors %}
+                    {{ form.notes(class="form-control is-invalid", rows=4) }}
+                    <div class="invalid-feedback">
+                        {% for error in form.notes.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.notes(class="form-control", rows=4) }}
+                {% endif %}
+                <small class="form-text text-muted">Optional: Add any additional notes about your workout</small>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{{ url_for('workout.list_workouts') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
