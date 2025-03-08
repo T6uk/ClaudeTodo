@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Games - Personal Dashboard{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Games</h2>
+</div>
+
+<p class="lead mb-4">Take a break and have some fun with these simple games.</p>
+
+<div class="row">
+    {% for game in games %}
+        <div class="col-md-6 col-lg-3 mb-4">
+            <div class="card h-100 shadow-sm game-card">
+                <div class="card-body text-center">
+                    <div class="game-icon text-primary">
+                        <i class="bi {{ game.icon }}"></i>
+                    </div>
+                    <h4 class="card-title">{{ game.name }}</h4>
+                    <p class="card-text text-muted">{{ game.description }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-top-0 text-center">
+                    <a href="{{ url_for('games.' + game.id + '_game') }}" class="btn btn-primary">Play</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
