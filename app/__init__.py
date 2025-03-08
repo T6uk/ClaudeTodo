@@ -3,9 +3,10 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bcrypt import Bcrypt
+from flask_wtf.csrf import CSRFProtect
 from app.config import Config
 from datetime import datetime
-
+import sqlite3
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -14,6 +15,7 @@ login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'info'
 bcrypt = Bcrypt()
+csrf = CSRFProtect()
 
 
 def create_app(config_class=Config):
@@ -26,6 +28,7 @@ def create_app(config_class=Config):
     migrate.init_app(app, db)
     login_manager.init_app(app)
     bcrypt.init_app(app)
+    csrf.init_app(app)  # Initialize CSRF protection properly
 
     # Register blueprints
     from app.blueprints.auth import auth_bp
@@ -54,8 +57,34 @@ def create_app(config_class=Config):
     def inject_now():
         return {'now': datetime.utcnow()}
 
-    # Create database tables
+    # Update database schema directly
     with app.app_context():
-        db.create_all()
+        try:
+            # First try to create all tables (including any new models)
+            db.create_all()
+
+            # Then add new columns to existing tables if they don't exist
+            database_path = app.config['SQLALCHEMY_DATABASE_URI'].replace('sqlite:///', '')
+            conn = sqlite3.connect(database_path)
+            cursor = conn.cursor()
+
+            # Check if the columns already exist
+            cursor.execute("PRAGMA table_info(todos)")
+            columns = [column[1] for column in cursor.fetchall()]
+
+            # Add 'deleted' column if it doesn't exist
+            if 'deleted' not in columns:
+                cursor.execute("ALTER TABLE todos ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT 0")
+
+            # Add 'deleted_at' column if it doesn't exist
+            if 'deleted_at' not in columns:
+                cursor.execute("ALTER TABLE todos ADD COLUMN deleted_at DATETIME")
+
+            conn.commit()
+            conn.close()
+            app.logger.info("Database schema updated successfully.")
+
+        except Exception as e:
+            app.logger.error(f"Error updating database schema: {str(e)}")
 
     return app

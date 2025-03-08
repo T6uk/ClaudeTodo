@@ -10,7 +10,7 @@ class TodoForm(FlaskForm):
         (1, 'Medium'),
         (2, 'High')
     ], coerce=int)
-    due_date = DateTimeField('Due Date', format='%Y-%m-%d %H:%M', validators=[Optional()])
+    due_date = DateTimeField('Due Date', format='%Y-%m-%dT%H:%M', validators=[Optional()])
     submit = SubmitField('Save')
 
 class TodoStatusForm(FlaskForm):
