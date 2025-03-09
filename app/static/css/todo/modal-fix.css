@@ -1,0 +1,119 @@
+/**
+ * Direct modal fixes for CSS
+ * These styles ensure modals display correctly and override any problematic Bootstrap styles
+ */
+
+/* Ensure correct z-index for modals */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+/* For multiple backdrops, make sure they stack properly */
+.modal-backdrop + .modal-backdrop {
+    opacity: 0 !important;
+}
+
+/* Ensure the backdrop covers the entire viewport */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+/* Fix modal dialog position and size */
+.modal-dialog {
+    margin: 1.75rem auto;
+    max-width: 95%;
+    width: 500px;
+}
+
+/* Ensure modals animate properly */
+.modal.fade .modal-dialog {
+    transition: transform .3s ease-out;
+    transform: translate(0, -50px);
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Fix modal content styling */
+.modal-content {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Fix modal header and footer */
+.modal-header,
+.modal-footer {
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+/* Fix scrollbar issues */
+body.modal-open {
+    overflow: hidden;
+    padding-right: 0 !important; /* Prevents layout shift */
+}
+
+/* Fix close button */
+.modal .btn-close:focus {
+    box-shadow: none;
+    opacity: 0.75;
+}
+
+/* Prevent background interactions when modal is open */
+.modal-backdrop {
+    pointer-events: all !important;
+}
+
+/* Fix multiple modal stacking */
+.modal:nth-of-type(1) {
+    z-index: 1050 !important;
+}
+.modal:nth-of-type(2) {
+    z-index: 1060 !important;
+}
+.modal:nth-of-type(3) {
+    z-index: 1070 !important;
+}
+.modal:nth-of-type(4) {
+    z-index: 1080 !important;
+}
+.modal:nth-of-type(5) {
+    z-index: 1090 !important;
+}
+
+/* Force modal to be visible when shown */
+.modal.show {
+    display: block !important;
+}
+
+/* Improved mobile handling */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 1rem;
+        width: auto;
+    }
+
+    .modal-content {
+        border-radius: 0.75rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+}
