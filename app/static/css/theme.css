@@ -1,18 +1,17 @@
-/* Theme-related styles */
+/* Theme-related styles with enhanced light and dark mode */
 
 /* Theme toggle switch */
 .theme-switch-wrapper {
     display: flex;
     align-items: center;
-    justify-content: center;
     margin: 5px 15px;
 }
 
 .theme-switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 24px;
+    width: 52px;
+    height: 26px;
 }
 
 .theme-switch input {
@@ -30,27 +29,29 @@
     bottom: 0;
     background-color: #ccc;
     transition: .4s;
-    border-radius: 24px;
+    border-radius: 26px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 18px;
-    width: 18px;
+    height: 20px;
+    width: 20px;
     left: 3px;
     bottom: 3px;
     background-color: white;
     transition: .4s;
     border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 input:checked + .slider {
-    background-color: #2196F3;
+    background-color: #4e73df;
 }
 
 input:focus + .slider {
-    box-shadow: 0 0 1px #2196F3;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2), 0 0 0 3px rgba(78, 115, 223, 0.2);
 }
 
 input:checked + .slider:before {
@@ -58,112 +59,370 @@ input:checked + .slider:before {
 }
 
 .theme-icon {
-    margin-left: 6px;
+    margin-left: 8px;
     font-size: 18px;
+    transition: color 0.3s ease;
 }
 
-/* Dark theme specific overrides */
+/* ===== LIGHT THEME (DEFAULT) ===== */
+:root {
+    --primary: #4e73df;
+    --primary-hover: #2e59d9;
+    --primary-light: #eaedff;
+    --secondary: #858796;
+    --success: #1cc88a;
+    --info: #36b9cc;
+    --warning: #f6c23e;
+    --danger: #e74a3b;
+    --light: #f8f9fc;
+    --dark: #5a5c69;
+    --body-bg: #f8f9fc;
+    --card-bg: #fff;
+    --text-primary: #333;
+    --text-secondary: #6c757d;
+    --border-color: #e3e6f0;
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.15);
+}
+
+/* ===== DARK THEME ===== */
 [data-bs-theme="dark"] {
-    --bs-body-bg: #121212;
-    --bs-body-color: #e0e0e0;
-    --bs-card-bg: #1e1e1e;
-    --bs-card-border-color: #333;
-    --bs-border-color: #333;
-    --bs-link-color: #8ab4f8;
-    --bs-nav-tabs-link-active-color: #fff;
-    --bs-primary: #8ab4f8;
-    --bs-secondary: #747474;
+    --primary: #4e73df;
+    --primary-hover: #6c8be6;
+    --primary-light: #2e3650;
+    --secondary: #858796;
+    --success: #1cc88a;
+    --info: #36b9cc;
+    --warning: #f6c23e;
+    --danger: #e74a3b;
+    --light: #252836;
+    --dark: #e0e0e0;
+    --body-bg: #1a1c29;
+    --card-bg: #252836;
+    --text-primary: #e0e0e0;
+    --text-secondary: #b3b8c8;
+    --border-color: #3c3f53;
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.2);
+    --shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.35);
 }
 
-[data-bs-theme="dark"] .bg-light {
-    background-color: #222 !important;
+/* Base styles that adapt to theme */
+body {
+    background-color: var(--body-bg);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-[data-bs-theme="dark"] .text-muted {
-    color: #a0a0a0 !important;
+/* Card styling */
+.card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
-[data-bs-theme="dark"] .card:hover {
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3) !important;
+.card:hover {
+    box-shadow: var(--shadow);
+    transform: translateY(-5px);
 }
 
-[data-bs-theme="dark"] .navbar {
-    background-color: #1a1a1a !important;
+.card-header {
+    background-color: var(--light);
+    border-color: var(--border-color);
 }
 
-[data-bs-theme="dark"] .navbar-dark .navbar-nav .nav-link {
-    color: #e0e0e0;
+/* Navbar styling */
+.navbar {
+    background-color: var(--card-bg) !important;
+    box-shadow: var(--shadow-sm);
+    border-bottom: 1px solid var(--border-color);
 }
 
-[data-bs-theme="dark"] .modal-content {
-    background-color: #1e1e1e;
-    border-color: #333;
+.navbar-dark .navbar-brand,
+.navbar-dark .nav-link {
+    color: var(--text-primary) !important;
 }
 
-[data-bs-theme="dark"] .table {
-    color: #e0e0e0;
+.navbar-dark .nav-link:hover {
+    color: var(--primary) !important;
 }
 
-[data-bs-theme="dark"] .table-hover tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.075);
+.navbar-dark .active > .nav-link,
+.navbar-dark .nav-link.active {
+    color: var(--primary) !important;
+    font-weight: 600;
 }
 
-[data-bs-theme="dark"] .form-control,
-[data-bs-theme="dark"] .form-select {
-    background-color: #2d2d2d;
-    border-color: #444;
-    color: #e0e0e0;
+/* Form elements */
+.form-control,
+.form-select {
+    background-color: var(--body-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
 }
 
-[data-bs-theme="dark"] .form-control:focus,
-[data-bs-theme="dark"] .form-select:focus {
-    background-color: #2d2d2d;
-    border-color: #575757;
-    color: #e0e0e0;
+.form-control:focus,
+.form-select:focus {
+    background-color: var(--body-bg);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.25);
+    color: var(--text-primary);
 }
 
-/* Keep specific backgrounds for cards with borders */
-[data-bs-theme="dark"] .card.border-primary,
-[data-bs-theme="dark"] .card.border-success,
-[data-bs-theme="dark"] .card.border-info,
-[data-bs-theme="dark"] .card.border-warning,
-[data-bs-theme="dark"] .card.border-danger,
-[data-bs-theme="dark"] .card.border-dark {
-    border-width: 2px !important;
+/* Table styling */
+.table {
+    color: var(--text-primary);
+    border-color: var(--border-color);
 }
 
-/* Customize dark theme color gradients */
-[data-bs-theme="dark"] .bg-gradient-primary {
-    background: linear-gradient(135deg, #365fcc 0%, #1b3b8a 100%);
+.table-hover tbody tr:hover {
+    background-color: var(--primary-light);
 }
 
-[data-bs-theme="dark"] .bg-gradient-success {
-    background: linear-gradient(135deg, #159a6d 0%, #0d6a48 100%);
+/* Modal styling */
+.modal-content {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
 }
 
-[data-bs-theme="dark"] .bg-gradient-info {
-    background: linear-gradient(135deg, #2997a7 0%, #1c6d7a 100%);
+.modal-header,
+.modal-footer {
+    border-color: var(--border-color);
 }
 
-[data-bs-theme="dark"] .bg-gradient-warning {
-    background: linear-gradient(135deg, #dea718 0%, #b58608 100%);
+/* Button hover effects */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
 }
 
-[data-bs-theme="dark"] .bg-gradient-danger {
-    background: linear-gradient(135deg, #d13426 0%, #a21e11 100%);
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
 }
 
-/* Fix borders and backgrounds for health stats in dark mode */
-[data-bs-theme="dark"] .health-stat {
-    border: 1px solid #333;
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
 }
 
-/* Game card styling for dark mode */
-[data-bs-theme="dark"] .game-card {
-    border-color: #333;
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: white;
 }
 
-/* Challenge progress bar for dark mode */
-[data-bs-theme="dark"] .challenge-progress-container {
-    background-color: #333;
+/* Progress bars */
+.progress {
+    background-color: var(--border-color);
+}
+
+/* Challenge progress bar */
+.challenge-progress-container {
+    background-color: var(--border-color);
+}
+
+.challenge-progress-bar {
+    background-color: var(--primary);
+}
+
+/* Footer */
+footer {
+    background-color: var(--card-bg) !important;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.dropdown-item {
+    color: var(--text-primary);
+}
+
+.dropdown-item:hover {
+    background-color: var(--primary-light);
+    color: var(--text-primary);
+}
+
+/* Alert styling */
+.alert {
+    border-left: 4px solid transparent;
+}
+
+.alert-success {
+    border-left-color: var(--success);
+}
+
+.alert-info {
+    border-left-color: var(--info);
+}
+
+.alert-warning {
+    border-left-color: var(--warning);
+}
+
+.alert-danger {
+    border-left-color: var(--danger);
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+}
+
+/* Custom styling for stat cards on home page */
+.home-card {
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.border-primary {
+    border-left-color: var(--primary) !important;
+}
+
+.border-success {
+    border-left-color: var(--success) !important;
+}
+
+.border-info {
+    border-left-color: var(--info) !important;
+}
+
+.border-warning {
+    border-left-color: var(--warning) !important;
+}
+
+.border-danger {
+    border-left-color: var(--danger) !important;
+}
+
+.border-dark {
+    border-left-color: var(--dark) !important;
+}
+
+/* Game cards */
+.game-card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.game-card .card-body {
+    padding: 2rem 1.5rem;
+}
+
+.game-icon {
+    font-size: 3rem;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+    transition: transform 0.3s ease;
+}
+
+.game-card:hover .game-icon {
+    transform: scale(1.2);
+}
+
+/* Health dashboard */
+.stat-card {
+    border-radius: 1rem;
+    overflow: hidden;
+    border: none;
+    color: white;
+}
+
+.bg-primary {
+    background: linear-gradient(135deg, #4e73df, #224abe) !important;
+}
+
+.bg-success {
+    background: linear-gradient(135deg, #1cc88a, #13855c) !important;
+}
+
+.bg-info {
+    background: linear-gradient(135deg, #36b9cc, #258391) !important;
+}
+
+.bg-warning {
+    background: linear-gradient(135deg, #f6c23e, #dda20a) !important;
+}
+
+.bg-danger {
+    background: linear-gradient(135deg, #e74a3b, #be2617) !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--body-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* Dark mode adjustments for specific components */
+[data-bs-theme="dark"] .nav-tabs .nav-link.active {
+    background-color: var(--card-bg);
+    color: var(--primary);
+    border-color: var(--border-color) var(--border-color) var(--card-bg);
+}
+
+[data-bs-theme="dark"] .nav-tabs {
+    border-bottom-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .form-check-input {
+    background-color: var(--body-bg);
+    border-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+/* Calendar specific styling for dark mode */
+[data-bs-theme="dark"] .fc-theme-standard td,
+[data-bs-theme="dark"] .fc-theme-standard th {
+    border-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .fc-theme-standard .fc-scrollgrid {
+    border-color: var(--border-color);
+}
+
+[data-bs-theme="dark"] .fc-col-header-cell {
+    background-color: var(--light);
+}
+
+[data-bs-theme="dark"] .fc-day-today {
+    background-color: var(--primary-light) !important;
+}
+
+/* Todo list styling enhancements */
+.task-completed {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.deleted-task {
+    opacity: 0.6;
+}
+
+/* Chart colors for dark theme */
+[data-bs-theme="dark"] .chart-container canvas {
+    filter: brightness(0.9);
 }
