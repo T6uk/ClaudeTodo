@@ -1,0 +1,168 @@
+/* Theme-related styles */
+
+/* Theme toggle switch */
+.theme-switch-wrapper {
+    display: flex;
+    align-items: center;
+    margin-left: 15px;
+}
+
+.theme-switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.theme-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.theme-icon {
+    margin-left: 6px;
+    font-size: 18px;
+}
+
+/* Dark theme specific overrides */
+[data-bs-theme="dark"] {
+    --bs-body-bg: #121212;
+    --bs-body-color: #e0e0e0;
+    --bs-card-bg: #1e1e1e;
+    --bs-card-border-color: #333;
+    --bs-border-color: #333;
+    --bs-link-color: #8ab4f8;
+    --bs-nav-tabs-link-active-color: #fff;
+    --bs-primary: #8ab4f8;
+    --bs-secondary: #747474;
+}
+
+[data-bs-theme="dark"] .bg-light {
+    background-color: #222 !important;
+}
+
+[data-bs-theme="dark"] .text-muted {
+    color: #a0a0a0 !important;
+}
+
+[data-bs-theme="dark"] .card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-bs-theme="dark"] .navbar {
+    background-color: #1a1a1a !important;
+}
+
+[data-bs-theme="dark"] .navbar-dark .navbar-nav .nav-link {
+    color: #e0e0e0;
+}
+
+[data-bs-theme="dark"] .modal-content {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+[data-bs-theme="dark"] .table {
+    color: #e0e0e0;
+}
+
+[data-bs-theme="dark"] .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.075);
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select {
+    background-color: #2d2d2d;
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+[data-bs-theme="dark"] .form-control:focus,
+[data-bs-theme="dark"] .form-select:focus {
+    background-color: #2d2d2d;
+    border-color: #575757;
+    color: #e0e0e0;
+}
+
+/* Keep specific backgrounds for cards with borders */
+[data-bs-theme="dark"] .card.border-primary,
+[data-bs-theme="dark"] .card.border-success,
+[data-bs-theme="dark"] .card.border-info,
+[data-bs-theme="dark"] .card.border-warning,
+[data-bs-theme="dark"] .card.border-danger,
+[data-bs-theme="dark"] .card.border-dark {
+    border-width: 2px !important;
+}
+
+/* Customize dark theme color gradients */
+[data-bs-theme="dark"] .bg-gradient-primary {
+    background: linear-gradient(135deg, #365fcc 0%, #1b3b8a 100%);
+}
+
+[data-bs-theme="dark"] .bg-gradient-success {
+    background: linear-gradient(135deg, #159a6d 0%, #0d6a48 100%);
+}
+
+[data-bs-theme="dark"] .bg-gradient-info {
+    background: linear-gradient(135deg, #2997a7 0%, #1c6d7a 100%);
+}
+
+[data-bs-theme="dark"] .bg-gradient-warning {
+    background: linear-gradient(135deg, #dea718 0%, #b58608 100%);
+}
+
+[data-bs-theme="dark"] .bg-gradient-danger {
+    background: linear-gradient(135deg, #d13426 0%, #a21e11 100%);
+}
+
+/* Fix borders and backgrounds for health stats in dark mode */
+[data-bs-theme="dark"] .health-stat {
+    border: 1px solid #333;
+}
+
+/* Game card styling for dark mode */
+[data-bs-theme="dark"] .game-card {
+    border-color: #333;
+}
+
+/* Challenge progress bar for dark mode */
+[data-bs-theme="dark"] .challenge-progress-container {
+    background-color: #333;
+}

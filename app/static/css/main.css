@@ -20,6 +20,11 @@
     border-top-right-radius: 0.5rem !important;
 }
 
+/* Support for dark/light mode transition */
+body, .card, .navbar, .modal-content, .form-control, .form-select, .table, .btn {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
 /* Custom utility classes */
 .bg-gradient-primary {
     background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
