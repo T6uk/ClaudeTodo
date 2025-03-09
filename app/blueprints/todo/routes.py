@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for, flash, request, abort
+from flask import render_template, redirect, url_for, flash, request, abort, jsonify
 from flask_login import current_user, login_required
 from app import db
 from app.models import Todo
@@ -52,56 +52,65 @@ def list_todos():
     )
 
 
-@todo_bp.route('/new', methods=['GET', 'POST'])
+@todo_bp.route('/new', methods=['POST'])
 @login_required
 def new_todo():
-    form = TodoForm()
-    if form.validate_on_submit():
-        try:
-            todo = Todo(
-                title=form.title.data,
-                description=form.description.data,
-                priority=form.priority.data,
-                due_date=form.due_date.data,
-                user_id=current_user.id
-            )
-            db.session.add(todo)
-            db.session.commit()
-            flash('Task created successfully!', 'success')
-            return redirect(url_for('todo.list_todos'))
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error creating task: {str(e)}', 'danger')
-            return render_template('todo/item.html', title='New Task', form=form, is_update=False, todo=None)
+    try:
+        title = request.form.get('title')
+        description = request.form.get('description')
+        priority = int(request.form.get('priority', 0))
+        due_date_str = request.form.get('due_date')
 
-    return render_template('todo/item.html', title='New Task', form=form, is_update=False, todo=None)
+        due_date = None
+        if due_date_str and due_date_str.strip():
+            due_date = datetime.fromisoformat(due_date_str)
+
+        todo = Todo(
+            title=title,
+            description=description,
+            priority=priority,
+            due_date=due_date,
+            user_id=current_user.id
+        )
+        db.session.add(todo)
+        db.session.commit()
+        flash('Task created successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error creating task: {str(e)}', 'danger')
+
+    # Always redirect back to the todo list
+    return redirect(url_for('todo.list_todos'))
 
 
-@todo_bp.route('/<int:todo_id>', methods=['GET', 'POST'])
+@todo_bp.route('/<int:todo_id>/update-status', methods=['POST'])
 @login_required
-def view_todo(todo_id):
+def update_status(todo_id):
     todo = Todo.query.get_or_404(todo_id)
 
     # Ensure the current user owns this todo
     if todo.user_id != current_user.id:
         abort(403)
 
-    status_form = TodoStatusForm()
+    # Update the completed status
+    completed = 'completed' in request.form
+    todo.completed = completed
+    db.session.commit()
 
-    if status_form.validate_on_submit():
-        todo.completed = status_form.completed.data
-        db.session.commit()
-        flash('Task status updated!', 'success')
-        return redirect(url_for('todo.view_todo', todo_id=todo.id))
+    # Flash message based on the new status
+    if completed:
+        flash('Task marked as completed!', 'success')
+    else:
+        flash('Task marked as pending!', 'info')
 
-    # Pre-fill the form with current data
-    if request.method == 'GET':
-        status_form.completed.data = todo.completed
+    # Redirect to referer or default to todo list
+    next_page = request.args.get('next') or request.referrer
+    if not next_page:
+        next_page = url_for('todo.list_todos')
+    return redirect(next_page)
 
-    return render_template('todo/view.html', title=todo.title, todo=todo, form=status_form)
 
-
-@todo_bp.route('/<int:todo_id>/edit', methods=['GET', 'POST'])
+@todo_bp.route('/<int:todo_id>/edit', methods=['POST'])
 @login_required
 def edit_todo(todo_id):
     todo = Todo.query.get_or_404(todo_id)
@@ -115,29 +124,28 @@ def edit_todo(todo_id):
         flash('Cannot edit a deleted task. Restore it first.', 'warning')
         return redirect(url_for('todo.list_todos', tab='deleted'))
 
-    form = TodoForm()
+    try:
+        todo.title = request.form.get('title')
+        todo.description = request.form.get('description')
+        todo.priority = int(request.form.get('priority', 0))
 
-    if form.validate_on_submit():
-        try:
-            todo.title = form.title.data
-            todo.description = form.description.data
-            todo.priority = form.priority.data
-            todo.due_date = form.due_date.data
-            db.session.commit()
-            flash('Task updated successfully!', 'success')
-            return redirect(url_for('todo.view_todo', todo_id=todo.id))
-        except Exception as e:
-            db.session.rollback()
-            flash(f'Error updating task: {str(e)}', 'danger')
+        due_date_str = request.form.get('due_date')
+        if due_date_str and due_date_str.strip():
+            todo.due_date = datetime.fromisoformat(due_date_str)
+        else:
+            todo.due_date = None
 
-    # Pre-fill the form with current data
-    if request.method == 'GET':
-        form.title.data = todo.title
-        form.description.data = todo.description
-        form.priority.data = todo.priority
-        form.due_date.data = todo.due_date
+        db.session.commit()
+        flash('Task updated successfully!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error updating task: {str(e)}', 'danger')
 
-    return render_template('todo/item.html', title='Edit Task', form=form, is_update=True, todo=todo)
+    # Redirect to referer or default to todo list
+    next_page = request.args.get('next') or request.referrer
+    if not next_page:
+        next_page = url_for('todo.list_todos')
+    return redirect(next_page)
 
 
 @todo_bp.route('/<int:todo_id>/delete', methods=['POST'])
