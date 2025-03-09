@@ -4,7 +4,8 @@
 .theme-switch-wrapper {
     display: flex;
     align-items: center;
-    margin-left: 15px;
+    justify-content: center;
+    margin: 5px 15px;
 }
 
 .theme-switch {

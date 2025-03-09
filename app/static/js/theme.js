@@ -10,10 +10,22 @@ document.addEventListener('DOMContentLoaded', function() {
         if (document.getElementById('themeToggle')) {
             document.getElementById('themeToggle').checked = true;
         }
+
+        // Update the icon to moon
+        if (document.getElementById('themeIcon')) {
+            document.getElementById('themeIcon').classList.remove('bi-sun');
+            document.getElementById('themeIcon').classList.add('bi-moon');
+        }
     } else {
         document.documentElement.setAttribute('data-bs-theme', 'light');
         if (document.getElementById('themeToggle')) {
             document.getElementById('themeToggle').checked = false;
+        }
+
+        // Update the icon to sun
+        if (document.getElementById('themeIcon')) {
+            document.getElementById('themeIcon').classList.remove('bi-moon');
+            document.getElementById('themeIcon').classList.add('bi-sun');
         }
     }
 
