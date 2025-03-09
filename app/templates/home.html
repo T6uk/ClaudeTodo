@@ -2,88 +2,396 @@
 
 {% block title %}Home - Personal Dashboard{% endblock %}
 
+{% block styles %}
+<style>
+    .welcome-section {
+        padding: 2rem 0 3rem;
+        text-align: center;
+    }
+
+    .welcome-heading {
+        font-weight: 800;
+        margin-bottom: 1.5rem;
+        font-size: 2.5rem;
+        color: var(--primary);
+        position: relative;
+        display: inline-block;
+    }
+
+    .welcome-subheading {
+        font-size: 1.2rem;
+        margin-bottom: 2.5rem;
+        max-width: 700px;
+        margin-left: auto;
+        margin-right: auto;
+        color: var(--text-secondary);
+    }
+
+    .feature-card {
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        background-color: var(--card-bg);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-card .card-body {
+        padding: 1.75rem 1.25rem;
+        text-align: center;
+        z-index: 10;
+    }
+
+    .feature-icon {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.25rem;
+        border-radius: 50%;
+        font-size: 1.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .icon-primary {
+        color: #4e73df;
+        background-color: rgba(78, 115, 223, 0.1);
+    }
+
+    .icon-success {
+        color: #1cc88a;
+        background-color: rgba(28, 200, 138, 0.1);
+    }
+
+    .icon-info {
+        color: #36b9cc;
+        background-color: rgba(54, 185, 204, 0.1);
+    }
+
+    .icon-warning {
+        color: #f6c23e;
+        background-color: rgba(246, 194, 62, 0.1);
+    }
+
+    .icon-danger {
+        color: #e74a3b;
+        background-color: rgba(231, 74, 59, 0.1);
+    }
+
+    .icon-dark {
+        color: #5a5c69;
+        background-color: rgba(90, 92, 105, 0.1);
+    }
+
+    .feature-card:hover .feature-icon {
+        transform: scale(1.15);
+    }
+
+    .feature-card .card-title {
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        font-size: 1.35rem;
+        color: var(--text-primary);
+    }
+
+    .feature-card .card-text {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .feature-card .card-footer {
+        background-color: transparent;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1rem 1.25rem;
+    }
+
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+
+    .btn-success {
+        background-color: #1cc88a;
+        border-color: #1cc88a;
+    }
+
+    .btn-info {
+        background-color: #36b9cc;
+        border-color: #36b9cc;
+    }
+
+    .btn-warning {
+        background-color: #f6c23e;
+        border-color: #f6c23e;
+    }
+
+    .btn-danger {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+    }
+
+    .btn-dark {
+        background-color: #5a5c69;
+        border-color: #5a5c69;
+    }
+
+    .guest-cta {
+        padding: 2.5rem;
+        border-radius: 1rem;
+        background-color: rgba(78, 115, 223, 0.1);
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .guest-cta h2 {
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        color: var(--primary);
+    }
+
+    .guest-cta p {
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-up {
+        animation: fadeInUp 0.5s ease-out forwards;
+        opacity: 0;
+    }
+
+    [data-bs-theme="dark"] .feature-icon {
+        filter: brightness(1.1);
+    }
+
+    [data-bs-theme="dark"] .guest-cta {
+        background-color: rgba(78, 115, 223, 0.15);
+    }
+
+    .row > * {
+        transition-delay: calc(0.1s * var(--animation-order));
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h1 class="card-title text-center mb-4">Welcome to Your Personal Dashboard</h1>
+<div class="container">
+    <div class="welcome-section animate-fade-in-up">
+        {% if current_user.is_authenticated %}
+            <h1 class="welcome-heading">Welcome back, {{ current_user.username }}!</h1>
+            <p class="welcome-subheading">Your personal dashboard is ready. What would you like to accomplish today?</p>
+        {% else %}
+            <h1 class="welcome-heading">Welcome to Personal Dashboard</h1>
+            <p class="welcome-subheading">Your all-in-one hub for organizing tasks, tracking fitness, monitoring health, and staying productive.</p>
+        {% endif %}
+    </div>
 
-                {% if current_user.is_authenticated %}
-                    <p class="lead text-center">Hello, {{ current_user.username }}! What would you like to do today?</p>
-
-                    <div class="row mt-5">
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 border-primary">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">Todo List</h3>
-                                    <p class="card-text">Manage your tasks and stay organized.</p>
-                                    <a href="{{ url_for('todo.list_todos') }}" class="btn btn-primary">View Tasks</a>
-                                </div>
-                            </div>
+    {% if current_user.is_authenticated %}
+        <div class="row">
+            <div class="col-md-4 mb-4 animate-fade-in-up" style="--animation-order: 1">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon icon-primary">
+                            <i class="bi bi-check2-square"></i>
                         </div>
-
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 border-success">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">Calendar</h3>
-                                    <p class="card-text">Keep track of your schedule and events.</p>
-                                    <a href="{{ url_for('calendar.view_calendar') }}" class="btn btn-success">View Calendar</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 border-info">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">Challenges</h3>
-                                    <p class="card-text">Set personal challenges and track your progress.</p>
-                                    <a href="{{ url_for('challenges.list_challenges') }}" class="btn btn-info">View Challenges</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 border-warning">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">Workout</h3>
-                                    <p class="card-text">Log your workouts and monitor your fitness.</p>
-                                    <a href="{{ url_for('workout.list_workouts') }}" class="btn btn-warning">View Workouts</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 border-danger">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">Health</h3>
-                                    <p class="card-text">Track your health metrics and well-being.</p>
-                                    <a href="{{ url_for('health.dashboard') }}" class="btn btn-danger">View Health</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100 border-dark">
-                                <div class="card-body text-center">
-                                    <h3 class="card-title">Games</h3>
-                                    <p class="card-text">Take a break and enjoy some fun games.</p>
-                                    <a href="{{ url_for('games.list_games') }}" class="btn btn-dark">Play Games</a>
-                                </div>
-                            </div>
-                        </div>
+                        <h3 class="card-title">Todo List</h3>
+                        <p class="card-text">Organize your tasks, set priorities, and track your progress.</p>
                     </div>
-                {% else %}
-                    <p class="lead text-center">Your personal hub for staying organized, healthy, and motivated.</p>
-
-                    <div class="text-center mt-5">
-                        <p>Get started with your personal dashboard today!</p>
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">Register</a>
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg">Login</a>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('todo.list_todos') }}" class="btn btn-primary">
+                            Manage Tasks <i class="bi bi-arrow-right"></i>
+                        </a>
                     </div>
-                {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4 animate-fade-in-up" style="--animation-order: 2">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon icon-success">
+                            <i class="bi bi-calendar-event"></i>
+                        </div>
+                        <h3 class="card-title">Calendar</h3>
+                        <p class="card-text">Plan your schedule, manage events, and never miss important dates.</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('calendar.view_calendar') }}" class="btn btn-success">
+                            View Calendar <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4 animate-fade-in-up" style="--animation-order: 3">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon icon-info">
+                            <i class="bi bi-trophy"></i>
+                        </div>
+                        <h3 class="card-title">Challenges</h3>
+                        <p class="card-text">Set personal goals, challenge yourself, and track your achievements.</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('challenges.list_challenges') }}" class="btn btn-info">
+                            View Challenges <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4 animate-fade-in-up" style="--animation-order: 4">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon icon-warning">
+                            <i class="bi bi-activity"></i>
+                        </div>
+                        <h3 class="card-title">Workout</h3>
+                        <p class="card-text">Log your fitness activities, track exercises, and monitor progress.</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('workout.list_workouts') }}" class="btn btn-warning">
+                            Track Workouts <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4 animate-fade-in-up" style="--animation-order: 5">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon icon-danger">
+                            <i class="bi bi-heart-pulse"></i>
+                        </div>
+                        <h3 class="card-title">Health</h3>
+                        <p class="card-text">Monitor vital metrics, track wellness data, and maintain your health.</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('health.dashboard') }}" class="btn btn-danger">
+                            Health Dashboard <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4 animate-fade-in-up" style="--animation-order: 6">
+                <div class="card feature-card h-100">
+                    <div class="card-body">
+                        <div class="feature-icon icon-dark">
+                            <i class="bi bi-controller"></i>
+                        </div>
+                        <h3 class="card-title">Games</h3>
+                        <p class="card-text">Take a break, relax your mind, and enjoy some entertaining games.</p>
+                    </div>
+                    <div class="card-footer text-center">
+                        <a href="{{ url_for('games.list_games') }}" class="btn btn-dark">
+                            Play Games <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
+    {% else %}
+        <div class="row justify-content-center animate-fade-in-up" style="--animation-order: 1">
+            <div class="col-lg-10">
+                <div class="guest-cta">
+                    <h2>Start Organizing Your Life Today</h2>
+                    <p>Join thousands of users who have transformed their productivity, health tracking, and personal goals with our all-in-one dashboard.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-person-plus"></i> Create an Account
+                        </a>
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="bi bi-box-arrow-in-right"></i> Sign In
+                        </a>
+                    </div>
+                </div>
+
+                <div class="row mt-5">
+                    <div class="col-md-6 mb-4 animate-fade-in-up" style="--animation-order: 2">
+                        <div class="card feature-card h-100">
+                            <div class="card-body">
+                                <div class="feature-icon icon-primary">
+                                    <i class="bi bi-check2-all"></i>
+                                </div>
+                                <h3 class="card-title">Task Management</h3>
+                                <p class="card-text">Keep track of all your tasks, set priorities, and never forget important deadlines.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4 animate-fade-in-up" style="--animation-order: 3">
+                        <div class="card feature-card h-100">
+                            <div class="card-body">
+                                <div class="feature-icon icon-success">
+                                    <i class="bi bi-calendar-check"></i>
+                                </div>
+                                <h3 class="card-title">Event Planning</h3>
+                                <p class="card-text">Organize your schedule, plan events, and synchronize with your personal calendar.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4 animate-fade-in-up" style="--animation-order: 4">
+                        <div class="card feature-card h-100">
+                            <div class="card-body">
+                                <div class="feature-icon icon-info">
+                                    <i class="bi bi-graph-up"></i>
+                                </div>
+                                <h3 class="card-title">Health Tracking</h3>
+                                <p class="card-text">Monitor your health metrics, visualize progress, and maintain your wellbeing.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 mb-4 animate-fade-in-up" style="--animation-order: 5">
+                        <div class="card feature-card h-100">
+                            <div class="card-body">
+                                <div class="feature-icon icon-warning">
+                                    <i class="bi bi-lightning-charge"></i>
+                                </div>
+                                <h3 class="card-title">Personal Challenges</h3>
+                                <p class="card-text">Set goals, challenge yourself, and visualize your progress over time.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation classes with delay
+        const elements = document.querySelectorAll('.animate-fade-in-up');
+        elements.forEach((element, index) => {
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, 100 * index);
+        });
+    });
+</script>
 {% endblock %}
