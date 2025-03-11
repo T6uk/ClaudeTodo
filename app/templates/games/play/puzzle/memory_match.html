@@ -12,15 +12,20 @@
     .game-board {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 10px;
+        gap: 12px;
         margin: 0 auto;
-        max-width: 500px;
+        max-width: 550px;
     }
 
     .card-container {
         perspective: 1000px;
         aspect-ratio: 3/4;
         cursor: pointer;
+        transition: transform 0.2s;
+    }
+
+    .card-container:hover {
+        transform: translateY(-5px);
     }
 
     .memory-card {
@@ -28,7 +33,7 @@
         height: 100%;
         position: relative;
         transform-style: preserve-3d;
-        transition: transform 0.6s;
+        transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .card-container.flipped .memory-card {
@@ -40,7 +45,7 @@
         height: 100%;
         position: absolute;
         backface-visibility: hidden;
-        border-radius: 10px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -50,14 +55,14 @@
     .card-front {
         background: linear-gradient(135deg, #A1B2D4 0%, #8090B2 100%);
         color: white;
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
 
     .card-back {
         background-color: white;
         transform: rotateY(180deg);
         color: #333;
-        font-size: 2.5rem;
+        font-size: 3rem;
     }
 
     [data-bs-theme="dark"] .card-back {
@@ -65,9 +70,13 @@
         color: #f8f9fa;
     }
 
+    .matched .memory-card {
+        animation: pulse-matched 1.5s infinite alternate;
+    }
+
     .matched .card-back {
         background-color: rgba(87, 167, 115, 0.2);
-        box-shadow: 0 0 10px rgba(87, 167, 115, 0.5);
+        box-shadow: 0 0 15px rgba(87, 167, 115, 0.5);
     }
 
     [data-bs-theme="dark"] .matched .card-back {
@@ -78,15 +87,21 @@
         display: flex;
         justify-content: space-around;
         margin: 20px auto;
-        max-width: 500px;
+        max-width: 550px;
     }
 
     .stat-item {
         text-align: center;
-        padding: 10px 20px;
+        padding: 12px 20px;
         background-color: #f8f9fa;
-        border-radius: 10px;
+        border-radius: 12px;
         min-width: 100px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
 
     [data-bs-theme="dark"] .stat-item {
@@ -94,18 +109,24 @@
     }
 
     .stat-value {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: 700;
         color: var(--primary);
     }
 
     .stat-label {
-        font-size: 0.8rem;
+        font-size: 0.9rem;
         color: var(--text-secondary);
+        margin-top: 5px;
     }
 
     .level-select {
         margin: 20px auto;
+        text-align: center;
+    }
+
+    .theme-select {
+        margin: 0 auto 20px;
         text-align: center;
     }
 
@@ -115,7 +136,7 @@
         margin: 20px auto;
         overflow: hidden;
         background-color: #e9ecef;
-        max-width: 500px;
+        max-width: 550px;
     }
 
     .progress-value {
@@ -125,7 +146,32 @@
         transition: width 1s linear;
     }
 
-    /* Animations */
+    /* Game feedback toasts */
+    .game-toast {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-weight: 600;
+        z-index: 1000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .combo-counter {
+        position: absolute;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #57A773;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    /* Enhanced animations */
     @keyframes match-success {
         0% {transform: scale(1);}
         50% {transform: scale(1.1);}
@@ -145,6 +191,67 @@
     .match-fail {
         animation: match-fail 0.4s;
     }
+
+    @keyframes pulse-matched {
+        0% {transform: rotateY(180deg) scale(1);}
+        100% {transform: rotateY(180deg) scale(1.05);}
+    }
+
+    @keyframes fade-up {
+        0% {opacity: 1; transform: translateY(0);}
+        100% {opacity: 0; transform: translateY(-50px);}
+    }
+
+    @keyframes show-toast {
+        0% {opacity: 0; transform: translate(-50%, -20px);}
+        20% {opacity: 1; transform: translate(-50%, 0);}
+        80% {opacity: 1; transform: translate(-50%, 0);}
+        100% {opacity: 0; transform: translate(-50%, -20px);}
+    }
+
+    .show-toast {
+        animation: show-toast 2s ease forwards;
+    }
+
+    .streak-animation {
+        animation: fade-up 1.5s ease forwards;
+    }
+
+    /* Difficulty stars */
+    .difficulty-stars {
+        margin-bottom: 10px;
+        color: var(--primary);
+    }
+
+    /* Game variant selector */
+    .variant-selector {
+        margin: 10px auto;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .variant-btn {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 2px solid var(--primary);
+        background-color: transparent;
+        color: var(--primary);
+        transition: all 0.3s ease;
+    }
+
+    .variant-btn.active {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .variant-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+    }
 </style>
 {% endblock %}
 
@@ -163,15 +270,42 @@
             <div class="stat-value" id="timeDisplay">0:00</div>
             <div class="stat-label">Time</div>
         </div>
+        <div class="stat-item">
+            <div class="stat-value" id="comboDisplay">0</div>
+            <div class="stat-label">Combo</div>
+        </div>
     </div>
 
     <div class="level-select mb-3">
+        <div class="difficulty-stars mb-2" id="difficultyStars">
+            <i class="fas fa-star"></i>
+            <i class="fas fa-star"></i>
+            <i class="far fa-star"></i>
+        </div>
         <label for="levelSelect" class="form-label">Difficulty:</label>
         <select id="levelSelect" class="form-select form-select-sm d-inline-block w-auto">
             <option value="easy">Easy (4×3)</option>
             <option value="medium" selected>Medium (4×4)</option>
             <option value="hard">Hard (6×4)</option>
+            <option value="expert">Expert (6×5)</option>
         </select>
+    </div>
+
+    <div class="theme-select">
+        <label for="themeSelect" class="form-label">Card Theme:</label>
+        <select id="themeSelect" class="form-select form-select-sm d-inline-block w-auto">
+            <option value="animals" selected>Animals</option>
+            <option value="fruits">Fruits</option>
+            <option value="transport">Transport</option>
+            <option value="space">Space</option>
+            <option value="emotions">Emotions</option>
+        </select>
+    </div>
+
+    <div class="variant-selector">
+        <button class="variant-btn active" data-variant="classic">Classic</button>
+        <button class="variant-btn" data-variant="timed">Timed</button>
+        <button class="variant-btn" data-variant="challenge">Challenge</button>
     </div>
 
     <div class="progress-bar">
@@ -181,6 +315,9 @@
     <div id="gameBoard" class="game-board">
         <!-- Memory cards will be generated here -->
     </div>
+
+    <!-- Toast for game feedback -->
+    <div id="gameToast" class="game-toast"></div>
 </div>
 {% endblock %}
 
@@ -209,31 +346,134 @@
         let gameTimer;
         let startTime;
         let gameActive = false;
+        let combo = 0;
+        let maxCombo = 0;
+        let gameVariant = 'classic';
+        let soundEnabled = true;
 
         // Card symbols by theme (unicode symbols and emojis)
         const cardSymbols = {
-            animals: ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🦁', '🐯', '🐨', '🐮', '🐷', '🐸'],
-            fruits: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🥝', '🍍'],
-            transport: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎', '🚓', '🚑', '🚒', '🚚', '🚛', '✈️'],
-            space: ['🚀', '🌎', '🌙', '⭐', '☄️', '🌞', '🌚', '🪐', '🌌', '🌠', '👨‍🚀', '👽']
+            animals: ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🦁', '🐯', '🐨', '🐮', '🐷', '🐸', '🦄', '🦓', '🦒'],
+            fruits: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🥝', '🍍', '🥥', '🍆', '🥑'],
+            transport: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎', '🚓', '🚑', '🚒', '🚚', '🚛', '✈️', '🚂', '🚢', '🛵'],
+            space: ['🚀', '🌎', '🌙', '⭐', '☄️', '🌞', '🌚', '🪐', '🌌', '🌠', '👨‍🚀', '👽', '🛸', '🔭', '🌟'],
+            emotions: ['😀', '😂', '😍', '🤔', '😎', '🥳', '😴', '🤯', '😱', '🙄', '🤩', '😇', '🥺', '😤', '🤪']
         };
+
+        // Game sounds
+        const sounds = {
+            flip: new Audio('https://freesound.org/data/previews/240/240776_4107740-lq.mp3'),
+            match: new Audio('https://freesound.org/data/previews/131/131660_2398403-lq.mp3'),
+            wrong: new Audio('https://freesound.org/data/previews/142/142608_1840739-lq.mp3'),
+            win: new Audio('https://freesound.org/data/previews/320/320775_5260872-lq.mp3'),
+            timeTick: new Audio('https://freesound.org/data/previews/254/254316_4404552-lq.mp3')
+        };
+
+        // Preload sounds
+        for (const sound in sounds) {
+            sounds[sound].load();
+            sounds[sound].volume = 0.4;
+        }
+
+        // Play sound if enabled
+        function playSound(sound) {
+            if (soundEnabled) {
+                sounds[sound].currentTime = 0;
+                sounds[sound].play().catch(e => console.log("Audio play error:", e));
+            }
+        }
 
         // DOM elements
         const gameBoard = document.getElementById('gameBoard');
         const scoreDisplay = document.getElementById('scoreDisplay');
         const movesDisplay = document.getElementById('movesDisplay');
         const timeDisplay = document.getElementById('timeDisplay');
+        const comboDisplay = document.getElementById('comboDisplay');
         const progressBar = document.getElementById('progressBar');
         const levelSelect = document.getElementById('levelSelect');
+        const themeSelect = document.getElementById('themeSelect');
+        const difficultyStars = document.getElementById('difficultyStars');
         const startButton = document.getElementById('startButton');
         const resetButton = document.getElementById('resetButton');
+        const gameToast = document.getElementById('gameToast');
+        const variantButtons = document.querySelectorAll('.variant-btn');
 
         // Set up difficulty settings
         const DIFFICULTY = {
-            easy: { rows: 3, cols: 4, timeLimit: 60 },
-            medium: { rows: 4, cols: 4, timeLimit: 90 },
-            hard: { rows: 4, cols: 6, timeLimit: 120 }
+            easy: { rows: 3, cols: 4, timeLimit: 60, timePerMatch: 5, basePoints: 10 },
+            medium: { rows: 4, cols: 4, timeLimit: 90, timePerMatch: 4, basePoints: 15 },
+            hard: { rows: 4, cols: 6, timeLimit: 120, timePerMatch: 3, basePoints: 20 },
+            expert: { rows: 5, cols: 6, timeLimit: 150, timePerMatch: 2, basePoints: 25 }
         };
+
+        // Game variants
+        const VARIANTS = {
+            classic: {
+                description: "Match all pairs without time pressure",
+                setup: function() {
+                    const difficulty = levelSelect.value;
+                    timeLeft = DIFFICULTY[difficulty].timeLimit;
+                    progressBar.style.display = 'none';
+                }
+            },
+            timed: {
+                description: "Race against the clock to match all pairs",
+                setup: function() {
+                    const difficulty = levelSelect.value;
+                    timeLeft = DIFFICULTY[difficulty].timeLimit;
+                    progressBar.style.display = 'block';
+                }
+            },
+            challenge: {
+                description: "Limited moves to find all matches",
+                setup: function() {
+                    // Calculate max moves based on difficulty
+                    const difficulty = levelSelect.value;
+                    const totalCards = DIFFICULTY[difficulty].rows * DIFFICULTY[difficulty].cols;
+                    // Set max moves to 1.5x the number of pairs
+                    const maxMoves = Math.floor(totalCards * 0.75);
+
+                    // Display moves left instead of time
+                    timeLeft = maxMoves;
+                    timeDisplay.textContent = timeLeft;
+                    document.querySelector('.stat-item:nth-child(3) .stat-label').textContent = 'Moves Left';
+
+                    progressBar.style.display = 'block';
+                }
+            }
+        };
+
+        // Show toast message
+        function showToast(message) {
+            gameToast.textContent = message;
+            gameToast.classList.remove('show-toast');
+            // Trigger reflow to restart animation
+            void gameToast.offsetWidth;
+            gameToast.classList.add('show-toast');
+        }
+
+        // Update difficulty stars display
+        function updateDifficultyStars() {
+            const difficulty = levelSelect.value;
+            let stars = '';
+
+            switch(difficulty) {
+                case 'easy':
+                    stars = '<i class="fas fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i>';
+                    break;
+                case 'medium':
+                    stars = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="far fa-star"></i>';
+                    break;
+                case 'hard':
+                    stars = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                    break;
+                case 'expert':
+                    stars = '<i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>';
+                    break;
+            }
+
+            difficultyStars.innerHTML = stars;
+        }
 
         // Set up initial game state
         function initGame() {
@@ -249,10 +489,17 @@
             score = 0;
             moves = 0;
             matches = 0;
+            combo = 0;
+            maxCombo = 0;
 
             // Get difficulty settings
             const difficulty = levelSelect.value;
-            timeLeft = DIFFICULTY[difficulty].timeLimit;
+
+            // Setup based on game variant
+            VARIANTS[gameVariant].setup();
+
+            // Update star rating
+            updateDifficultyStars();
 
             // Set game to inactive
             gameActive = false;
@@ -260,11 +507,22 @@
             // Update displays
             scoreDisplay.textContent = '0';
             movesDisplay.textContent = '0';
-            timeDisplay.textContent = formatTime(timeLeft);
+            comboDisplay.textContent = '0';
+
+            if (gameVariant !== 'challenge') {
+                timeDisplay.textContent = formatTime(timeLeft);
+                document.querySelector('.stat-item:nth-child(3) .stat-label').textContent = 'Time';
+            } else {
+                timeDisplay.textContent = timeLeft;
+            }
+
             progressBar.style.width = '100%';
 
             // Clear the game board
             gameBoard.innerHTML = '';
+
+            // Show game variant description
+            showToast(VARIANTS[gameVariant].description);
 
             // Set up based on selected difficulty
             setupDifficulty();
@@ -288,21 +546,19 @@
             // Calculate total pairs
             totalPairs = (rows * cols) / 2;
 
-            console.log(`Difficulty: ${difficulty}, Rows: ${rows}, Cols: ${cols}, Total Pairs: ${totalPairs}`);
-
             // Update grid layout
             gameBoard.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-            // Choose a random theme
-            const themes = Object.keys(cardSymbols);
-            const theme = themes[Math.floor(Math.random() * themes.length)];
+            // Choose the selected theme
+            const theme = themeSelect.value;
             const symbols = cardSymbols[theme];
 
             // Create cards for pairs
             const cardPairs = [];
             for (let i = 0; i < totalPairs; i++) {
-                cardPairs.push(symbols[i % symbols.length]);
-                cardPairs.push(symbols[i % symbols.length]);
+                const symbol = symbols[i % symbols.length];
+                cardPairs.push(symbol);
+                cardPairs.push(symbol);
             }
 
             // Shuffle the cards
@@ -343,6 +599,31 @@
             cards.push(cardContainer);
         }
 
+        // Display a combo animation
+        function showComboAnimation(x, y, comboCount) {
+            const comboEl = document.createElement('div');
+            comboEl.classList.add('combo-counter');
+            comboEl.textContent = `${comboCount}x Combo!`;
+            comboEl.style.left = `${x}px`;
+            comboEl.style.top = `${y}px`;
+            document.body.appendChild(comboEl);
+
+            // Trigger animation
+            setTimeout(() => {
+                comboEl.style.opacity = '1';
+                comboEl.style.transform = 'translateY(-20px)';
+
+                setTimeout(() => {
+                    comboEl.classList.add('streak-animation');
+
+                    // Remove element after animation
+                    setTimeout(() => {
+                        comboEl.remove();
+                    }, 1500);
+                }, 300);
+            }, 10);
+        }
+
         // Shuffle an array (Fisher-Yates algorithm)
         function shuffle(array) {
             const newArray = [...array];
@@ -357,6 +638,10 @@
         function flipCard() {
             if (lockBoard) return;
             if (this === firstCard) return;
+            if (this.classList.contains('matched')) return;
+
+            // Play flip sound
+            playSound('flip');
 
             this.classList.add('flipped');
 
@@ -372,6 +657,21 @@
             moves++;
             movesDisplay.textContent = moves;
 
+            // For challenge mode, decrement moves left
+            if (gameVariant === 'challenge') {
+                timeLeft--;
+                timeDisplay.textContent = timeLeft;
+                const maxMoves = DIFFICULTY[levelSelect.value].rows * DIFFICULTY[levelSelect.value].cols * 0.75;
+                progressBar.style.width = (timeLeft / maxMoves * 100) + '%';
+
+                // Check if out of moves
+                if (timeLeft <= 0) {
+                    setTimeout(() => {
+                        outOfMoves();
+                    }, 800);
+                }
+            }
+
             checkForMatch();
         }
 
@@ -386,38 +686,74 @@
                 // It's a match!
                 disableCards();
 
+                // Increment combo
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                comboDisplay.textContent = combo;
+
+                // Play match sound
+                playSound('match');
+
                 // Add match animation
                 firstCard.classList.add('match-success', 'matched');
                 secondCard.classList.add('match-success', 'matched');
 
-                // Add points based on speed and difficulty
-                const speedBonus = Math.max(1, Math.floor(timeLeft / 10));
-                const difficultyMultiplier = levelSelect.value === 'easy' ? 1 :
-                                            levelSelect.value === 'medium' ? 1.5 : 2;
+                // Show combo animation if > 1
+                if (combo > 1) {
+                    const rect = secondCard.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top;
+                    showComboAnimation(x, y, combo);
+                }
 
-                const pointsEarned = Math.floor(10 * speedBonus * difficultyMultiplier);
+                // Add points based on speed, difficulty, and combo
+                const difficulty = levelSelect.value;
+                const basePoints = DIFFICULTY[difficulty].basePoints;
+                const comboMultiplier = 1 + (combo * 0.1); // +10% per combo
+                let speedMultiplier = 1;
+
+                // Speed multiplier based on game variant
+                if (gameVariant === 'timed') {
+                    const elapsedTime = (Date.now() - startTime) / 1000;
+                    const averageTimePerMatch = elapsedTime / (matches + 1);
+                    const expectedTime = DIFFICULTY[difficulty].timeLimit / totalPairs;
+                    speedMultiplier = Math.max(0.5, Math.min(2, expectedTime / averageTimePerMatch));
+                }
+
+                const pointsEarned = Math.floor(basePoints * comboMultiplier * speedMultiplier);
                 score += pointsEarned;
-                scoreDisplay.textContent = score;
+                updateScore(score);
 
                 // Track matches
                 matches++;
 
-                console.log(`Match! Total matches: ${matches}/${totalPairs}`);
+                // Add time bonus for timed mode
+                if (gameVariant === 'timed') {
+                    const timeBonus = DIFFICULTY[difficulty].timePerMatch;
+                    timeLeft += timeBonus;
+                    showToast(`+${timeBonus}s Time Bonus!`);
+                }
 
                 // Check if game is complete
                 if (matches >= totalPairs) {
-                    console.log("All pairs found! Finishing game...");
                     setTimeout(() => {
                         finishGame();
-                    }, 500);
+                    }, 800);
                 }
             } else {
                 // Not a match
                 unflipCards();
 
+                // Reset combo
+                combo = 0;
+                comboDisplay.textContent = combo;
+
+                // Play wrong sound
+                playSound('wrong');
+
                 // Subtract points for wrong moves, but don't go below 0
                 score = Math.max(0, score - 5);
-                scoreDisplay.textContent = score;
+                updateScore(score);
 
                 // Add fail animation
                 firstCard.classList.add('match-fail');
@@ -468,17 +804,24 @@
             matches = 0;
             score = 0;
             moves = 0;
+            combo = 0;
+            maxCombo = 0;
 
             // Update display
             scoreDisplay.textContent = '0';
             movesDisplay.textContent = '0';
+            comboDisplay.textContent = '0';
 
             // Update control buttons
             startButton.disabled = true;
             levelSelect.disabled = true;
+            themeSelect.disabled = true;
+            variantButtons.forEach(btn => btn.disabled = true);
 
-            // Start the timer
-            gameTimer = setInterval(updateTimer, 1000);
+            // Start the timer for timed modes
+            if (gameVariant === 'timed') {
+                gameTimer = setInterval(updateTimer, 1000);
+            }
         }
 
         // Update timer display
@@ -486,6 +829,11 @@
             if (!gameActive) return;
 
             timeLeft--;
+
+            // Play a tick sound at low time
+            if (timeLeft <= 10) {
+                playSound('timeTick');
+            }
 
             // Update time display
             timeDisplay.textContent = formatTime(timeLeft);
@@ -495,6 +843,13 @@
             const maxTime = DIFFICULTY[difficulty].timeLimit;
             const percentLeft = (timeLeft / maxTime) * 100;
             progressBar.style.width = `${percentLeft}%`;
+
+            // Change progress bar color when low on time
+            if (timeLeft <= 10) {
+                progressBar.style.backgroundColor = '#D76464';
+            } else {
+                progressBar.style.backgroundColor = 'var(--primary)';
+            }
 
             // Check for game over
             if (timeLeft <= 0) {
@@ -508,12 +863,34 @@
             lockBoard = true;
             gameActive = false;
 
+            // Play sound
+            playSound('wrong');
+
             // Enable buttons
             startButton.disabled = false;
             levelSelect.disabled = false;
+            themeSelect.disabled = false;
+            variantButtons.forEach(btn => btn.disabled = false);
 
             // Show message
-            endGame(score, 'Time\'s up! Better luck next time.');
+            endGame(score, 'Time\'s up! You matched ' + matches + ' out of ' + totalPairs + ' pairs.');
+        }
+
+        // Out of moves - challenge mode
+        function outOfMoves() {
+            lockBoard = true;
+            gameActive = false;
+
+            // Play sound
+            playSound('wrong');
+
+            // Enable buttons
+            startButton.disabled = false;
+            levelSelect.disabled = false;
+            themeSelect.disabled = false;
+            variantButtons.forEach(btn => btn.disabled = false);
+            // Show message for challenge mode out of moves
+            endGame(score, 'Out of moves! You matched ' + matches + ' out of ' + totalPairs + ' pairs.');
         }
 
         // Finish game - all matches found
@@ -522,9 +899,28 @@
             lockBoard = true;
             gameActive = false;
 
-            // Calculate time bonus
-            const timeBonus = timeLeft * 2;
-            score += timeBonus;
+            // Play win sound
+            playSound('win');
+
+            // Calculate bonuses
+            let timeBonus = 0;
+            let movesBonus = 0;
+            let comboBonus = 0;
+
+            // Different bonuses based on game variant
+            if (gameVariant === 'timed') {
+                timeBonus = timeLeft * 2;
+                score += timeBonus;
+            } else if (gameVariant === 'challenge') {
+                movesBonus = timeLeft * 5; // Remaining moves
+                score += movesBonus;
+            }
+
+            // Combo bonus for all variants
+            comboBonus = maxCombo * 20;
+            score += comboBonus;
+
+            // Update score display
             scoreDisplay.textContent = score;
 
             // Calculate elapsed time
@@ -536,11 +932,22 @@
             // Enable buttons
             startButton.disabled = false;
             levelSelect.disabled = false;
+            themeSelect.disabled = false;
+            variantButtons.forEach(btn => btn.disabled = false);
 
-            // Show success message
+            // Show success message with bonuses
             let message = `Great job! You completed the game in ${timeStr} with ${moves} moves.`;
+
             if (timeBonus > 0) {
                 message += ` Time bonus: +${timeBonus} points!`;
+            }
+
+            if (movesBonus > 0) {
+                message += ` Moves bonus: +${movesBonus} points!`;
+            }
+
+            if (maxCombo > 1) {
+                message += ` Max combo (${maxCombo}×): +${comboBonus} points!`;
             }
 
             endGame(score, message);
@@ -554,12 +961,47 @@
             // Enable buttons
             startButton.disabled = false;
             levelSelect.disabled = false;
+            themeSelect.disabled = false;
+            variantButtons.forEach(btn => btn.disabled = false);
+        }
+
+        // Update game variant
+        function setGameVariant(variant) {
+            gameVariant = variant;
+
+            // Update button states
+            variantButtons.forEach(btn => {
+                if (btn.dataset.variant === variant) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Reinitialize game with new variant
+            initGame();
         }
 
         // Event listeners
         startButton.addEventListener('click', startGame);
         resetButton.addEventListener('click', resetGame);
         levelSelect.addEventListener('change', initGame);
+        themeSelect.addEventListener('change', initGame);
+
+        // Variant button listeners
+        variantButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                setGameVariant(this.dataset.variant);
+            });
+        });
+
+        // Toggle sound with keyboard shortcut 'M'
+        document.addEventListener('keydown', function(e) {
+            if (e.key.toLowerCase() === 'm') {
+                soundEnabled = !soundEnabled;
+                showToast(soundEnabled ? 'Sound enabled' : 'Sound muted');
+            }
+        });
 
         // Initialize game
         initGame();
