@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block head %}
+<!-- Include health-specific CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/health.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>
+                <i class="fas fa-chart-line me-2"></i>
+                Weekly Health Report
+            </h1>
+            <p class="lead">Summary of your health data from {{ report.start_date.strftime('%b %d, %Y') }} to {{ report.end_date.strftime('%b %d, %Y') }}</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="health-card">
+                <div class="card-header">
+                    <i class="fas fa-dumbbell me-2"></i>
+                    Workouts Summary
+                </div>
+                <div class="card-body">
+                    <div class="health-stat">
+                        <div class="stat-value">{{ report.workouts.count }}</div>
+                        <div class="stat-label">Workouts Completed</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="health-stat">
+                                <div class="stat-value">{{ report.workouts.minutes }}</div>
+                                <div class="stat-label">Total Minutes</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="health-stat">
+                                <div class="stat-value">{{ report.workouts.calories|default(0, true)|int }}</div>
+                                <div class="stat-label">Calories Burned</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="health-card">
+                <div class="card-header">
+                    <i class="fas fa-utensils me-2"></i>
+                    Nutrition Summary
+                </div>
+                <div class="card-body">
+                    <div class="health-stat">
+                        <div class="stat-value">{{ report.nutrition.avg_daily_calories|round|int }}</div>
+                        <div class="stat-label">Avg. Daily Calories</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="health-stat">
+                                <div class="stat-value">{{ report.nutrition.total_protein|default(0, true)|round(1) }}</div>
+                                <div class="stat-label">Protein (g)</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="health-stat">
+                                <div class="stat-value">{{ report.nutrition.total_carbs|default(0, true)|round(1) }}</div>
+                                <div class="stat-label">Carbs (g)</div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="health-stat">
+                                <div class="stat-value">{{ report.nutrition.total_fat|default(0, true)|round(1) }}</div>
+                                <div class="stat-label">Fat (g)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="health-card">
+                <div class="card-header">
+                    <i class="fas fa-weight me-2"></i>
+                    Weight Change
+                </div>
+                <div class="card-body text-center">
+                    {% if report.weight_change is not none %}
+                        <div class="health-stat">
+                            {% if report.weight_change > 0 %}
+                                <div class="stat-value text-danger">+{{ report.weight_change|round(1) }} kg</div>
+                            {% elif report.weight_change < 0 %}
+                                <div class="stat-value text-success">{{ report.weight_change|round(1) }} kg</div>
+                            {% else %}
+                                <div class="stat-value">0 kg</div>
+                            {% endif %}
+                            <div class="stat-label">Weight Change</div>
+                        </div>
+                    {% else %}
+                        <div class="health-stat">
+                            <div class="stat-value text-muted">N/A</div>
+                            <div class="stat-label">No weight data available</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="health-card">
+                <div class="card-header">
+                    <i class="fas fa-dumbbell me-2"></i>
+                    Weekly Workouts
+                </div>
+                <div class="card-body">
+                    {% if workouts %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Workout</th>
+                                        <th>Duration</th>
+                                        <th>Calories</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for workout in workouts %}
+                                        <tr>
+                                            <td>{{ workout.date.strftime('%b %d') }}</td>
+                                            <td>{{ workout.title }}</td>
+                                            <td>{{ workout.duration }} mins</td>
+                                            <td>{{ workout.calories_burned or '-' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="mb-0">No workouts recorded this week</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="health-card">
+                <div class="card-header">
+                    <i class="fas fa-utensils me-2"></i>
+                    Weekly Meals
+                </div>
+                <div class="card-body">
+                    {% if meals %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Meal</th>
+                                        <th>Calories</th>
+                                        <th>Protein</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for meal in meals %}
+                                        <tr>
+                                            <td>{{ meal.meal_time.strftime('%b %d') }}</td>
+                                            <td>{{ meal.name.capitalize() }}</td>
+                                            <td>{{ meal.calories or '-' }}</td>
+                                            <td>{{ meal.protein or '-' }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p class="mb-0">No meals recorded this week</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="health-card">
+                <div class="card-header">
+                    <i class="fas fa-clipboard-list me-2"></i>
+                    Key Observations
+                </div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% if report.workouts.count > 2 %}
+                            <li class="list-group-item">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                Good job! You completed {{ report.workouts.count }} workouts this week.
+                            </li>
+                        {% else %}
+                            <li class="list-group-item">
+                                <i class="fas fa-info-circle text-warning me-2"></i>
+                                Try to aim for at least 3 workouts per week for better fitness results.
+                            </li>
+                        {% endif %}
+
+                        {% if report.nutrition.avg_daily_calories > 0 %}
+                            <li class="list-group-item">
+                                <i class="fas fa-info-circle text-info me-2"></i>
+                                Your average daily caloric intake was {{ report.nutrition.avg_daily_calories|round|int }} calories.
+                            </li>
+                        {% endif %}
+
+                        {% if report.weight_change is not none %}
+                            {% if report.weight_change < 0 %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    You lost {{ (report.weight_change * -1)|round(1) }} kg this week.
+                                </li>
+                            {% elif report.weight_change > 0 %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                    You gained {{ report.weight_change|round(1) }} kg this week.
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">
+                                    <i class="fas fa-info-circle text-info me-2"></i>
+                                    Your weight remained stable this week.
+                                </li>
+                            {% endif %}
+                        {% endif %}
+
+                        <li class="list-group-item">
+                            <i class="fas fa-lightbulb text-warning me-2"></i>
+                            Remember to track your water intake daily for better hydration monitoring.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mb-4">
+        <a href="{{ url_for('health.health') }}" class="btn btn-primary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Health Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

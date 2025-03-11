@@ -53,12 +53,14 @@ def create_app(config_name=None):
     from app.routes.todo import todo_bp
     from app.routes.calendar import calendar_bp
     from app.routes.challenge import challenge_bp
+    from app.routes.health import health_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
     app.register_blueprint(todo_bp)
     app.register_blueprint(calendar_bp)
     app.register_blueprint(challenge_bp)
+    app.register_blueprint(health_bp)
 
     # Register error handlers
     register_error_handlers(app)
