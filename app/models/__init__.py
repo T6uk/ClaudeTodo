@@ -1,6 +1,7 @@
+"""
+Models package initialization
+"""
 from app.models.user import User
 from app.models.todo import Todo
-from app.models.calendar_event import CalendarEvent
+from app.models.event import Event
 from app.models.challenge import Challenge
-from app.models.workout import Workout, Exercise  # Added Exercise here
-from app.models.health import HealthRecord

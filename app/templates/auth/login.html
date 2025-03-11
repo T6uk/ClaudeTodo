@@ -1,62 +1,76 @@
-{% extends "base.html" %}
-
-{% block title %}Login - Personal Dashboard{% endblock %}
+{% extends "auth/auth_base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <h2 class="card-title text-center mb-4">Login</h2>
+<div class="auth-logo">
+    <h1>Personal Website</h1>
+    <p>Welcome back! Please login to your account</p>
+</div>
 
-                <form method="POST" action="">
-                    {{ form.hidden_tag() }}
-
-                    <div class="mb-3">
-                        {{ form.email.label(class="form-label") }}
-                        {% if form.email.errors %}
-                            {{ form.email(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.email.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.email(class="form-control") }}
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {% if form.password.errors %}
-                            {{ form.password(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for error in form.password.errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                            {{ form.password(class="form-control") }}
-                        {% endif %}
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        {{ form.remember(class="form-check-input") }}
-                        {{ form.remember.label(class="form-check-label") }}
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        {{ form.submit(class="btn btn-primary") }}
-                    </div>
-                </form>
-            </div>
-
-            <div class="card-footer text-center py-3">
-                <small class="text-muted">
-                    Need an account? <a href="{{ url_for('auth.register') }}">Sign up now</a>
-                </small>
-            </div>
-        </div>
+<div class="auth-card card">
+    <div class="card-header bg-primary text-white">
+        <h2 class="card-title mb-0">
+            <i class="fas fa-sign-in-alt me-2"></i>
+            Login
+        </h2>
     </div>
+    <div class="card-body">
+        <form method="POST" action="" novalidate>
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+                {{ form.email.label(class="form-label") }}
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-envelope"></i>
+                    </span>
+                    {% if form.email.errors %}
+                        {{ form.email(class="form-control is-invalid", placeholder="Enter your email") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.email(class="form-control", placeholder="Enter your email") }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    {% if form.password.errors %}
+                        {{ form.password(class="form-control is-invalid", placeholder="Enter your password") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.password.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.password(class="form-control", placeholder="Enter your password") }}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-3 form-check">
+                {{ form.remember_me(class="form-check-input") }}
+                {{ form.remember_me.label(class="form-check-label") }}
+            </div>
+
+            <div class="d-grid">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </form>
+    </div>
+    <div class="auth-toggle">
+        <span>Don't have an account? <a href="{{ url_for('auth.register') }}">Register here</a></span>
+    </div>
+</div>
+
+<div class="auth-footer">
+    <p>&copy; 2025 Personal Website</p>
 </div>
 {% endblock %}

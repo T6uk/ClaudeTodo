@@ -1,158 +1,185 @@
-// Enhanced theme.js - Handles theme switching functionality with smooth transitions
-document.addEventListener('DOMContentLoaded', function() {
-    // Theme toggle element
-    const themeToggle = document.getElementById('themeToggle');
-    const themeIcon = document.getElementById('themeIcon');
+/**
+ * Enhanced Theme management for light/dark mode with smooth transitions
+ */
+(function() {
+    // Theme constants
+    const THEME_KEY = 'personalWebsiteTheme';
+    const DARK_THEME = 'dark';
+    const LIGHT_THEME = 'light';
 
-    // Check for saved theme preference, system preference, or time-based default
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // DOM elements
+    let themeToggleBtns;
 
-    // Time-based theme (dark during evening/night)
-    const currentHour = new Date().getHours();
-    const isNightTime = currentHour < 6 || currentHour >= 19; // Between 7PM and 6AM
+    // Initialize theme
+    function initTheme() {
+        // Get saved theme from localStorage or use system preference as default
+        const savedTheme = localStorage.getItem(THEME_KEY);
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-    // Set initial theme based on priority: saved preference > system preference > time-based
-    let initialTheme;
-    if (savedTheme) {
-        initialTheme = savedTheme;
-    } else if (prefersDark) {
-        initialTheme = 'dark';
-    } else if (isNightTime) {
-        initialTheme = 'dark';
-    } else {
-        initialTheme = 'light';
-    }
+        const defaultTheme = savedTheme || (systemPrefersDark ? DARK_THEME : LIGHT_THEME);
 
-    // Apply the initial theme
-    applyTheme(initialTheme);
+        // Add transition class to html for first load (prevents flash)
+        document.documentElement.classList.add('theme-transition');
 
-    // Toggle theme when the switch is clicked
-    if (themeToggle) {
-        themeToggle.addEventListener('change', function() {
-            const newTheme = this.checked ? 'dark' : 'light';
-            applyTheme(newTheme);
-            localStorage.setItem('theme', newTheme);
+        // Set initial theme without transition
+        setTheme(defaultTheme, false);
 
-            // Add animation to the body to show transition
-            document.body.classList.add('theme-transition');
-            setTimeout(() => {
-                document.body.classList.remove('theme-transition');
-            }, 1000);
+        // Remove transition prevention class after a short delay
+        setTimeout(() => {
+            document.documentElement.classList.remove('theme-transition');
+        }, 300);
+
+        // Initialize theme toggle buttons
+        themeToggleBtns = document.querySelectorAll('.theme-toggle');
+        themeToggleBtns.forEach(btn => {
+            // Set initial button state
+            updateToggleUI(btn, getCurrentTheme());
+
+            // Add click event listener with animation
+            btn.addEventListener('click', function() {
+                // Add the rotation animation class
+                this.classList.add('rotate-animation');
+
+                // Remove the class after animation completes
+                setTimeout(() => {
+                    this.classList.remove('rotate-animation');
+                }, 500);
+
+                toggleTheme();
+            });
         });
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (!localStorage.getItem(THEME_KEY)) {
+                setTheme(event.matches ? DARK_THEME : LIGHT_THEME);
+            }
+        });
+
+        // Add CSS for theme toggle animation
+        const style = document.createElement('style');
+        style.textContent = `
+            .rotate-animation {
+                animation: theme-toggle-rotate 0.5s ease;
+            }
+            @keyframes theme-toggle-rotate {
+                0% { transform: rotate(0); }
+                100% { transform: rotate(360deg); }
+            }
+            .theme-transition * {
+                transition: none !important;
+            }
+        `;
+        document.head.append(style);
     }
 
-    // Listen for system preference changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        // Only change theme automatically if user hasn't set a preference
-        if (!localStorage.getItem('theme')) {
-            const newTheme = event.matches ? 'dark' : 'light';
-            applyTheme(newTheme);
+    // Get current theme
+    function getCurrentTheme() {
+        return document.documentElement.getAttribute('data-bs-theme') || LIGHT_THEME;
+    }
+
+    // Set theme
+    function setTheme(theme, animate = true) {
+        // If animate is false, temporarily disable transitions
+        if (!animate) {
+            document.documentElement.classList.add('theme-transition');
         }
-    });
 
-    // Function to apply theme
-    function applyTheme(theme) {
-        if (theme === 'dark') {
-            document.documentElement.setAttribute('data-bs-theme', 'dark');
-            if (themeToggle) themeToggle.checked = true;
-            if (themeIcon) {
-                themeIcon.classList.remove('bi-sun');
-                themeIcon.classList.add('bi-moon');
-            }
+        document.documentElement.setAttribute('data-bs-theme', theme);
+        localStorage.setItem(THEME_KEY, theme);
 
-            // Apply dark mode class for components that might need it
-            document.body.classList.add('dark-mode');
-            document.body.classList.remove('light-mode');
+        // Update all toggle buttons
+        if (themeToggleBtns) {
+            themeToggleBtns.forEach(btn => updateToggleUI(btn, theme));
+        }
+
+        // Dispatch custom event
+        window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
+
+        // Update auth page theme if applicable
+        updateAuthPageTheme(theme);
+
+        // Re-enable transitions after a short delay if they were disabled
+        if (!animate) {
+            setTimeout(() => {
+                document.documentElement.classList.remove('theme-transition');
+            }, 50);
+        }
+    }
+
+    // Toggle between light and dark themes
+    function toggleTheme() {
+        const currentTheme = getCurrentTheme();
+        const newTheme = currentTheme === DARK_THEME ? LIGHT_THEME : DARK_THEME;
+        setTheme(newTheme);
+    }
+
+    // Update toggle button UI based on current theme
+    function updateToggleUI(toggleBtn, theme) {
+        const sunIcon = toggleBtn.querySelector('.theme-icon-light');
+        const moonIcon = toggleBtn.querySelector('.theme-icon-dark');
+
+        if (theme === DARK_THEME) {
+            toggleBtn.setAttribute('aria-label', 'Switch to light mode');
+            toggleBtn.title = 'Switch to light mode';
+            if (sunIcon) sunIcon.classList.add('d-none');
+            if (moonIcon) moonIcon.classList.remove('d-none');
         } else {
-            document.documentElement.setAttribute('data-bs-theme', 'light');
-            if (themeToggle) themeToggle.checked = false;
-            if (themeIcon) {
-                themeIcon.classList.remove('bi-moon');
-                themeIcon.classList.add('bi-sun');
+            toggleBtn.setAttribute('aria-label', 'Switch to dark mode');
+            toggleBtn.title = 'Switch to dark mode';
+            if (sunIcon) sunIcon.classList.remove('d-none');
+            if (moonIcon) moonIcon.classList.add('d-none');
+        }
+    }
+
+    // Special handling for auth pages
+    function updateAuthPageTheme(theme) {
+        const authBody = document.querySelector('.auth-body');
+        if (authBody) {
+            if (theme === DARK_THEME) {
+                authBody.classList.add('auth-body-dark');
+                authBody.classList.remove('auth-body-light');
+            } else {
+                authBody.classList.add('auth-body-light');
+                authBody.classList.remove('auth-body-dark');
             }
-
-            // Apply light mode class for components that might need it
-            document.body.classList.add('light-mode');
-            document.body.classList.remove('dark-mode');
         }
 
-        // Custom event that other scripts can listen for
-        document.dispatchEvent(new CustomEvent('themeChanged', {
-            detail: { theme: theme }
-        }));
+        // Add page animation
+        animatePageContent();
     }
 
-    // Add additional theme-related functionality
-
-    // Update chart colors when theme changes
-    document.addEventListener('themeChanged', function(e) {
-        const isDark = e.detail.theme === 'dark';
-
-        // If any charts exist, update their themes
-        if (typeof Chart !== 'undefined') {
-            Chart.helpers.each(Chart.instances, function(chart) {
-                // Update chart colors based on theme
-                updateChartColors(chart, isDark);
-                chart.update();
-            });
-        }
-    });
-
-    // Function to update chart colors
-    function updateChartColors(chart, isDark) {
-        if (!chart.config || !chart.config.data) return;
-
-        const darkPalette = {
-            backgroundColor: ['rgba(78, 115, 223, 0.2)', 'rgba(28, 200, 138, 0.2)', 'rgba(54, 185, 204, 0.2)',
-                             'rgba(246, 194, 62, 0.2)', 'rgba(231, 74, 59, 0.2)'],
-            borderColor: ['rgba(78, 115, 223, 1)', 'rgba(28, 200, 138, 1)', 'rgba(54, 185, 204, 1)',
-                         'rgba(246, 194, 62, 1)', 'rgba(231, 74, 59, 1)']
-        };
-
-        const lightPalette = {
-            backgroundColor: ['rgba(78, 115, 223, 0.2)', 'rgba(28, 200, 138, 0.2)', 'rgba(54, 185, 204, 0.2)',
-                              'rgba(246, 194, 62, 0.2)', 'rgba(231, 74, 59, 0.2)'],
-            borderColor: ['rgba(78, 115, 223, 1)', 'rgba(28, 200, 138, 1)', 'rgba(54, 185, 204, 1)',
-                          'rgba(246, 194, 62, 1)', 'rgba(231, 74, 59, 1)']
-        };
-
-        const palette = isDark ? darkPalette : lightPalette;
-
-        // Apply to datasets
-        if (chart.config.data.datasets) {
-            chart.config.data.datasets.forEach((dataset, i) => {
-                // Only update if not explicitly set by the chart
-                if (!dataset._backgroundColor) {
-                    dataset.backgroundColor = palette.backgroundColor[i % palette.backgroundColor.length];
-                }
-                if (!dataset._borderColor) {
-                    dataset.borderColor = palette.borderColor[i % palette.borderColor.length];
-                }
-            });
-        }
-
-        // Update grid lines
-        if (chart.config.options && chart.config.options.scales) {
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            const textColor = isDark ? '#e0e0e0' : '#666';
-
-            Object.values(chart.config.options.scales).forEach(scale => {
-                if (scale.grid) scale.grid.color = gridColor;
-                if (scale.ticks) scale.ticks.color = textColor;
-            });
+    // Add subtle animation to page content on theme change
+    function animatePageContent() {
+        const mainContent = document.querySelector('main');
+        if (mainContent) {
+            mainContent.classList.add('theme-content-fade');
+            setTimeout(() => {
+                mainContent.classList.remove('theme-content-fade');
+            }, 500);
         }
     }
 
-    // Add CSS for the theme transition
-    const style = document.createElement('style');
-    style.innerHTML = `
-        .theme-transition {
-            transition: background-color 0.7s ease, color 0.7s ease !important;
+    // Add CSS for content animation
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+        .theme-content-fade {
+            animation: theme-content-fade 0.5s ease;
         }
-        .theme-transition * {
-            transition: background-color 0.7s ease, color 0.7s ease, border-color 0.7s ease !important;
+        @keyframes theme-content-fade {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
         }
     `;
-    document.head.appendChild(style);
-});
+    document.head.append(styleSheet);
+
+    // Initialize on DOM content loaded
+    document.addEventListener('DOMContentLoaded', initTheme);
+
+    // Expose theme functions to global scope
+    window.themeManager = {
+        toggle: toggleTheme,
+        set: setTheme,
+        get: getCurrentTheme
+    };
+})();

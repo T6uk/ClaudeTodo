@@ -1,85 +1,50 @@
-// Main JavaScript for the Personal Dashboard
+// Main JavaScript for Personal Website
 
+// Wait for document to be fully loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Enable Bootstrap tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
-    // Enable Bootstrap popovers
-    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    var popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl);
-    });
-
-    // Auto-dismiss alerts
-    setTimeout(function() {
-        var alerts = document.querySelectorAll('.alert:not(.alert-important)');
-        alerts.forEach(function(alert) {
-            var bsAlert = new bootstrap.Alert(alert);
+    // Auto-dismiss alerts after 5 seconds
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            const bsAlert = new bootstrap.Alert(alert);
             bsAlert.close();
-        });
-    }, 5000); // Close after 5 seconds
-
-    // Form validation styling
-    var forms = document.querySelectorAll('.needs-validation');
-    Array.from(forms).forEach(function(form) {
-        form.addEventListener('submit', function(event) {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        }, false);
+        }, 5000);
     });
 
-    // Toggle password visibility
-    var togglePassword = document.querySelector('#togglePassword');
-    if (togglePassword) {
-        togglePassword.addEventListener('click', function() {
-            var passwordInput = document.querySelector('#password');
-            var type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
+    // Update navbar appearance on theme change
+    window.addEventListener('themechange', function(e) {
+        updateNavbarForTheme(e.detail.theme);
+    });
 
-            // Toggle icon
-            this.classList.toggle('bi-eye');
-            this.classList.toggle('bi-eye-slash');
-        });
-    }
+    // Initialize navbar based on current theme
+    updateNavbarForTheme(document.documentElement.getAttribute('data-bs-theme'));
 
-    // Sidebar toggle functionality for mobile
-    var sidebarToggle = document.querySelector('#sidebarToggle');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.body.classList.toggle('sidebar-toggled');
-            document.querySelector('.sidebar').classList.toggle('toggled');
-        });
-    }
-
-    // Close sidebar when window is less than 768px
-    var handleResize = function() {
-        if (window.innerWidth < 768) {
-            document.querySelector('.sidebar').classList.add('toggled');
-        } else {
-            document.querySelector('.sidebar').classList.remove('toggled');
-        }
-    };
-
-    // Initial check and add resize event listener
-    if (document.querySelector('.sidebar')) {
-        handleResize();
-        window.addEventListener('resize', handleResize);
-    }
-
-    // Initialize any date pickers
-    var datePickers = document.querySelectorAll('.datepicker');
-    if (datePickers.length > 0) {
-        datePickers.forEach(function(picker) {
-            // This is a placeholder for actual date picker initialization
-            // You would typically use a library like flatpickr or bootstrap-datepicker
-            console.log('Date picker would be initialized here');
-        });
-    }
+    // Log initialization
+    console.log('Personal Website initialized');
 });
+
+// Update navbar appearance based on theme
+function updateNavbarForTheme(theme) {
+    const navbar = document.querySelector('.navbar');
+    const footer = document.querySelector('footer');
+
+    if (!navbar) return;
+
+    if (theme === 'dark') {
+        navbar.classList.remove('navbar-dark', 'bg-dark');
+        navbar.classList.add('navbar-dark', 'bg-dark');
+
+        if (footer) {
+            footer.classList.remove('bg-light', 'text-dark');
+            footer.classList.add('bg-dark', 'text-white');
+        }
+    } else {
+        navbar.classList.remove('navbar-dark', 'bg-dark');
+        navbar.classList.add('navbar-dark', 'bg-primary');
+
+        if (footer) {
+            footer.classList.remove('bg-dark', 'text-white');
+            footer.classList.add('bg-dark', 'text-white');
+        }
+    }
+}

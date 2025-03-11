@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>
+                <i class="fas fa-tachometer-alt me-2"></i>
+                Dashboard
+            </h1>
+            <p class="lead">Welcome back, {{ current_user.full_name }}!</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title h5 mb-0">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Account Overview
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong><i class="fas fa-user me-2"></i>Username:</strong> {{ current_user.username }}
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-envelope me-2"></i>Email:</strong> {{ current_user.email }}
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-calendar-alt me-2"></i>Account Created:</strong> {{ current_user.created_at.strftime('%Y-%m-%d') }}
+                    </div>
+                    <div class="mb-3">
+                        <strong><i class="fas fa-clock me-2"></i>Last Login:</strong>
+                        {% if current_user.last_login %}
+                            {{ current_user.last_login.strftime('%Y-%m-%d %H:%M') }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-edit me-1"></i>
+                        Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title h5 mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Quick Actions
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    Statistics
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="fas fa-file-alt me-2"></i>
+                                    Documents
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="fas fa-cog me-2"></i>
+                                    Settings
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="d-grid">
+                                <a href="#" class="btn btn-outline-primary">
+                                    <i class="fas fa-question-circle me-2"></i>
+                                    Help
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title h5 mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Recent Activity
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="text-muted text-center my-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No recent activity to display.
+                        </div>
+                        <!-- Activity timeline will go here in future iterations -->
+
+                        <div class="text-center mt-4">
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Refresh Activity
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title h5 mb-0">
+                        <i class="fas fa-bell me-2"></i>
+                        Notifications
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="text-muted text-center my-4">
+                        <i class="fas fa-bell-slash me-2"></i>
+                        No new notifications.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="card-title h5 mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Quick Tasks
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Add a new task...">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-muted text-center my-3">
+                        <i class="fas fa-check-circle me-2"></i>
+                        No tasks to display.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
