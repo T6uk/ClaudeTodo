@@ -45,10 +45,6 @@
         margin-left: 5px;
     }
 
-    .leaderboard-tabs {
-        margin-bottom: 15px;
-    }
-
     .user-stats-card {
         background-color: #f8f9fa;
         border-radius: 10px;
@@ -82,17 +78,6 @@
 
     [data-bs-theme="dark"] .stat-item {
         background-color: rgba(0, 0, 0, 0.2);
-    }
-
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
     }
 
     .weekly-badge {
@@ -165,7 +150,7 @@
                         <select id="gameFilter" name="game_id" class="form-select">
                             <option value="">All Games</option>
                             {% for game in games %}
-                                <option value="{{ game.id }}" {% if request.args.get('game_id') == game.id|string %}selected{% endif %}>{{ game.title }}</option>
+                                <option value="{{ game.id }}" {% if request.args.get('game_id')|int == game.id %}selected{% endif %}>{{ game.title }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -187,150 +172,153 @@
     </div>
 
     <!-- Leaderboard Tabs -->
-    <div class="leaderboard-tabs">
-        <ul class="nav nav-tabs" id="leaderboardTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="all-games-tab" data-bs-toggle="tab" data-bs-target="#all-games-tab-pane" type="button" role="tab">
-                    <i class="fas fa-trophy me-1"></i> Leaderboards
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="personal-bests-tab" data-bs-toggle="tab" data-bs-target="#personal-bests-tab-pane" type="button" role="tab">
-                    <i class="fas fa-star me-1"></i> Your Personal Bests
-                </button>
-            </li>
-        </ul>
-    </div>
-
-    <div class="tab-content" id="leaderboardTabsContent">
-        <!-- All Games Leaderboard Tab -->
-        <div class="tab-pane fade show active" id="all-games-tab-pane" role="tabpanel" aria-labelledby="all-games-tab">
-            <div class="row">
-                {% for game in displayed_games %}
-                    <div class="col-lg-6 mb-4">
-                        <div class="card leaderboard-card">
-                            <div class="leaderboard-header d-flex justify-content-between align-items-center">
-                                <h3 class="leaderboard-title">
-                                    {{ game.title }}
-                                    {% if period == 'weekly' and game.weekly_reset %}
-                                        <span class="time-period-badge weekly-badge">Weekly</span>
-                                    {% elif period == 'all' %}
-                                        <span class="time-period-badge all-time-badge">All Time</span>
-                                    {% endif %}
-                                </h3>
-                                <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-sm btn-light">
-                                    <i class="fas fa-play me-1"></i> Play
-                                </a>
-                            </div>
-                            <div class="leaderboard-body">
-                                <div class="table-responsive">
-                                    <table class="table leaderboard-table mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Rank</th>
-                                                <th>Player</th>
-                                                <th>Score</th>
-                                                <th>Date</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% if leaderboards[game.id] %}
-                                                {% for score in leaderboards[game.id] %}
-                                                    <tr class="{% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %} {% if score.user_id == current_user.id %}personal-best{% endif %}">
-                                                        <td>
-                                                            {% if loop.index <= 3 %}
-                                                                <span class="rank-label">{{ loop.index }}</span>
-                                                            {% else %}
-                                                                {{ loop.index }}
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="player-name">
-                                                            {% if score.user_id == current_user.id %}
-                                                                <span class="player-badge"><i class="fas fa-user"></i></span>
-                                                            {% endif %}
-                                                            {{ score.user.username }}
-                                                            {% if score.user_id == current_user.id %}
-                                                                <small class="text-primary">(You)</small>
-                                                            {% endif %}
-                                                        </td>
-                                                        <td class="score-value">{{ score.score }}</td>
-                                                        <td>{{ score.date.strftime('%b %d, %Y') }}</td>
-                                                    </tr>
-                                                {% endfor %}
-                                            {% else %}
-                                                <tr>
-                                                    <td colspan="4" class="text-center py-3">No scores yet. Be the first to play!</td>
-                                                </tr>
-                                            {% endif %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <ul class="nav nav-tabs card-header-tabs" id="leaderboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active text-dark" id="all-games-tab" data-bs-toggle="tab" data-bs-target="#all-games-tab-pane" type="button" role="tab">
+                        <i class="fas fa-trophy me-1"></i> Leaderboards
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-dark" id="personal-bests-tab" data-bs-toggle="tab" data-bs-target="#personal-bests-tab-pane" type="button" role="tab">
+                        <i class="fas fa-star me-1"></i> Your Personal Bests
+                    </button>
+                </li>
+            </ul>
         </div>
-
-        <!-- Personal Bests Tab -->
-        <div class="tab-pane fade" id="personal-bests-tab-pane" role="tabpanel" aria-labelledby="personal-bests-tab">
-            {% if personal_bests %}
-                <div class="row">
-                    {% for game_id, score in personal_bests.items() %}
-                        <div class="col-lg-6 mb-4">
-                            <div class="card leaderboard-card">
-                                <div class="leaderboard-header d-flex justify-content-between align-items-center">
-                                    <h3 class="leaderboard-title">{{ game_map[game_id].title }}</h3>
-                                    <a href="{{ url_for('games.play_game', game_id=game_id) }}" class="btn btn-sm btn-light">
-                                        <i class="fas fa-play me-1"></i> Play
-                                    </a>
-                                </div>
-                                <div class="leaderboard-body">
-                                    <div class="table-responsive">
-                                        <table class="table mb-0">
-                                            <tbody>
-                                                <tr>
-                                                    <th>Your Best Score</th>
-                                                    <td class="text-end fw-bold">{{ score.score }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Date Achieved</th>
-                                                    <td class="text-end">{{ score.date.strftime('%b %d, %Y') }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Rank</th>
-                                                    <td class="text-end">{{ score.rank }} of {{ score.total_players }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Score to Beat #1</th>
-                                                    <td class="text-end">
-                                                        {% if score.top_score %}
-                                                            {{ score.top_score }} <small>(+{{ score.top_score - score.score }})</small>
-                                                        {% else %}
-                                                            N/A
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <th>Total Games Played</th>
-                                                    <td class="text-end">{{ score.games_played }}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+        <div class="card-body">
+            <div class="tab-content" id="leaderboardTabsContent">
+                <!-- All Games Leaderboard Tab -->
+                <div class="tab-pane fade show active" id="all-games-tab-pane" role="tabpanel" aria-labelledby="all-games-tab">
+                    <div class="row">
+                        {% for game in displayed_games %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="card leaderboard-card">
+                                    <div class="leaderboard-header d-flex justify-content-between align-items-center">
+                                        <h3 class="leaderboard-title">
+                                            {{ game.title }}
+                                            {% if period == 'weekly' and game.weekly_reset %}
+                                                <span class="time-period-badge weekly-badge">Weekly</span>
+                                            {% elif period == 'all' %}
+                                                <span class="time-period-badge all-time-badge">All Time</span>
+                                            {% endif %}
+                                        </h3>
+                                        <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-sm btn-light">
+                                            <i class="fas fa-play me-1"></i> Play
+                                        </a>
+                                    </div>
+                                    <div class="leaderboard-body">
+                                        <div class="table-responsive">
+                                            <table class="table leaderboard-table mb-0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Rank</th>
+                                                        <th>Player</th>
+                                                        <th>Score</th>
+                                                        <th>Date</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% if leaderboards[game.id] %}
+                                                        {% for score in leaderboards[game.id] %}
+                                                            <tr class="{% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %} {% if score.user_id == current_user.id %}personal-best{% endif %}">
+                                                                <td>
+                                                                    {% if loop.index <= 3 %}
+                                                                        <span class="rank-label">{{ loop.index }}</span>
+                                                                    {% else %}
+                                                                        {{ loop.index }}
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td class="player-name">
+                                                                    {% if score.user_id == current_user.id %}
+                                                                        <span class="player-badge"><i class="fas fa-user"></i></span>
+                                                                    {% endif %}
+                                                                    {{ score.user.username }}
+                                                                    {% if score.user_id == current_user.id %}
+                                                                        <small class="text-primary">(You)</small>
+                                                                    {% endif %}
+                                                                </td>
+                                                                <td class="score-value">{{ score.score }}</td>
+                                                                <td>{{ score.date.strftime('%b %d, %Y') }}</td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr>
+                                                            <td colspan="4" class="text-center py-3">No scores yet. Be the first to play!</td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Personal Bests Tab -->
+                <div class="tab-pane fade" id="personal-bests-tab-pane" role="tabpanel" aria-labelledby="personal-bests-tab">
+                    {% if personal_bests %}
+                        <div class="row">
+                            {% for game_id, score in personal_bests.items() %}
+                                <div class="col-lg-6 mb-4">
+                                    <div class="card leaderboard-card">
+                                        <div class="leaderboard-header d-flex justify-content-between align-items-center">
+                                            <h3 class="leaderboard-title">{{ game_map[game_id].title }}</h3>
+                                            <a href="{{ url_for('games.play_game', game_id=game_id) }}" class="btn btn-sm btn-light">
+                                                <i class="fas fa-play me-1"></i> Play
+                                            </a>
+                                        </div>
+                                        <div class="leaderboard-body">
+                                            <div class="table-responsive">
+                                                <table class="table mb-0">
+                                                    <tbody>
+                                                        <tr>
+                                                            <th>Your Best Score</th>
+                                                            <td class="text-end fw-bold">{{ score.score }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Date Achieved</th>
+                                                            <td class="text-end">{{ score.date.strftime('%b %d, %Y') }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Rank</th>
+                                                            <td class="text-end">{{ score.rank }} of {{ score.total_players }}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Score to Beat #1</th>
+                                                            <td class="text-end">
+                                                                {% if score.top_score %}
+                                                                    {{ score.top_score }} <small>(+{{ score.top_score - score.score }})</small>
+                                                                {% else %}
+                                                                    N/A
+                                                                {% endif %}
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>Total Games Played</th>
+                                                            <td class="text-end">{{ score.games_played }}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+                            <h4>No Personal Bests Yet</h4>
+                            <p>Play some games to establish your personal records!</p>
+                            <a href="{{ url_for('games.games') }}" class="btn btn-primary mt-2">Browse Games</a>
+                        </div>
+                    {% endif %}
                 </div>
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
-                    <h4>No Personal Bests Yet</h4>
-                    <p>Play some games to establish your personal records!</p>
-                    <a href="{{ url_for('games.games') }}" class="btn btn-primary mt-2">Browse Games</a>
-                </div>
-            {% endif %}
+            </div>
         </div>
     </div>
 </div>

@@ -1,6 +1,5 @@
-# app/models/game.py
 """
-Expanded Game model for storing game information and providing more details
+Game model for storing game information and providing more details
 """
 from datetime import datetime
 from app import db
@@ -49,6 +48,9 @@ class Game(db.Model):
         self.weekly_reset = weekly_reset
         self.active = active
 
+    def __repr__(self):
+        return f"<Game {self.id}: {self.title}>"
+
     def to_dict(self):
         """Convert game to dictionary with more details"""
         return {
@@ -63,7 +65,7 @@ class Game(db.Model):
             'multiplayer_support': self.multiplayer_support,
             'global_leaderboard': self.global_leaderboard,
             'weekly_reset': self.weekly_reset,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'active': self.active
         }

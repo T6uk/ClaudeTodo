@@ -5,115 +5,25 @@
 <!-- Include games-specific CSS -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/games.css') }}">
 <style>
-    .category-header {
-        background: var(--primary-gradient);
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        color: white;
+    .game-carousel {
+        margin-bottom: 30px;
         position: relative;
+        border-radius: 15px;
         overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
     }
 
-    .category-header::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
+    .carousel-item {
+        height: 300px;
+    }
+
+    .carousel-caption {
+        background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);
+        left: 0;
         right: 0;
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 50%;
-        transform: translate(30%, 30%);
-    }
-
-    .category-icon {
-        font-size: 2rem;
-        margin-right: 15px;
-        display: inline-block;
-        vertical-align: middle;
-    }
-
-    .game-stats {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-
-    [data-bs-theme="dark"] .game-stats {
-        background-color: #343a40;
-    }
-
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
-    }
-
-    .stat-item {
-        text-align: center;
-        padding: 10px;
-        background-color: rgba(255, 255, 255, 0.5);
-        border-radius: 8px;
-    }
-
-    [data-bs-theme="dark"] .stat-item {
-        background-color: rgba(0, 0, 0, 0.2);
-    }
-
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--primary);
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        color: var(--text-secondary);
-    }
-
-    .game-search {
-        position: relative;
-        margin-bottom: 20px;
-    }
-
-    .search-icon {
-        position: absolute;
-        left: 15px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-    }
-
-    .search-input {
-        padding-left: 40px;
-        border-radius: 20px;
-    }
-
-    .difficulty-filters {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-
-    .difficulty-filter {
-        padding: 5px 15px;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .difficulty-filter:hover {
-        transform: translateY(-3px);
-    }
-
-    .difficulty-filter.active {
-        background-color: var(--primary);
-        color: white;
+        bottom: 0;
+        padding: 30px 15px 20px;
+        border-radius: 0 0 15px 15px;
     }
 
     .newest-badge {
@@ -153,77 +63,21 @@
         overflow: hidden;
     }
 
-    .achievement-banner::before {
-        content: "";
-        position: absolute;
-        top: -30px;
-        left: -30px;
-        width: 100px;
-        height: 100px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-    }
-
-    .achievement-banner::after {
-        content: "";
-        position: absolute;
-        bottom: -20px;
-        right: -20px;
-        width: 80px;
-        height: 80px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
-    }
-
-    .achievement-title {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-    }
-
-    .game-carousel {
-        position: relative;
-        overflow: hidden;
+    .category-header {
+        background: var(--primary-gradient);
+        padding: 15px;
         border-radius: 10px;
-        margin-bottom: 30px;
-    }
-
-    .carousel-item-game {
-        height: 300px;
-        background-size: cover;
-        background-position: center;
-        display: flex;
-        align-items: flex-end;
-        padding: 20px;
-        position: relative;
-    }
-
-    .carousel-item-game::before {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 50%;
-        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
-    }
-
-    .carousel-content {
+        margin-bottom: 20px;
         color: white;
         position: relative;
-        z-index: 2;
+        overflow: hidden;
     }
 
-    .carousel-title {
+    .category-icon {
         font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 10px;
-    }
-
-    .carousel-description {
-        font-size: 1.1rem;
-        margin-bottom: 15px;
-        max-width: 60%;
+        margin-right: 15px;
+        display: inline-block;
+        vertical-align: middle;
     }
 </style>
 {% endblock %}
@@ -279,21 +133,30 @@
         </div>
     </div>
 
-    <!-- Achievement banner - only show if user has played some games -->
-    {% if stats.total_games > 0 %}
-    <div class="achievement-banner">
-        <div class="achievement-title">
-            <i class="fas fa-trophy me-2"></i>
-            Your Gaming Adventures
+    <!-- Featured games carousel -->
+    <div id="gamesCarousel" class="carousel slide game-carousel mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for game in all_games[:3] %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <div class="carousel-caption d-none d-md-block">
+                        <h2>{{ game.title }}</h2>
+                        <p>{{ game.description }}</p>
+                        <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-light">
+                            <i class="fas fa-play me-1"></i> Play Now
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-        <p class="mb-0">
-            Continue playing to unlock achievements and top the leaderboards!
-        </p>
-        <a href="{{ url_for('games.leaderboard') }}" class="btn btn-light mt-3">
-            <i class="fas fa-trophy me-1"></i> View Leaderboards
-        </a>
+        <button class="carousel-control-prev" type="button" data-bs-target="#gamesCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#gamesCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
-    {% endif %}
 
     <!-- Game filtering and search -->
     <div class="row mb-4">
@@ -327,33 +190,6 @@
         <div class="difficulty-filter difficulty-hard" data-difficulty="hard">Hard</div>
     </div>
 
-    <!-- Featured games carousel -->
-    <div id="gamesCarousel" class="carousel slide game-carousel mb-4" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            {% for game in all_games[:3] %}
-                <div class="carousel-item {% if loop.first %}active{% endif %}">
-                    <div class="carousel-item-game" style="background-image: url({% if game.thumbnail %}{{ game.thumbnail }}{% else %}{{ url_for('static', filename='images/games/default.jpg') }}{% endif %});">
-                        <div class="carousel-content">
-                            <h2 class="carousel-title">{{ game.title }}</h2>
-                            <p class="carousel-description">{{ game.description }}</p>
-                            <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-light">
-                                <i class="fas fa-play me-1"></i> Play Now
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#gamesCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#gamesCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-        </button>
-    </div>
-
     <!-- Game sections by type -->
     {% for game_type, games in games_by_type.items() %}
         <div class="game-section game-type-section" data-type="{{ game_type }}">
@@ -376,12 +212,11 @@
                             {% if loop.index == 1 and game_type == 'word' %}
                                 <span class="newest-badge">New!</span>
                             {% endif %}
-                            {% if game.id == 3 or game.id == 4 %}
+                            {% if loop.index == 1 and game_type == 'arcade' %}
                                 <span class="popular-badge">Popular</span>
                             {% endif %}
                             <div class="game-thumbnail">
                                 {% if game.thumbnail %}
-                                    <img src="{{ game.thumbnail }}" alt="{{ game.title }}" onerror="this.src='{{ url_for('static', filename='images/games/default.jpg') }}'">
                                 {% else %}
                                     <div class="d-flex align-items-center justify-content-center h-100">
                                         <i class="fas
@@ -435,7 +270,7 @@
         const gameSearch = document.getElementById('gameSearch');
         const gameCards = document.querySelectorAll('.game-card-container');
 
-        // Set up filter functionality
+        // Set up category filter functionality
         filterButtons.forEach(button => {
             button.addEventListener('click', function() {
                 // Remove active class from all buttons
@@ -462,7 +297,7 @@
                     });
                 }
 
-                // Apply difficulty filter again to maintain both filters
+                // Apply difficulty filter to maintain both filters
                 applyDifficultyFilter();
                 // Apply search filter again
                 applySearchFilter();

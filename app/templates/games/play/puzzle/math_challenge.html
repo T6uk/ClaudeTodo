@@ -70,11 +70,25 @@
     .feedback-incorrect {
         color: #D76464;
     }
+
+    .level-select {
+        margin: 20px auto;
+        text-align: center;
+    }
 </style>
 {% endblock %}
 
 {% block game_content %}
 <div class="math-game-container">
+    <div class="level-select mb-3">
+        <label for="difficultySelect" class="form-label">Difficulty:</label>
+        <select id="difficultySelect" class="form-select form-select-sm d-inline-block w-auto">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+    </div>
+
     <div class="time-display">
         Time: <span id="timeDisplay">60</span>s
     </div>
@@ -107,14 +121,35 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Game variables
         const GAME_TIME = 60; // seconds
-        const OPERATORS = ['+', '-', '*'];
-        const MAX_NUMBER = 20;
+
+        // Difficulty levels
+        const DIFFICULTY = {
+            easy: {
+                maxNumber: 10,
+                operators: ['+', '-'],
+                timeLimit: 60,
+                pointsPerCorrectAnswer: 10
+            },
+            medium: {
+                maxNumber: 20,
+                operators: ['+', '-', '*'],
+                timeLimit: 60,
+                pointsPerCorrectAnswer: 15
+            },
+            hard: {
+                maxNumber: 50,
+                operators: ['+', '-', '*', '/'],
+                timeLimit: 90,
+                pointsPerCorrectAnswer: 20
+            }
+        };
 
         let score = 0;
         let timeLeft = GAME_TIME;
         let gameInterval;
         let gameActive = false;
         let currentAnswer = null;
+        let currentDifficulty = 'medium'; // Default difficulty
 
         // DOM elements
         const mathProblem = document.getElementById('mathProblem');
@@ -124,15 +159,19 @@
         const progressBar = document.getElementById('progressBar');
         const startButton = document.getElementById('startButton');
         const resetButton = document.getElementById('resetButton');
+        const difficultySelect = document.getElementById('difficultySelect');
 
         // Start game
         function startGame() {
-            // Reset variables
-            score = 0;
-            timeLeft = GAME_TIME;
-            gameActive = true;
+            // Skip if already active
+            if (gameActive && !isPaused) return;
 
-            // Update display
+            // Get difficulty settings
+            currentDifficulty = difficultySelect.value;
+            timeLeft = DIFFICULTY[currentDifficulty].timeLimit;
+
+            // Reset score and UI
+            score = 0;
             updateScore(0);
             timeDisplay.textContent = timeLeft;
             progressBar.style.width = '100%';
@@ -143,13 +182,17 @@
             answerInput.value = '';
             answerInput.focus();
 
-            // Disable start button
+            // Disable controls
             startButton.disabled = true;
+            difficultySelect.disabled = true;
+
+            // Set game to active
+            gameActive = true;
 
             // Create first problem
             newMathProblem();
 
-            // Start timer
+            // Start game loop
             gameInterval = setInterval(updateTimer, 1000);
         }
 
@@ -157,40 +200,56 @@
         function newMathProblem() {
             if (!gameActive) return;
 
-            // Generate random numbers
-            const num1 = Math.floor(Math.random() * MAX_NUMBER) + 1;
-            const num2 = Math.floor(Math.random() * MAX_NUMBER) + 1;
+            const diffSettings = DIFFICULTY[currentDifficulty];
 
-            // Select random operator
-            const operatorIndex = Math.floor(Math.random() * OPERATORS.length);
-            const operator = OPERATORS[operatorIndex];
+            // Generate random numbers based on difficulty
+            const num1 = Math.floor(Math.random() * diffSettings.maxNumber) + 1;
+            const num2 = Math.floor(Math.random() * diffSettings.maxNumber) + 1;
+
+            // Select random operator from available operators for this difficulty
+            const operatorIndex = Math.floor(Math.random() * diffSettings.operators.length);
+            const operator = diffSettings.operators[operatorIndex];
 
             // Calculate correct answer
             let answer;
+            let problem;
+
             switch (operator) {
                 case '+':
                     answer = num1 + num2;
+                    problem = `${num1} ${operator} ${num2} = ?`;
                     break;
                 case '-':
-                    // Make sure subtraction doesn't result in negative
-                    if (num1 < num2) {
-                        answer = num2 - num1;
-                        mathProblem.textContent = `${num2} ${operator} ${num1} = ?`;
-                    } else {
+                    // Make sure subtraction doesn't result in negative for easier levels
+                    if (num1 >= num2) {
                         answer = num1 - num2;
-                        mathProblem.textContent = `${num1} ${operator} ${num2} = ?`;
+                        problem = `${num1} ${operator} ${num2} = ?`;
+                    } else {
+                        answer = num2 - num1;
+                        problem = `${num2} ${operator} ${num1} = ?`;
                     }
-                    return; // We already set the problem text
+                    break;
                 case '*':
                     answer = num1 * num2;
+                    problem = `${num1} ${operator} ${num2} = ?`;
+                    break;
+                case '/':
+                    // For division, ensure we have clean integers
+                    const product = num1 * num2;
+                    answer = num1; // Divisor is num1, so answer is clean
+                    problem = `${product} ${operator} ${num1} = ?`;
                     break;
             }
 
             // Update problem display
-            mathProblem.textContent = `${num1} ${operator} ${num2} = ?`;
+            mathProblem.textContent = problem;
 
             // Store correct answer
             currentAnswer = answer;
+
+            // Clear input and focus
+            answerInput.value = '';
+            answerInput.focus();
         }
 
         // Handle answer submission
@@ -207,7 +266,8 @@
 
             if (userAnswer === currentAnswer) {
                 // Correct answer
-                score += 10;
+                const pointsEarned = DIFFICULTY[currentDifficulty].pointsPerCorrectAnswer;
+                score += pointsEarned;
                 updateScore(score);
 
                 feedback.textContent = 'Correct!';
@@ -237,7 +297,7 @@
         function updateTimer() {
             timeLeft--;
             timeDisplay.textContent = timeLeft;
-            progressBar.style.width = (timeLeft / GAME_TIME * 100) + '%';
+            progressBar.style.width = (timeLeft / DIFFICULTY[currentDifficulty].timeLimit * 100) + '%';
 
             if (timeLeft <= 0) {
                 endGameTime();
@@ -253,6 +313,7 @@
             answerInput.disabled = true;
 
             startButton.disabled = false;
+            difficultySelect.disabled = false;
 
             // Show game end modal
             let message = '';
@@ -269,7 +330,7 @@
             gameActive = false;
 
             score = 0;
-            timeLeft = GAME_TIME;
+            timeLeft = DIFFICULTY[currentDifficulty].timeLimit;
             currentAnswer = null;
 
             updateScore(0);
@@ -282,11 +343,16 @@
             feedback.textContent = '';
 
             startButton.disabled = false;
+            difficultySelect.disabled = false;
         }
 
         // Add event listeners
         startButton.addEventListener('click', startGame);
         resetButton.addEventListener('click', resetGame);
+        difficultySelect.addEventListener('change', function() {
+            timeLeft = DIFFICULTY[this.value].timeLimit;
+            timeDisplay.textContent = timeLeft;
+        });
 
         answerInput.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {

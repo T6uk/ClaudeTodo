@@ -1,4 +1,3 @@
-# app/models/game_score.py
 """
 GameScore model for tracking user game scores
 """
@@ -43,9 +42,9 @@ class GameScore(db.Model):
         return {
             'id': self.id,
             'score': self.score,
-            'date': self.date.isoformat(),
+            'date': self.date.isoformat() if self.date else None,
             'user_id': self.user_id,
-            'username': self.user.username,
+            'username': self.user.username if self.user else None,
             'game_id': self.game_id,
-            'game_title': self.game.title
+            'game_title': self.game.title if self.game else None
         }

@@ -1,4 +1,3 @@
-# app/routes/games.py
 """
 Enhanced Game routes for browsing, playing, and managing games
 """
@@ -6,7 +5,6 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from flask_login import current_user, login_required
 from datetime import datetime, timedelta
 from sqlalchemy import func, desc
-from sqlalchemy.sql import text
 import os
 
 from app import db
@@ -19,11 +17,11 @@ games_bp = Blueprint("games", __name__)
 @games_bp.route("/games")
 @login_required
 def games():
-    """Games listing page with advanced filtering and categorization"""
+    """Games listing page with filtering and categorization"""
     # Get all active games
     all_games = Game.query.filter_by(active=True).all()
 
-    # Group games by multiple attributes
+    # Group games by multiple attributes for easier display
     games_by_type = {}
     games_by_difficulty = {}
 
@@ -38,12 +36,12 @@ def games():
             games_by_difficulty[game.difficulty] = []
         games_by_difficulty[game.difficulty].append(game)
 
-    # Additional game statistics
+    # Additional game statistics for the UI
     stats = {
         'total_games': len(all_games),
         'total_game_types': len(games_by_type),
         'game_type_counts': {k: len(v) for k, v in games_by_type.items()},
-        'difficulty_counts': {k: len(v) for k, v in games_by_difficulty.items()}
+        'difficulty_counts': {k: len(v) for k, v in games_by_difficulty.items() if k}
     }
 
     return render_template("games/games.html",
@@ -88,7 +86,6 @@ def leaderboard():
 
         # Get top 10 scores for each game, ordered by score descending
         top_scores = query.order_by(GameScore.score.desc()).limit(10).all()
-
         leaderboards[game.id] = top_scores
 
     # Get personal bests for each game
@@ -105,35 +102,18 @@ def leaderboard():
             total_players = db.session.query(func.count(func.distinct(GameScore.user_id))).filter_by(
                 game_id=game.id).scalar()
 
-            # Find the user's rank
-            rank_query = text("""
-                SELECT player_rank FROM (
-                    SELECT user_id, RANK() OVER (ORDER BY MAX(score) DESC) as player_rank
-                    FROM game_scores
-                    WHERE game_id = :game_id
-                    GROUP BY user_id
-                ) as rankings
-                WHERE user_id = :user_id
-            """)
+            # Find the user's rank (simplified approach)
+            scores_above = GameScore.query.with_entities(
+                func.max(GameScore.score)
+            ).filter(
+                GameScore.game_id == game.id
+            ).group_by(
+                GameScore.user_id
+            ).having(
+                func.max(GameScore.score) > best_score.score
+            ).count()
 
-            try:
-                result = db.engine.execute(rank_query, game_id=game.id, user_id=current_user.id).first()
-                rank = result[0] if result else None
-            except Exception:
-                # Fallback to a simpler approach if the SQL query fails
-                rank = None
-                scores_above = GameScore.query.with_entities(
-                    func.max(GameScore.score)
-                ).filter(
-                    GameScore.game_id == game.id
-                ).group_by(
-                    GameScore.user_id
-                ).having(
-                    func.max(GameScore.score) > best_score.score
-                ).count()
-
-                if rank is None:
-                    rank = scores_above + 1
+            rank = scores_above + 1
 
             # Get the top score for this game
             top_score = GameScore.query.filter_by(game_id=game.id).order_by(GameScore.score.desc()).first()
@@ -234,7 +214,7 @@ def record_score():
     # Validate game exists
     game = Game.query.get_or_404(game_id)
 
-    # Check for cheating (extremely high scores)
+    # Check for suspicious scores (extremely high scores)
     highest_score = GameScore.query.filter_by(game_id=game_id).order_by(GameScore.score.desc()).first()
 
     if highest_score and score > highest_score.score * 2 and highest_score.score > 1000:
@@ -270,7 +250,7 @@ def record_score():
 @games_bp.route("/weekly-reset")
 @login_required
 def weekly_game_reset():
-    """Reset weekly game leaderboards"""
+    """Reset weekly game leaderboards - admin only"""
     if not current_user.is_admin:
         flash("You do not have permission to perform this action.", "danger")
         return redirect(url_for("games.leaderboard"))

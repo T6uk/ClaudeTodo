@@ -6,6 +6,7 @@
     .memory-match-container {
         max-width: 800px;
         margin: 0 auto;
+        text-align: center;
     }
 
     .game-board {
@@ -204,7 +205,7 @@
         let moves = 0;
         let matches = 0;
         let timeLeft = 60;
-        let totalPairs = 8;
+        let totalPairs = 8;  // Default for medium difficulty
         let gameTimer;
         let startTime;
         let gameActive = false;
@@ -227,6 +228,13 @@
         const startButton = document.getElementById('startButton');
         const resetButton = document.getElementById('resetButton');
 
+        // Set up difficulty settings
+        const DIFFICULTY = {
+            easy: { rows: 3, cols: 4, timeLimit: 60 },
+            medium: { rows: 4, cols: 4, timeLimit: 90 },
+            hard: { rows: 4, cols: 6, timeLimit: 120 }
+        };
+
         // Set up initial game state
         function initGame() {
             // Clear any existing timer
@@ -241,13 +249,18 @@
             score = 0;
             moves = 0;
             matches = 0;
-            timeLeft = 60;
+
+            // Get difficulty settings
+            const difficulty = levelSelect.value;
+            timeLeft = DIFFICULTY[difficulty].timeLimit;
+
+            // Set game to inactive
             gameActive = false;
 
             // Update displays
             scoreDisplay.textContent = '0';
             movesDisplay.textContent = '0';
-            timeDisplay.textContent = '0:00';
+            timeDisplay.textContent = formatTime(timeLeft);
             progressBar.style.width = '100%';
 
             // Clear the game board
@@ -257,27 +270,25 @@
             setupDifficulty();
         }
 
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
         // Set up based on selected difficulty
         function setupDifficulty() {
             const difficulty = levelSelect.value;
+            const settings = DIFFICULTY[difficulty];
 
-            let rows, cols;
-            if (difficulty === 'easy') {
-                rows = 3;
-                cols = 4;
-                timeLeft = 60;
-            } else if (difficulty === 'medium') {
-                rows = 4;
-                cols = 4;
-                timeLeft = 90;
-            } else { // hard
-                rows = 4;
-                cols = 6;
-                timeLeft = 120;
-            }
+            const rows = settings.rows;
+            const cols = settings.cols;
 
             // Calculate total pairs
             totalPairs = (rows * cols) / 2;
+
+            console.log(`Difficulty: ${difficulty}, Rows: ${rows}, Cols: ${cols}, Total Pairs: ${totalPairs}`);
 
             // Update grid layout
             gameBoard.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
@@ -391,8 +402,11 @@
                 // Track matches
                 matches++;
 
+                console.log(`Match! Total matches: ${matches}/${totalPairs}`);
+
                 // Check if game is complete
-                if (matches === totalPairs) {
+                if (matches >= totalPairs) {
+                    console.log("All pairs found! Finishing game...");
                     setTimeout(() => {
                         finishGame();
                     }, 500);
@@ -450,6 +464,15 @@
             lockBoard = false;
             startTime = Date.now();
 
+            // Reset counters just to be safe
+            matches = 0;
+            score = 0;
+            moves = 0;
+
+            // Update display
+            scoreDisplay.textContent = '0';
+            movesDisplay.textContent = '0';
+
             // Update control buttons
             startButton.disabled = true;
             levelSelect.disabled = true;
@@ -460,16 +483,16 @@
 
         // Update timer display
         function updateTimer() {
+            if (!gameActive) return;
+
             timeLeft--;
 
             // Update time display
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            timeDisplay.textContent = formatTime(timeLeft);
 
             // Update progress bar
-            const maxTime = levelSelect.value === 'easy' ? 60 :
-                           levelSelect.value === 'medium' ? 90 : 120;
+            const difficulty = levelSelect.value;
+            const maxTime = DIFFICULTY[difficulty].timeLimit;
             const percentLeft = (timeLeft / maxTime) * 100;
             progressBar.style.width = `${percentLeft}%`;
 
