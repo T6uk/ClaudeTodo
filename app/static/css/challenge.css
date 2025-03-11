@@ -1,0 +1,300 @@
+/* Challenge system specific styling */
+
+/* Challenge cards and list */
+.challenge-list {
+    margin-top: 20px;
+}
+
+.challenge-item {
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.challenge-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.challenge-completed {
+    background-color: rgba(87, 167, 115, 0.1);
+}
+
+.challenge-deleted {
+    background-color: rgba(215, 100, 100, 0.1);
+}
+
+[data-bs-theme="dark"] .challenge-completed {
+    background-color: rgba(0, 173, 181, 0.1);
+}
+
+[data-bs-theme="dark"] .challenge-deleted {
+    background-color: rgba(238, 82, 83, 0.1);
+}
+
+/* Challenge category badge styles */
+.badge-category {
+    display: inline-block;
+    padding: 0.25em 0.6em;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: 50px;
+    margin-right: 5px;
+}
+
+.badge-General { background-color: #6c757d; color: white; }
+.badge-Fitness { background-color: #28a745; color: white; }
+.badge-Learning { background-color: #17a2b8; color: white; }
+.badge-Productivity { background-color: #007bff; color: white; }
+.badge-Finance { background-color: #fd7e14; color: white; }
+.badge-Health { background-color: #20c997; color: white; }
+.badge-Social { background-color: #e83e8c; color: white; }
+.badge-Other { background-color: #6610f2; color: white; }
+
+/* Challenge progress bar */
+.challenge-progress {
+    height: 10px;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.challenge-progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--primary-gradient);
+}
+
+/* Progress update slider */
+.progress-update-container {
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+[data-bs-theme="dark"] .progress-update-container {
+    background-color: #343a40;
+}
+
+.progress-update-range {
+    width: 100%;
+    height: 10px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #ddd;
+    outline: none;
+    border-radius: 5px;
+}
+
+.progress-update-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.progress-update-range::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.progress-update-range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.progress-update-range::-moz-range-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Challenge stats cards */
+.stats-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stats-header {
+    padding: 15px;
+    font-weight: 600;
+    background-color: var(--primary);
+    color: white;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.stats-body {
+    padding: 20px;
+}
+
+.stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stats-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+/* Category chart */
+.category-chart {
+    padding: 15px;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.category-label {
+    flex: 1;
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.category-bar {
+    flex: 2;
+    height: 12px;
+    background-color: #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.category-progress {
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 6px;
+}
+
+.category-count {
+    margin-left: 10px;
+    font-weight: 600;
+    width: 30px;
+    text-align: right;
+}
+
+/* Challenge participant badges */
+.challenge-participant {
+    background-color: #e9ecef;
+    color: #495057;
+    border-radius: 50px;
+    padding: 3px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+[data-bs-theme="dark"] .challenge-participant {
+    background-color: #343a40;
+    color: #e9ecef;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 40px 0;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
+
+.empty-state h4 {
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* Challenge actions */
+.challenge-actions {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+}
+
+.challenge-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 8px;
+    margin-left: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.challenge-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Status badges */
+.badge-active {
+    background-color: #57A773;
+    color: white;
+}
+
+.badge-completed {
+    background-color: #4682B4;
+    color: white;
+}
+
+.badge-deleted {
+    background-color: #D76464;
+    color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stats-card {
+        margin-bottom: 15px;
+    }
+
+    .stats-number {
+        font-size: 2rem;
+    }
+
+    .category-label {
+        font-size: 0.9rem;
+    }
+
+    .challenge-actions {
+        position: relative;
+        right: auto;
+        top: auto;
+        margin-top: 15px;
+        display: flex;
+        justify-content: flex-end;
+    }
+}

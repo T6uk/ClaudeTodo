@@ -1,41 +1,74 @@
-# Personal Dashboard
+# Personal Website
 
-A Flask-based personal dashboard web application that helps you stay organized, track your health, manage workouts, set challenges, and more.
+A personal website built with Flask, featuring a user authentication system.
 
 ## Features
 
-- User authentication (register/login)
-- Todo list management
-- Calendar for scheduling events
-- Challenges tracking with progress
-- Workout tracking and exercise logging
-- Health metrics monitoring
-- Simple games for relaxation
+- User authentication (register, login, logout)
+- User profile management
+- Responsive design with Bootstrap 5
+- SQLAlchemy ORM integration
+- Flask-Login for session management
 
 ## Project Structure
 
-The project uses Flask blueprints for a modular, extensible structure:
+```
+PersonalWebSite/
+│
+├── app/                      # Main application package
+│   ├── __init__.py           # App initialization and factory
+│   ├── config.py             # Configuration settings
+│   ├── models/               # SQLAlchemy data models
+│   │   ├── __init__.py
+│   │   └── user.py           # User model
+│   ├── routes/               # Route definitions
+│   │   ├── __init__.py
+│   │   ├── auth.py           # Authentication routes
+│   │   └── main.py           # Main routes
+│   ├── forms/                # WTForms forms
+│   │   ├── __init__.py
+│   │   └── auth_forms.py     # Authentication forms
+│   ├── static/               # Static assets
+│   │   ├── css/
+│   │   │   └── style.css
+│   │   └── js/
+│   │       └── main.js
+│   └── templates/            # Jinja2 templates
+│       ├── base.html         # Base template
+│       ├── index.html        # Home page
+│       ├── dashboard.html    # User dashboard
+│       ├── auth/             # Authentication templates
+│       │   ├── login.html
+│       │   ├── register.html
+│       │   └── profile.html
+│       └── errors/           # Error pages
+│           ├── 404.html
+│           └── 500.html
+│
+├── .env                      # Environment variables
+├── .gitignore                # Git ignore file
+├── README.md                 # Project README
+├── requirements.txt          # Python dependencies
+└── run.py                    # Application entry point
+```
 
-- `auth`: User authentication and profile management
-- `todo`: Task management functionality
-- `calendar`: Event scheduling and calendar views
-- `challenges`: Personal challenges with progress tracking
-- `workout`: Workout logging and tracking
-- `health`: Health metrics monitoring
-- `games`: Simple browser games
-
-## Setup and Installation
+## Installation
 
 1. Clone the repository:
    ```
-   git clone <repository-url>
-   cd personal-dashboard
+   git clone https://github.com/T6uk/PersonalWebSite.git
+   cd PersonalWebSite
    ```
 
 2. Create and activate a virtual environment:
    ```
    python -m venv venv
-   source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+   
+   # On Windows
+   venv\Scripts\activate
+   
+   # On macOS/Linux
+   source venv/bin/activate
    ```
 
 3. Install dependencies:
@@ -43,20 +76,7 @@ The project uses Flask blueprints for a modular, extensible structure:
    pip install -r requirements.txt
    ```
 
-4. Set environment variables:
-   ```
-   # For development (Unix/Linux/Mac)
-   export FLASK_APP=run.py
-   export FLASK_ENV=development
-   export SECRET_KEY=your-secret-key
-
-   # For Windows
-   set FLASK_APP=run.py
-   set FLASK_ENV=development
-   set SECRET_KEY=your-secret-key
-   ```
-
-   Alternatively, create a `.env` file with these settings.
+4. Create a `.env` file with required environment variables (see `.env` example)
 
 5. Initialize the database:
    ```
@@ -67,29 +87,24 @@ The project uses Flask blueprints for a modular, extensible structure:
 
 6. Run the application:
    ```
-   flask run
+   python run.py
    ```
 
-7. Access the application at `http://localhost:5000`
+## Usage
 
-## Extending the Application
+- Access the application at `http://localhost:5000`
+- Register a new account
+- Log in with your credentials
+- View your dashboard and profile
 
-The modular blueprint structure makes it easy to add new features:
+## Development
 
-1. Create a new blueprint directory in `app/blueprints/`
-2. Define routes, forms, and templates for your feature
-3. Register the blueprint in `app/__init__.py`
-
-## Dependencies
-
-- Flask: Web framework
-- Flask-SQLAlchemy: Database ORM
-- Flask-Migrate: Database migrations
-- Flask-Login: User authentication
-- Flask-WTF: Form handling and validation
-- Flask-Bcrypt: Password hashing
-- Bootstrap 5: Frontend styling
+- Create database migrations when models change:
+  ```
+  flask db migrate -m "Description of changes"
+  flask db upgrade
+  ```
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is open-source and available under the MIT License.

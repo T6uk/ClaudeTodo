@@ -4,6 +4,7 @@ Challenge routes for user challenges
 from flask import Blueprint, render_template, flash, redirect, url_for, request, jsonify
 from flask_login import current_user, login_required
 from datetime import datetime
+from sqlalchemy import func
 
 from app import db
 from app.models.user import User
@@ -30,11 +31,24 @@ def challenges():
     users = User.query.all()
     form.participants.choices = [(u.id, u.username) for u in users]
 
+    # Get statistics
+    stats = {
+        'total_active': len(active_challenges),
+        'total_completed': len(completed_challenges),
+        'total_created': Challenge.query.filter_by(creator_id=current_user.id).count(),
+        'total_joined': Challenge.query.join(Challenge.participants).filter(User.id == current_user.id).count(),
+        'categories': db.session.query(
+            Challenge.category,
+            func.count(Challenge.id)
+        ).group_by(Challenge.category).all()
+    }
+
     return render_template("challenge/challenges.html",
                            title="Challenges",
                            active_challenges=active_challenges,
                            completed_challenges=completed_challenges,
                            deleted_challenges=deleted_challenges,
+                           stats=stats,
                            form=form)
 
 
@@ -53,8 +67,11 @@ def create_challenge():
         challenge = Challenge(
             title=form.title.data,
             description=form.description.data,
+            category=form.category.data,
             start_date=form.start_date.data,
             end_date=form.end_date.data,
+            target_value=form.target_value.data,
+            measurement_unit=form.measurement_unit.data,
             creator_id=current_user.id
         )
 
@@ -107,9 +124,12 @@ def update_challenge(challenge_id):
         # Update challenge fields
         challenge.title = form.title.data
         challenge.description = form.description.data
+        challenge.category = form.category.data
         challenge.start_date = form.start_date.data
         challenge.end_date = form.end_date.data
         challenge.status = form.status.data
+        challenge.target_value = form.target_value.data
+        challenge.measurement_unit = form.measurement_unit.data
 
         # Update participants
         if form.participants.data:
@@ -164,6 +184,11 @@ def complete_challenge(challenge_id):
         return redirect(url_for("challenge.challenges"))
 
     challenge.status = 'completed'
+
+    # If target_value is set, update current_value to target_value
+    if challenge.target_value:
+        challenge.current_value = challenge.target_value
+
     db.session.commit()
 
     flash("Challenge marked as completed!", "success")
@@ -226,5 +251,40 @@ def join_challenge(challenge_id):
         flash("You have joined the challenge!", "success")
     else:
         flash("You are already a participant in this challenge.", "info")
+
+    return redirect(url_for("challenge.challenges"))
+
+
+@challenge_bp.route("/challenges/<int:challenge_id>/update-progress", methods=["POST"])
+@login_required
+def update_progress(challenge_id):
+    """Update challenge progress"""
+    challenge = Challenge.query.get_or_404(challenge_id)
+
+    # Check if user is a participant
+    if current_user not in challenge.participants and current_user.id != challenge.creator_id:
+        flash("You must be a participant to update progress.", "danger")
+        return redirect(url_for("challenge.challenges"))
+
+    # Get progress value from form
+    progress_value = request.form.get('progress_value', type=float)
+
+    if progress_value is not None:
+        if challenge.target_value and progress_value > challenge.target_value:
+            # Cap progress at target value
+            challenge.current_value = challenge.target_value
+        else:
+            challenge.current_value = progress_value
+
+        # If we've reached 100%, ask if they want to complete the challenge
+        if challenge.target_value and challenge.current_value >= challenge.target_value:
+            challenge.current_value = challenge.target_value
+            db.session.commit()
+            flash("You've reached the target! You can now mark the challenge as completed.", "success")
+        else:
+            db.session.commit()
+            flash("Progress updated successfully!", "success")
+    else:
+        flash("Invalid progress value.", "danger")
 
     return redirect(url_for("challenge.challenges"))
