@@ -1,10 +1,11 @@
 # app/routes/games.py
 """
-Game routes for browsing and playing games
+Enhanced Game routes for browsing, playing, and managing games
 """
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import current_user, login_required
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import func
 
 from app import db
 from app.models.game import Game
@@ -16,107 +17,62 @@ games_bp = Blueprint("games", __name__)
 @games_bp.route("/games")
 @login_required
 def games():
-    """Games listing page"""
+    """Games listing page with advanced filtering and categorization"""
     # Get all active games
     all_games = Game.query.filter_by(active=True).all()
 
-    # Group games by type
+    # Group games by multiple attributes
     games_by_type = {}
+    games_by_difficulty = {}
+
     for game in all_games:
+        # Group by game type
         if game.game_type not in games_by_type:
             games_by_type[game.game_type] = []
         games_by_type[game.game_type].append(game)
 
+        # Group by difficulty
+        if game.difficulty not in games_by_difficulty:
+            games_by_difficulty[game.difficulty] = []
+        games_by_difficulty[game.difficulty].append(game)
+
+    # Additional game statistics
+    stats = {
+        'total_games': len(all_games),
+        'total_game_types': len(games_by_type),
+        'game_type_counts': {k: len(v) for k, v in games_by_type.items()},
+        'difficulty_counts': {k: len(v) for k, v in games_by_difficulty.items()}
+    }
+
     return render_template("games/games.html",
                            title="Games",
                            all_games=all_games,
-                           games_by_type=games_by_type)
+                           games_by_type=games_by_type,
+                           games_by_difficulty=games_by_difficulty,
+                           stats=stats)
 
 
-@games_bp.route("/games/<int:game_id>")
+@games_bp.route("/games/weekly-reset")
 @login_required
-def play_game(game_id):
-    """Play a specific game"""
-    game = Game.query.get_or_404(game_id)
+def weekly_game_reset():
+    """Reset weekly game leaderboards"""
+    if not current_user.is_admin:
+        flash("You do not have permission to perform this action.", "danger")
+        return redirect(url_for("games.leaderboard"))
 
-    # Prevent potential infinite recursion by checking game template
-    try:
-        # Try to render the game template
-        template_path = f"games/play/{game.game_type}/{game.title.lower().replace(' ', '_')}.html"
+    # Find games with weekly reset enabled
+    weekly_reset_games = Game.query.filter_by(weekly_reset=True).all()
+    reset_count = 0
 
-        # Get user's high score for this game
-        high_score = GameScore.query.filter_by(
-            user_id=current_user.id,
-            game_id=game_id
-        ).order_by(GameScore.score.desc()).first()
+    for game in weekly_reset_games:
+        # Delete scores older than 7 days
+        one_week_ago = datetime.utcnow() - timedelta(days=7)
+        GameScore.query.filter(
+            GameScore.game_id == game.id,
+            GameScore.date < one_week_ago
+        ).delete(synchronize_session=False)
+        reset_count += 1
 
-        # Get top scores for the game
-        top_scores = GameScore.query.filter_by(
-            game_id=game_id
-        ).order_by(GameScore.score.desc()).limit(10).all()
-
-        return render_template(template_path,
-                               title=game.title,
-                               game=game,
-                               high_score=high_score,
-                               top_scores=top_scores)
-    except Exception as e:
-        # Log the error and redirect with a meaningful message
-        flash(f"Error loading game: {str(e)}", "danger")
-        return redirect(url_for("games.games"))
-
-
-@games_bp.route("/games/<int:game_id>/save-score", methods=["POST"])
-@login_required
-def save_score(game_id):
-    """Save a game score"""
-    game = Game.query.get_or_404(game_id)
-
-    # Get score from request
-    score = request.form.get('score', type=int)
-    if score is None:
-        data = request.get_json()
-        if data:
-            score = data.get('score')
-
-    if not score:
-        flash("No score provided", "danger")
-        return redirect(url_for("games.play_game", game_id=game_id))
-
-    # Save the score
-    game_score = GameScore(
-        user_id=current_user.id,
-        game_id=game_id,
-        score=score
-    )
-
-    db.session.add(game_score)
     db.session.commit()
-
-    flash(f"Score of {score} saved successfully!", "success")
-
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return jsonify({"success": True, "score": score})
-
-    return redirect(url_for("games.play_game", game_id=game_id))
-
-
-@games_bp.route("/games/leaderboard")
-@login_required
-def leaderboard():
-    """Global game leaderboard"""
-    games = Game.query.filter_by(active=True).all()
-
-    # Get top score for each game
-    leaderboards = {}
-    for game in games:
-        top_scores = GameScore.query.filter_by(
-            game_id=game.id
-        ).order_by(GameScore.score.desc()).limit(10).all()
-
-        leaderboards[game.id] = top_scores
-
-    return render_template("games/leaderboard.html",
-                           title="Games Leaderboard",
-                           games=games,
-                           leaderboards=leaderboards)
+    flash(f"Weekly leaderboard reset completed for {reset_count} games.", "success")
+    return redirect(url_for("games.leaderboard"))

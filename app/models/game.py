@@ -1,6 +1,6 @@
 # app/models/game.py
 """
-Game model for storing game information
+Expanded Game model for storing game information and providing more details
 """
 from datetime import datetime
 from app import db
@@ -8,17 +8,7 @@ from app import db
 
 class Game(db.Model):
     """
-    Game model for storing games and user scores
-
-    Attributes:
-        id (int): Primary key
-        title (str): Game title
-        description (str): Game description
-        game_type (str): Type of game (puzzle, arcade, etc.)
-        difficulty (str): Game difficulty level
-        created_at (datetime): Game creation timestamp
-        updated_at (datetime): Game last update timestamp
-        active (bool): Whether the game is active
+    Enhanced Game model with additional attributes and relationships
     """
     __tablename__ = 'games'
 
@@ -29,6 +19,13 @@ class Game(db.Model):
     difficulty = db.Column(db.String(20), nullable=True)
     instructions = db.Column(db.Text, nullable=True)
     thumbnail = db.Column(db.String(200), nullable=True)
+
+    # Game configuration options
+    max_players = db.Column(db.Integer, default=1)
+    multiplayer_support = db.Column(db.Boolean, default=False)
+    global_leaderboard = db.Column(db.Boolean, default=True)
+    weekly_reset = db.Column(db.Boolean, default=False)
+
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     active = db.Column(db.Boolean, default=True)
@@ -37,20 +34,23 @@ class Game(db.Model):
     scores = db.relationship('GameScore', backref='game', lazy='dynamic', cascade='all, delete-orphan')
 
     def __init__(self, title, game_type, description=None, difficulty=None,
-                 instructions=None, thumbnail=None, active=True):
+                 instructions=None, thumbnail=None, max_players=1,
+                 multiplayer_support=False, global_leaderboard=True,
+                 weekly_reset=False, active=True):
         self.title = title
         self.game_type = game_type
         self.description = description
         self.difficulty = difficulty
         self.instructions = instructions
         self.thumbnail = thumbnail
+        self.max_players = max_players
+        self.multiplayer_support = multiplayer_support
+        self.global_leaderboard = global_leaderboard
+        self.weekly_reset = weekly_reset
         self.active = active
 
-    def __repr__(self):
-        return f"<Game {self.id}: {self.title}>"
-
     def to_dict(self):
-        """Convert game to dictionary"""
+        """Convert game to dictionary with more details"""
         return {
             'id': self.id,
             'title': self.title,
@@ -59,6 +59,10 @@ class Game(db.Model):
             'difficulty': self.difficulty,
             'instructions': self.instructions,
             'thumbnail': self.thumbnail,
+            'max_players': self.max_players,
+            'multiplayer_support': self.multiplayer_support,
+            'global_leaderboard': self.global_leaderboard,
+            'weekly_reset': self.weekly_reset,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
             'active': self.active
