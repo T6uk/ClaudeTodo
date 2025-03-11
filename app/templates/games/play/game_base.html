@@ -22,23 +22,92 @@
 </head>
 <body>
     <div class="container">
-        <div class="row mb-4">
+        <div class="row mb-2">
             <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{{ url_for('games.games') }}">Games</a></li>
+                        <li class="breadcrumb-item active">{{ game.title }}</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-8">
                 <h1>
                     <i class="fas fa-gamepad me-2"></i>
                     {{ game.title }}
                 </h1>
                 <p class="lead">{{ game.description }}</p>
             </div>
+            <div class="col-md-4 d-flex justify-content-md-end align-items-center">
+                <a href="{{ url_for('games.leaderboard', game_id=game.id) }}" class="btn btn-outline-primary">
+                    <i class="fas fa-trophy me-1"></i> View Leaderboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Score displays -->
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-user me-1"></i> Your Best:
+                        </div>
+                        <div class="fw-bold">
+                            {% if personal_best %}
+                                {{ personal_best.score }}
+                            {% else %}
+                                No scores yet
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light">
+                    <div class="card-body p-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-globe me-1"></i> High Score:
+                        </div>
+                        <div class="fw-bold">
+                            {% if global_best %}
+                                {{ global_best.score }} by {{ global_best.user.username }}
+                            {% else %}
+                                No scores yet
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="game-play-container">
+            {% if game.instructions %}
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <div class="fw-bold"><i class="fas fa-info-circle me-1"></i> How to play:</div>
+                            {{ game.instructions }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
             {% block game_content %}{% endblock %}
         </div>
 
         <div class="row mt-4">
             <div class="col-12 text-center">
                 {% block game_controls %}{% endblock %}
+
+                <div class="mt-3">
+                    <a href="{{ url_for('games.games') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Games
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -54,10 +123,49 @@
                 <div class="modal-body text-center">
                     <div class="game-end-score" id="finalScore">0</div>
                     <div class="game-end-message" id="gameEndMessage">Well done!</div>
+
+                    <div class="score-comparison mt-4">
+                        <div class="row">
+                            <div class="col-6 text-end border-end pe-3">
+                                <div class="text-muted">Your Best:</div>
+                                <div class="fw-bold" id="personalBestScore">
+                                    {% if personal_best %}
+                                        {{ personal_best.score }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-6 text-start ps-3">
+                                <div class="text-muted">High Score:</div>
+                                <div class="fw-bold" id="highScore">
+                                    {% if global_best %}
+                                        {{ global_best.score }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="achievementBanner" class="alert alert-success mt-3 d-none">
+                        <i class="fas fa-award me-1"></i>
+                        <span id="achievementMessage"></span>
+                    </div>
                 </div>
                 <div class="modal-footer">
+                    <form id="scoreForm" method="POST" action="{{ url_for('games.record_score') }}">
+                        <input type="hidden" name="game_id" value="{{ game.id }}">
+                        <input type="hidden" name="score" id="scoreInput" value="0">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> Save Score
+                        </button>
+                    </form>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="resetGame()">Play Again</button>
+                    <button type="button" class="btn btn-success" onclick="resetGame()">
+                        <i class="fas fa-redo me-1"></i> Play Again
+                    </button>
                 </div>
             </div>
         </div>
@@ -71,25 +179,51 @@
 
     <!-- Utility game scripts -->
     <script>
+        // Store personal best and global high score
+        const personalBest = {% if personal_best %}{{ personal_best.score }}{% else %}0{% endif %};
+        const globalHighScore = {% if global_best %}{{ global_best.score }}{% else %}0{% endif %};
+
         function updateScore(score) {
             document.getElementById('finalScore').textContent = score;
+            document.getElementById('scoreInput').value = score;
         }
 
         function endGame(score, message) {
             document.getElementById('finalScore').textContent = score;
             document.getElementById('gameEndMessage').textContent = message;
 
+            // Check for achievements
+            const achievementBanner = document.getElementById('achievementBanner');
+            const achievementMessage = document.getElementById('achievementMessage');
+
+            if (score > personalBest) {
+                achievementBanner.classList.remove('d-none');
+                achievementMessage.textContent = 'New Personal Best!';
+
+                // Update displayed personal best
+                document.getElementById('personalBestScore').textContent = score;
+            }
+
+            if (score > globalHighScore) {
+                achievementBanner.classList.remove('d-none');
+                achievementBanner.classList.remove('alert-success');
+                achievementBanner.classList.add('alert-warning');
+                achievementMessage.textContent = 'New High Score! You\'re #1';
+
+                // Update displayed high score
+                document.getElementById('highScore').textContent = score;
+            }
+
             const gameEndModal = new bootstrap.Modal(document.getElementById('gameEndModal'));
             gameEndModal.show();
+        }
 
-            // Optional: Send score to server
-            fetch('/games/score', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `game_id={{ game.id }}&score=${score}`
-            }).catch(error => console.error('Error submitting score:', error));
+        // Function to close modal without saving score
+        function closeWithoutSaving() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('gameEndModal'));
+            if (modal) {
+                modal.hide();
+            }
         }
     </script>
 

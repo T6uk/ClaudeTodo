@@ -21,7 +21,7 @@ def seed_games():
             'description': 'Test your speed and color recognition skills!',
             'difficulty': 'Easy',
             'thumbnail': '/static/images/games/color_match.jpg',
-            'instructions': 'Match the color of the word, not the text itself.',
+            'instructions': 'Match the color of the word, not the text itself. Click the button that corresponds to the color that the word is displayed in, not what the word says.',
         },
         {
             'title': 'Math Challenge',
@@ -29,7 +29,7 @@ def seed_games():
             'description': 'Solve math problems before time runs out!',
             'difficulty': 'Medium',
             'thumbnail': '/static/images/games/math_challenge.jpg',
-            'instructions': 'Answer math problems as quickly as possible.',
+            'instructions': 'Answer math problems as quickly as possible. Type your answer and press Enter to submit.',
         },
         {
             'title': 'Memory Match',
@@ -37,7 +37,7 @@ def seed_games():
             'description': 'Test your memory by matching card pairs!',
             'difficulty': 'Easy',
             'thumbnail': '/static/images/games/memory_match.jpg',
-            'instructions': 'Flip cards and match identical pairs.',
+            'instructions': 'Flip cards and match identical pairs. Remember the positions of cards you\'ve seen to find matches more efficiently.',
         },
         {
             'title': 'Snake',
@@ -45,12 +45,23 @@ def seed_games():
             'description': 'Classic snake game - eat food and grow!',
             'difficulty': 'Medium',
             'thumbnail': '/static/images/games/snake.jpg',
-            'instructions': 'Use arrow keys to control the snake. Avoid walls and yourself.',
+            'instructions': 'Use arrow keys to control the snake. Eat the food to grow longer. Avoid colliding with walls and yourself.',
+            'weekly_reset': True,
+        },
+        {
+            'title': 'Word Scramble',
+            'game_type': 'word',
+            'description': 'Unscramble words before time runs out!',
+            'difficulty': 'Medium',
+            'thumbnail': '/static/images/games/word_scramble.jpg',
+            'instructions': 'Unscramble words from jumbled letters. Type your answer and press Enter to submit. Use the hint if you get stuck!',
+            'weekly_reset': True,
         }
     ]
 
     # Track changes
     added_games = 0
+    updated_games = 0
     existing_games = 0
 
     for game_info in games_data:
@@ -60,13 +71,18 @@ def seed_games():
             db.session.add(game)
             added_games += 1
         else:
+            # Update existing game with new information
+            for key, value in game_info.items():
+                setattr(existing_game, key, value)
+            updated_games += 1
             existing_games += 1
 
     db.session.commit()
 
     print(f"Game seeding complete:")
     print(f"- Added {added_games} new games")
-    print(f"- {existing_games} games already existed")
+    print(f"- Updated {updated_games} existing games")
+    print(f"- {existing_games - updated_games} games unchanged")
 
 
 def main():

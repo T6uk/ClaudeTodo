@@ -1,0 +1,548 @@
+<!-- app/templates/games/play/puzzle/memory_match.html -->
+{% extends "games/play/game_base.html" %}
+
+{% block game_head %}
+<style>
+    .memory-match-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .game-board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin: 0 auto;
+        max-width: 500px;
+    }
+
+    .card-container {
+        perspective: 1000px;
+        aspect-ratio: 3/4;
+        cursor: pointer;
+    }
+
+    .memory-card {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.6s;
+    }
+
+    .card-container.flipped .memory-card {
+        transform: rotateY(180deg);
+    }
+
+    .card-front, .card-back {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        backface-visibility: hidden;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .card-front {
+        background: linear-gradient(135deg, #A1B2D4 0%, #8090B2 100%);
+        color: white;
+        font-size: 2rem;
+    }
+
+    .card-back {
+        background-color: white;
+        transform: rotateY(180deg);
+        color: #333;
+        font-size: 2.5rem;
+    }
+
+    [data-bs-theme="dark"] .card-back {
+        background-color: #343a40;
+        color: #f8f9fa;
+    }
+
+    .matched .card-back {
+        background-color: rgba(87, 167, 115, 0.2);
+        box-shadow: 0 0 10px rgba(87, 167, 115, 0.5);
+    }
+
+    [data-bs-theme="dark"] .matched .card-back {
+        background-color: rgba(87, 167, 115, 0.3);
+    }
+
+    .game-stats {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px auto;
+        max-width: 500px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px 20px;
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        min-width: 100px;
+    }
+
+    [data-bs-theme="dark"] .stat-item {
+        background-color: #343a40;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .level-select {
+        margin: 20px auto;
+        text-align: center;
+    }
+
+    .progress-bar {
+        height: 10px;
+        border-radius: 5px;
+        margin: 20px auto;
+        overflow: hidden;
+        background-color: #e9ecef;
+        max-width: 500px;
+    }
+
+    .progress-value {
+        height: 100%;
+        border-radius: 5px;
+        background-color: var(--primary);
+        transition: width 1s linear;
+    }
+
+    /* Animations */
+    @keyframes match-success {
+        0% {transform: scale(1);}
+        50% {transform: scale(1.1);}
+        100% {transform: scale(1);}
+    }
+
+    .match-success {
+        animation: match-success 0.6s;
+    }
+
+    @keyframes match-fail {
+        0%, 100% {transform: translateX(0);}
+        20%, 60% {transform: translateX(-5px);}
+        40%, 80% {transform: translateX(5px);}
+    }
+
+    .match-fail {
+        animation: match-fail 0.4s;
+    }
+</style>
+{% endblock %}
+
+{% block game_content %}
+<div class="memory-match-container">
+    <div class="game-stats">
+        <div class="stat-item">
+            <div class="stat-value" id="scoreDisplay">0</div>
+            <div class="stat-label">Score</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="movesDisplay">0</div>
+            <div class="stat-label">Moves</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="timeDisplay">0:00</div>
+            <div class="stat-label">Time</div>
+        </div>
+    </div>
+
+    <div class="level-select mb-3">
+        <label for="levelSelect" class="form-label">Difficulty:</label>
+        <select id="levelSelect" class="form-select form-select-sm d-inline-block w-auto">
+            <option value="easy">Easy (4×3)</option>
+            <option value="medium" selected>Medium (4×4)</option>
+            <option value="hard">Hard (6×4)</option>
+        </select>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-value" id="progressBar" style="width: 100%;"></div>
+    </div>
+
+    <div id="gameBoard" class="game-board">
+        <!-- Memory cards will be generated here -->
+    </div>
+</div>
+{% endblock %}
+
+{% block game_controls %}
+<button id="startButton" class="btn btn-primary me-2">
+    <i class="fas fa-play me-1"></i> Start Game
+</button>
+<button id="resetButton" class="btn btn-secondary">
+    <i class="fas fa-redo me-1"></i> Reset
+</button>
+{% endblock %}
+
+{% block game_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Game variables
+        let cards = [];
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let score = 0;
+        let moves = 0;
+        let matches = 0;
+        let timeLeft = 60;
+        let totalPairs = 8;
+        let gameTimer;
+        let startTime;
+        let gameActive = false;
+
+        // Card symbols by theme (unicode symbols and emojis)
+        const cardSymbols = {
+            animals: ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🦁', '🐯', '🐨', '🐮', '🐷', '🐸'],
+            fruits: ['🍎', '🍐', '🍊', '🍋', '🍌', '🍉', '🍇', '🍓', '🍒', '🍑', '🥝', '🍍'],
+            transport: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎', '🚓', '🚑', '🚒', '🚚', '🚛', '✈️'],
+            space: ['🚀', '🌎', '🌙', '⭐', '☄️', '🌞', '🌚', '🪐', '🌌', '🌠', '👨‍🚀', '👽']
+        };
+
+        // DOM elements
+        const gameBoard = document.getElementById('gameBoard');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const movesDisplay = document.getElementById('movesDisplay');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const levelSelect = document.getElementById('levelSelect');
+        const startButton = document.getElementById('startButton');
+        const resetButton = document.getElementById('resetButton');
+
+        // Set up initial game state
+        function initGame() {
+            // Clear any existing timer
+            clearInterval(gameTimer);
+
+            // Reset game state
+            cards = [];
+            hasFlippedCard = false;
+            lockBoard = true;
+            firstCard = null;
+            secondCard = null;
+            score = 0;
+            moves = 0;
+            matches = 0;
+            timeLeft = 60;
+            gameActive = false;
+
+            // Update displays
+            scoreDisplay.textContent = '0';
+            movesDisplay.textContent = '0';
+            timeDisplay.textContent = '0:00';
+            progressBar.style.width = '100%';
+
+            // Clear the game board
+            gameBoard.innerHTML = '';
+
+            // Set up based on selected difficulty
+            setupDifficulty();
+        }
+
+        // Set up based on selected difficulty
+        function setupDifficulty() {
+            const difficulty = levelSelect.value;
+
+            let rows, cols;
+            if (difficulty === 'easy') {
+                rows = 3;
+                cols = 4;
+                timeLeft = 60;
+            } else if (difficulty === 'medium') {
+                rows = 4;
+                cols = 4;
+                timeLeft = 90;
+            } else { // hard
+                rows = 4;
+                cols = 6;
+                timeLeft = 120;
+            }
+
+            // Calculate total pairs
+            totalPairs = (rows * cols) / 2;
+
+            // Update grid layout
+            gameBoard.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+            // Choose a random theme
+            const themes = Object.keys(cardSymbols);
+            const theme = themes[Math.floor(Math.random() * themes.length)];
+            const symbols = cardSymbols[theme];
+
+            // Create cards for pairs
+            const cardPairs = [];
+            for (let i = 0; i < totalPairs; i++) {
+                cardPairs.push(symbols[i % symbols.length]);
+                cardPairs.push(symbols[i % symbols.length]);
+            }
+
+            // Shuffle the cards
+            const shuffledCards = shuffle(cardPairs);
+
+            // Create card elements
+            for (let i = 0; i < shuffledCards.length; i++) {
+                createCard(shuffledCards[i], i);
+            }
+        }
+
+        // Create a card element
+        function createCard(symbol, index) {
+            const cardContainer = document.createElement('div');
+            cardContainer.classList.add('card-container');
+            cardContainer.dataset.index = index;
+
+            const card = document.createElement('div');
+            card.classList.add('memory-card');
+
+            const cardFront = document.createElement('div');
+            cardFront.classList.add('card-front');
+            cardFront.innerHTML = '<i class="fas fa-question"></i>';
+
+            const cardBack = document.createElement('div');
+            cardBack.classList.add('card-back');
+            cardBack.textContent = symbol;
+
+            card.appendChild(cardFront);
+            card.appendChild(cardBack);
+            cardContainer.appendChild(card);
+
+            // Add click event
+            cardContainer.addEventListener('click', flipCard);
+
+            // Add to game board and cards array
+            gameBoard.appendChild(cardContainer);
+            cards.push(cardContainer);
+        }
+
+        // Shuffle an array (Fisher-Yates algorithm)
+        function shuffle(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        // Flip card handler
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            this.classList.add('flipped');
+
+            if (!hasFlippedCard) {
+                // First click
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+
+            // Second click
+            secondCard = this;
+            moves++;
+            movesDisplay.textContent = moves;
+
+            checkForMatch();
+        }
+
+        // Check if the two flipped cards match
+        function checkForMatch() {
+            // Get the symbols from both cards
+            const firstSymbol = firstCard.querySelector('.card-back').textContent;
+            const secondSymbol = secondCard.querySelector('.card-back').textContent;
+
+            // Check if they match
+            if (firstSymbol === secondSymbol) {
+                // It's a match!
+                disableCards();
+
+                // Add match animation
+                firstCard.classList.add('match-success', 'matched');
+                secondCard.classList.add('match-success', 'matched');
+
+                // Add points based on speed and difficulty
+                const speedBonus = Math.max(1, Math.floor(timeLeft / 10));
+                const difficultyMultiplier = levelSelect.value === 'easy' ? 1 :
+                                            levelSelect.value === 'medium' ? 1.5 : 2;
+
+                const pointsEarned = Math.floor(10 * speedBonus * difficultyMultiplier);
+                score += pointsEarned;
+                scoreDisplay.textContent = score;
+
+                // Track matches
+                matches++;
+
+                // Check if game is complete
+                if (matches === totalPairs) {
+                    setTimeout(() => {
+                        finishGame();
+                    }, 500);
+                }
+            } else {
+                // Not a match
+                unflipCards();
+
+                // Subtract points for wrong moves, but don't go below 0
+                score = Math.max(0, score - 5);
+                scoreDisplay.textContent = score;
+
+                // Add fail animation
+                firstCard.classList.add('match-fail');
+                secondCard.classList.add('match-fail');
+
+                setTimeout(() => {
+                    firstCard.classList.remove('match-fail');
+                    secondCard.classList.remove('match-fail');
+                }, 400);
+            }
+        }
+
+        // Disable matched cards
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+
+            resetBoard();
+        }
+
+        // Unflip non-matching cards
+        function unflipCards() {
+            lockBoard = true;
+
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+
+                resetBoard();
+            }, 1000);
+        }
+
+        // Reset board for next selection
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        // Start the game
+        function startGame() {
+            if (gameActive) return;
+
+            gameActive = true;
+            lockBoard = false;
+            startTime = Date.now();
+
+            // Update control buttons
+            startButton.disabled = true;
+            levelSelect.disabled = true;
+
+            // Start the timer
+            gameTimer = setInterval(updateTimer, 1000);
+        }
+
+        // Update timer display
+        function updateTimer() {
+            timeLeft--;
+
+            // Update time display
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // Update progress bar
+            const maxTime = levelSelect.value === 'easy' ? 60 :
+                           levelSelect.value === 'medium' ? 90 : 120;
+            const percentLeft = (timeLeft / maxTime) * 100;
+            progressBar.style.width = `${percentLeft}%`;
+
+            // Check for game over
+            if (timeLeft <= 0) {
+                clearInterval(gameTimer);
+                timeOut();
+            }
+        }
+
+        // Time out - game over
+        function timeOut() {
+            lockBoard = true;
+            gameActive = false;
+
+            // Enable buttons
+            startButton.disabled = false;
+            levelSelect.disabled = false;
+
+            // Show message
+            endGame(score, 'Time\'s up! Better luck next time.');
+        }
+
+        // Finish game - all matches found
+        function finishGame() {
+            clearInterval(gameTimer);
+            lockBoard = true;
+            gameActive = false;
+
+            // Calculate time bonus
+            const timeBonus = timeLeft * 2;
+            score += timeBonus;
+            scoreDisplay.textContent = score;
+
+            // Calculate elapsed time
+            const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsedSeconds / 60);
+            const seconds = elapsedSeconds % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            // Enable buttons
+            startButton.disabled = false;
+            levelSelect.disabled = false;
+
+            // Show success message
+            let message = `Great job! You completed the game in ${timeStr} with ${moves} moves.`;
+            if (timeBonus > 0) {
+                message += ` Time bonus: +${timeBonus} points!`;
+            }
+
+            endGame(score, message);
+        }
+
+        // Reset game
+        function resetGame() {
+            clearInterval(gameTimer);
+            initGame();
+
+            // Enable buttons
+            startButton.disabled = false;
+            levelSelect.disabled = false;
+        }
+
+        // Event listeners
+        startButton.addEventListener('click', startGame);
+        resetButton.addEventListener('click', resetGame);
+        levelSelect.addEventListener('change', initGame);
+
+        // Initialize game
+        initGame();
+
+        // Make resetGame function available globally
+        window.resetGame = resetGame;
+    });
+</script>
+{% endblock %}

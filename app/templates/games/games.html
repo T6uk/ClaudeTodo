@@ -4,6 +4,228 @@
 {% block head %}
 <!-- Include games-specific CSS -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/games.css') }}">
+<style>
+    .category-header {
+        background: var(--primary-gradient);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .category-header::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: translate(30%, 30%);
+    }
+
+    .category-icon {
+        font-size: 2rem;
+        margin-right: 15px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .game-stats {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    [data-bs-theme="dark"] .game-stats {
+        background-color: #343a40;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+    }
+
+    [data-bs-theme="dark"] .stat-item {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .game-search {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+
+    .search-input {
+        padding-left: 40px;
+        border-radius: 20px;
+    }
+
+    .difficulty-filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .difficulty-filter {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .difficulty-filter:hover {
+        transform: translateY(-3px);
+    }
+
+    .difficulty-filter.active {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .newest-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: #D76464;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .popular-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background-color: #57A773;
+        color: white;
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .achievement-banner {
+        margin-bottom: 30px;
+        padding: 20px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #A1B2D4 0%, #8090B2 100%);
+        color: white;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .achievement-banner::before {
+        content: "";
+        position: absolute;
+        top: -30px;
+        left: -30px;
+        width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+    }
+
+    .achievement-banner::after {
+        content: "";
+        position: absolute;
+        bottom: -20px;
+        right: -20px;
+        width: 80px;
+        height: 80px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+    }
+
+    .achievement-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .game-carousel {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        margin-bottom: 30px;
+    }
+
+    .carousel-item-game {
+        height: 300px;
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        align-items: flex-end;
+        padding: 20px;
+        position: relative;
+    }
+
+    .carousel-item-game::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 50%;
+        background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    }
+
+    .carousel-content {
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    .carousel-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+    }
+
+    .carousel-description {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        max-width: 60%;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -15,80 +237,160 @@
     'word': 'fa-font',
     'math': 'fa-calculator'
 } %}
+
 <div class="container">
     <div class="row mb-4">
         <div class="col-12">
             <h1>
                 <i class="fas fa-gamepad me-2"></i>
-                Games
+                Games Arcade
             </h1>
-            <p class="lead">Play games and compete for high scores</p>
+            <p class="lead">Play games, earn high scores, and compete with other users</p>
         </div>
     </div>
 
-    <!-- Game filtering -->
-    <div class="game-header">
-        <div class="games-filter">
-            <button class="btn btn-outline-primary filter-btn active" data-filter="all">All Games</button>
-            {% for game_type in games_by_type.keys() %}
-                <button class="btn btn-outline-primary filter-btn" data-filter="{{ game_type }}">
-                    {{ game_type.capitalize() }}
-                </button>
-            {% endfor %}
+    <!-- Game stats overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="game-stats">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ stats.total_games }}</div>
+                        <div class="stat-label">Games</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ stats.total_game_types }}</div>
+                        <div class="stat-label">Categories</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ stats.difficulty_counts.get('Easy', 0) }}</div>
+                        <div class="stat-label">Easy Games</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ stats.difficulty_counts.get('Medium', 0) }}</div>
+                        <div class="stat-label">Medium Games</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ stats.difficulty_counts.get('Hard', 0) }}</div>
+                        <div class="stat-label">Hard Games</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Featured games section -->
-    <div class="game-section">
-        <h2 class="game-section-title">Featured Games</h2>
-        <div class="row">
-            {% for game in all_games %}
-                {% if loop.index <= 3 %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card game-card">
-                            <div class="game-thumbnail">
-                                {% if game.thumbnail %}
-                                    <img src="{{ game.thumbnail }}" alt="{{ game.title }}">
-                                {% else %}
-                                    <div class="d-flex align-items-center justify-content-center h-100">
-                                        <i class="fas fa-gamepad fa-3x text-white"></i>
-                                    </div>
-                                {% endif %}
-                                {% if game.difficulty %}
-                                    <span class="difficulty-badge difficulty-{{ game.difficulty.lower() }}">
-                                        {{ game.difficulty }}
-                                    </span>
-                                {% endif %}
-                            </div>
-                            <div class="game-info">
-                                <h3 class="game-title">{{ game.title }}</h3>
-                                <div class="game-type">{{ game.game_type }}</div>
-                                <p class="game-description">{{ game.description|truncate(80) }}</p>
-                                <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-primary play-btn">
-                                    <i class="fas fa-play me-1"></i> Play Now
-                                </a>
-                            </div>
+    <!-- Achievement banner - only show if user has played some games -->
+    {% if stats.total_games > 0 %}
+    <div class="achievement-banner">
+        <div class="achievement-title">
+            <i class="fas fa-trophy me-2"></i>
+            Your Gaming Adventures
+        </div>
+        <p class="mb-0">
+            Continue playing to unlock achievements and top the leaderboards!
+        </p>
+        <a href="{{ url_for('games.leaderboard') }}" class="btn btn-light mt-3">
+            <i class="fas fa-trophy me-1"></i> View Leaderboards
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Game filtering and search -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="games-filter">
+                <button class="btn btn-outline-primary filter-btn active" data-filter="all">All Games</button>
+                {% for game_type in games_by_type.keys() %}
+                    <button class="btn btn-outline-primary filter-btn" data-filter="{{ game_type }}">
+                        {% if game_type in game_type_icons %}
+                            <i class="fas {{ game_type_icons[game_type] }} me-1"></i>
+                        {% endif %}
+                        {{ game_type.capitalize() }}
+                    </button>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="game-search">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="form-control search-input" id="gameSearch" placeholder="Search games...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Difficulty filters -->
+    <div class="difficulty-filters mb-4">
+        <span class="me-2">Difficulty:</span>
+        <div class="difficulty-filter active" data-difficulty="all">All</div>
+        <div class="difficulty-filter difficulty-easy" data-difficulty="easy">Easy</div>
+        <div class="difficulty-filter difficulty-medium" data-difficulty="medium">Medium</div>
+        <div class="difficulty-filter difficulty-hard" data-difficulty="hard">Hard</div>
+    </div>
+
+    <!-- Featured games carousel -->
+    <div id="gamesCarousel" class="carousel slide game-carousel mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            {% for game in all_games[:3] %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <div class="carousel-item-game" style="background-image: url({% if game.thumbnail %}{{ game.thumbnail }}{% else %}{{ url_for('static', filename='images/games/default.jpg') }}{% endif %});">
+                        <div class="carousel-content">
+                            <h2 class="carousel-title">{{ game.title }}</h2>
+                            <p class="carousel-description">{{ game.description }}</p>
+                            <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-light">
+                                <i class="fas fa-play me-1"></i> Play Now
+                            </a>
                         </div>
                     </div>
-                {% endif %}
+                </div>
             {% endfor %}
         </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#gamesCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#gamesCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
     </div>
 
     <!-- Game sections by type -->
     {% for game_type, games in games_by_type.items() %}
         <div class="game-section game-type-section" data-type="{{ game_type }}">
-            <h2 class="game-section-title">{{ game_type.capitalize() }} Games</h2>
+            <div class="category-header">
+                <span class="category-icon">
+                    {% if game_type in game_type_icons %}
+                        <i class="fas {{ game_type_icons[game_type] }}"></i>
+                    {% else %}
+                        <i class="fas fa-gamepad"></i>
+                    {% endif %}
+                </span>
+                <h2 class="game-section-title d-inline-block mb-0">{{ game_type.capitalize() }} Games</h2>
+                <span class="badge bg-light text-dark ms-2">{{ games|length }}</span>
+            </div>
             <div class="row">
                 {% for game in games %}
-                    <div class="col-md-4 col-lg-3 mb-4">
+                    <div class="col-md-4 col-lg-3 mb-4 game-card-container"
+                         data-difficulty="{{ game.difficulty|lower if game.difficulty else 'medium' }}">
                         <div class="card game-card">
+                            {% if loop.index == 1 and game_type == 'word' %}
+                                <span class="newest-badge">New!</span>
+                            {% endif %}
+                            {% if game.id == 3 or game.id == 4 %}
+                                <span class="popular-badge">Popular</span>
+                            {% endif %}
                             <div class="game-thumbnail">
                                 {% if game.thumbnail %}
-                                    <img src="{{ game.thumbnail }}" alt="{{ game.title }}">
+                                    <img src="{{ game.thumbnail }}" alt="{{ game.title }}" onerror="this.src='{{ url_for('static', filename='images/games/default.jpg') }}'">
                                 {% else %}
                                     <div class="d-flex align-items-center justify-content-center h-100">
-                                        <i class="fas fa-gamepad fa-3x text-white"></i>
+                                        <i class="fas
+                                           {% if game.game_type in game_type_icons %}
+                                               {{ game_type_icons[game.game_type] }}
+                                           {% else %}
+                                               fa-gamepad
+                                           {% endif %}
+                                           fa-3x text-white"></i>
                                     </div>
                                 {% endif %}
                                 {% if game.difficulty %}
@@ -112,7 +414,7 @@
         </div>
     {% endfor %}
 
-    <!-- Leaderboard section -->
+    <!-- Leaderboard promotion section -->
     <div class="game-section">
         <h2 class="game-section-title">Leaderboards</h2>
         <p class="mb-4">Compete with other players for the highest scores!</p>
@@ -129,7 +431,11 @@
         // Game filtering functionality
         const filterButtons = document.querySelectorAll('.filter-btn');
         const gameSections = document.querySelectorAll('.game-type-section');
+        const difficultyFilters = document.querySelectorAll('.difficulty-filter');
+        const gameSearch = document.getElementById('gameSearch');
+        const gameCards = document.querySelectorAll('.game-card-container');
 
+        // Set up filter functionality
         filterButtons.forEach(button => {
             button.addEventListener('click', function() {
                 // Remove active class from all buttons
@@ -155,8 +461,96 @@
                         }
                     });
                 }
+
+                // Apply difficulty filter again to maintain both filters
+                applyDifficultyFilter();
+                // Apply search filter again
+                applySearchFilter();
             });
         });
+
+        // Difficulty filtering
+        difficultyFilters.forEach(filter => {
+            filter.addEventListener('click', function() {
+                // Remove active class from all difficulty filters
+                difficultyFilters.forEach(f => f.classList.remove('active'));
+
+                // Add active class to clicked filter
+                this.classList.add('active');
+
+                // Apply the filter
+                applyDifficultyFilter();
+                applySearchFilter();
+            });
+        });
+
+        // Function to apply the difficulty filter
+        function applyDifficultyFilter() {
+            const activeDifficulty = document.querySelector('.difficulty-filter.active').getAttribute('data-difficulty');
+
+            if (activeDifficulty === 'all') {
+                // Show all cards
+                gameCards.forEach(card => {
+                    card.style.display = 'block';
+                });
+            } else {
+                // Show only matching cards
+                gameCards.forEach(card => {
+                    if (card.getAttribute('data-difficulty') === activeDifficulty) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Search functionality
+        gameSearch.addEventListener('input', function() {
+            applySearchFilter();
+        });
+
+        function applySearchFilter() {
+            const searchTerm = gameSearch.value.toLowerCase().trim();
+
+            if (searchTerm === '') {
+                // If search is empty, just apply the active filters
+                applyDifficultyFilter();
+                return;
+            }
+
+            // Apply search filter along with difficulty filter
+            const activeDifficulty = document.querySelector('.difficulty-filter.active').getAttribute('data-difficulty');
+
+            gameCards.forEach(card => {
+                const gameTitle = card.querySelector('.game-title').textContent.toLowerCase();
+                const gameDescription = card.querySelector('.game-description').textContent.toLowerCase();
+                const gameDifficulty = card.getAttribute('data-difficulty');
+
+                const matchesSearch = gameTitle.includes(searchTerm) || gameDescription.includes(searchTerm);
+                const matchesDifficulty = activeDifficulty === 'all' || gameDifficulty === activeDifficulty;
+
+                if (matchesSearch && matchesDifficulty) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Check if any section is now empty and hide it
+            gameSections.forEach(section => {
+                const visibleCards = section.querySelectorAll('.game-card-container[style="display: block;"]');
+                if (visibleCards.length === 0) {
+                    section.style.display = 'none';
+                } else {
+                    // Only show if the section's game type matches the active filter
+                    const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+                    if (activeFilter === 'all' || section.getAttribute('data-type') === activeFilter) {
+                        section.style.display = 'block';
+                    }
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

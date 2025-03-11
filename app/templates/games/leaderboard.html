@@ -4,6 +4,105 @@
 {% block head %}
 <!-- Include games-specific CSS -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/games.css') }}">
+<style>
+    .filter-controls {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+    }
+
+    [data-bs-theme="dark"] .filter-controls {
+        background-color: #343a40;
+    }
+
+    .personal-best {
+        background-color: rgba(95, 101, 212, 0.1);
+        border-left: 3px solid var(--primary);
+    }
+
+    .player-badge {
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+        line-height: 24px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: white;
+        font-size: 0.7rem;
+        margin-right: 5px;
+    }
+
+    .time-period-badge {
+        display: inline-block;
+        padding: 0.25em 0.5em;
+        font-size: 0.75em;
+        font-weight: 700;
+        border-radius: 20px;
+        color: white;
+        background-color: #4682B4;
+        margin-left: 5px;
+    }
+
+    .leaderboard-tabs {
+        margin-bottom: 15px;
+    }
+
+    .user-stats-card {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--primary);
+    }
+
+    [data-bs-theme="dark"] .user-stats-card {
+        background-color: #343a40;
+    }
+
+    .stats-header {
+        font-weight: 700;
+        margin-bottom: 10px;
+        font-size: 1.1rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+    }
+
+    [data-bs-theme="dark"] .stat-item {
+        background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+    }
+
+    .weekly-badge {
+        background-color: #57A773;
+    }
+
+    .all-time-badge {
+        background-color: #D76464;
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -22,61 +121,232 @@
         </div>
     </div>
 
-    <div class="row">
-        {% for game in games %}
-            <div class="col-lg-6 mb-4">
-                <div class="card leaderboard-card">
-                    <div class="leaderboard-header d-flex justify-content-between align-items-center">
-                        <h3 class="leaderboard-title">{{ game.title }}</h3>
-                        <!-- Use the play_game route with the correct game ID -->
-                        <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-sm btn-light">
-                            <i class="fas fa-play me-1"></i> Play
-                        </a>
+    <!-- User Stats Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="user-stats-card">
+                <div class="stats-header">
+                    <i class="fas fa-chart-line me-2"></i>
+                    Your Gaming Stats
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ user_stats.total_games_played }}</div>
+                        <div class="stat-label">Games Played</div>
                     </div>
-                    <div class="leaderboard-body">
-                        <div class="table-responsive">
-                            <table class="table leaderboard-table mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Rank</th>
-                                        <th>Player</th>
-                                        <th>Score</th>
-                                        <th>Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% if leaderboards[game.id] %}
-                                        {% for score in leaderboards[game.id] %}
-                                            <tr class="{% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %}">
-                                                <td>
-                                                    {% if loop.index <= 3 %}
-                                                        <span class="rank-label">{{ loop.index }}</span>
-                                                    {% else %}
-                                                        {{ loop.index }}
-                                                    {% endif %}
-                                                </td>
-                                                <td class="player-name">
-                                                    {{ score.user.username }}
-                                                    {% if score.user_id == current_user.id %}
-                                                        <small class="text-primary">(You)</small>
-                                                    {% endif %}
-                                                </td>
-                                                <td class="score-value">{{ score.score }}</td>
-                                                <td>{{ score.date.strftime('%b %d, %Y') }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="4" class="text-center py-3">No scores yet. Be the first to play!</td>
-                                        </tr>
-                                    {% endif %}
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ user_stats.total_score }}</div>
+                        <div class="stat-label">Total Score</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ user_stats.personal_bests }}</div>
+                        <div class="stat-label">Personal Bests</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ user_stats.top_rank }}</div>
+                        <div class="stat-label">Best Ranking</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ user_stats.weekly_played }}</div>
+                        <div class="stat-label">This Week</div>
                     </div>
                 </div>
             </div>
-        {% endfor %}
+        </div>
+    </div>
+
+    <!-- Filter Controls -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="filter-controls">
+                <form id="filterForm" method="GET" action="{{ url_for('games.leaderboard') }}" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="gameFilter" class="form-label">Game</label>
+                        <select id="gameFilter" name="game_id" class="form-select">
+                            <option value="">All Games</option>
+                            {% for game in games %}
+                                <option value="{{ game.id }}" {% if request.args.get('game_id') == game.id|string %}selected{% endif %}>{{ game.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="timeFilter" class="form-label">Time Period</label>
+                        <select id="timeFilter" name="period" class="form-select">
+                            <option value="all" {% if request.args.get('period') != 'weekly' %}selected{% endif %}>All Time</option>
+                            <option value="weekly" {% if request.args.get('period') == 'weekly' %}selected{% endif %}>This Week</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-filter me-1"></i> Apply Filters
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaderboard Tabs -->
+    <div class="leaderboard-tabs">
+        <ul class="nav nav-tabs" id="leaderboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-games-tab" data-bs-toggle="tab" data-bs-target="#all-games-tab-pane" type="button" role="tab">
+                    <i class="fas fa-trophy me-1"></i> Leaderboards
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="personal-bests-tab" data-bs-toggle="tab" data-bs-target="#personal-bests-tab-pane" type="button" role="tab">
+                    <i class="fas fa-star me-1"></i> Your Personal Bests
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="tab-content" id="leaderboardTabsContent">
+        <!-- All Games Leaderboard Tab -->
+        <div class="tab-pane fade show active" id="all-games-tab-pane" role="tabpanel" aria-labelledby="all-games-tab">
+            <div class="row">
+                {% for game in displayed_games %}
+                    <div class="col-lg-6 mb-4">
+                        <div class="card leaderboard-card">
+                            <div class="leaderboard-header d-flex justify-content-between align-items-center">
+                                <h3 class="leaderboard-title">
+                                    {{ game.title }}
+                                    {% if period == 'weekly' and game.weekly_reset %}
+                                        <span class="time-period-badge weekly-badge">Weekly</span>
+                                    {% elif period == 'all' %}
+                                        <span class="time-period-badge all-time-badge">All Time</span>
+                                    {% endif %}
+                                </h3>
+                                <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-sm btn-light">
+                                    <i class="fas fa-play me-1"></i> Play
+                                </a>
+                            </div>
+                            <div class="leaderboard-body">
+                                <div class="table-responsive">
+                                    <table class="table leaderboard-table mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Rank</th>
+                                                <th>Player</th>
+                                                <th>Score</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if leaderboards[game.id] %}
+                                                {% for score in leaderboards[game.id] %}
+                                                    <tr class="{% if loop.index == 1 %}rank-1{% elif loop.index == 2 %}rank-2{% elif loop.index == 3 %}rank-3{% endif %} {% if score.user_id == current_user.id %}personal-best{% endif %}">
+                                                        <td>
+                                                            {% if loop.index <= 3 %}
+                                                                <span class="rank-label">{{ loop.index }}</span>
+                                                            {% else %}
+                                                                {{ loop.index }}
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="player-name">
+                                                            {% if score.user_id == current_user.id %}
+                                                                <span class="player-badge"><i class="fas fa-user"></i></span>
+                                                            {% endif %}
+                                                            {{ score.user.username }}
+                                                            {% if score.user_id == current_user.id %}
+                                                                <small class="text-primary">(You)</small>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="score-value">{{ score.score }}</td>
+                                                        <td>{{ score.date.strftime('%b %d, %Y') }}</td>
+                                                    </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center py-3">No scores yet. Be the first to play!</td>
+                                                </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Personal Bests Tab -->
+        <div class="tab-pane fade" id="personal-bests-tab-pane" role="tabpanel" aria-labelledby="personal-bests-tab">
+            {% if personal_bests %}
+                <div class="row">
+                    {% for game_id, score in personal_bests.items() %}
+                        <div class="col-lg-6 mb-4">
+                            <div class="card leaderboard-card">
+                                <div class="leaderboard-header d-flex justify-content-between align-items-center">
+                                    <h3 class="leaderboard-title">{{ game_map[game_id].title }}</h3>
+                                    <a href="{{ url_for('games.play_game', game_id=game_id) }}" class="btn btn-sm btn-light">
+                                        <i class="fas fa-play me-1"></i> Play
+                                    </a>
+                                </div>
+                                <div class="leaderboard-body">
+                                    <div class="table-responsive">
+                                        <table class="table mb-0">
+                                            <tbody>
+                                                <tr>
+                                                    <th>Your Best Score</th>
+                                                    <td class="text-end fw-bold">{{ score.score }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Date Achieved</th>
+                                                    <td class="text-end">{{ score.date.strftime('%b %d, %Y') }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Rank</th>
+                                                    <td class="text-end">{{ score.rank }} of {{ score.total_players }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Score to Beat #1</th>
+                                                    <td class="text-end">
+                                                        {% if score.top_score %}
+                                                            {{ score.top_score }} <small>(+{{ score.top_score - score.score }})</small>
+                                                        {% else %}
+                                                            N/A
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Total Games Played</th>
+                                                    <td class="text-end">{{ score.games_played }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-trophy fa-3x text-muted mb-3"></i>
+                    <h4>No Personal Bests Yet</h4>
+                    <p>Play some games to establish your personal records!</p>
+                    <a href="{{ url_for('games.games') }}" class="btn btn-primary mt-2">Browse Games</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit form when filters change
+        document.getElementById('gameFilter').addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+
+        document.getElementById('timeFilter').addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+    });
+</script>
 {% endblock %}

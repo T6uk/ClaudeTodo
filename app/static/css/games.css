@@ -1,18 +1,20 @@
 /* app/static/css/games.css */
-/* Games page styling */
+/* Enhanced styling for games and game-related pages */
 
-/* Game card styling */
+/* ======== Game Card Styling ======== */
 .game-card {
     border-radius: 15px;
     overflow: hidden;
     transition: all 0.3s ease;
     height: 100%;
     margin-bottom: 20px;
+    border: none;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
 
 .game-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
 .game-thumbnail {
@@ -43,6 +45,7 @@
     font-weight: 600;
     text-transform: uppercase;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    z-index: 2;
 }
 
 .difficulty-easy {
@@ -93,7 +96,7 @@
     transition: all 0.3s ease;
 }
 
-/* Game section styling */
+/* ======== Game Section Styling ======== */
 .game-section {
     margin-bottom: 40px;
 }
@@ -117,7 +120,7 @@
     border-radius: 2px;
 }
 
-/* Game header */
+/* ======== Game Header ======== */
 .game-header {
     margin-bottom: 30px;
 }
@@ -158,11 +161,13 @@
     color: white;
 }
 
-/* Leaderboard styling */
+/* ======== Leaderboard Styling ======== */
 .leaderboard-card {
     border-radius: 15px;
     overflow: hidden;
     margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    border: none;
 }
 
 .leaderboard-header {
@@ -244,12 +249,19 @@
     color: #eee;
 }
 
-/* Game play styling */
+/* ======== Game Play Styling ======== */
 .game-play-container {
     border-radius: 15px;
     overflow: hidden;
     margin-bottom: 30px;
     position: relative;
+    padding: 20px;
+    background-color: #f8f9fa;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+[data-bs-theme="dark"] .game-play-container {
+    background-color: #343a40;
 }
 
 .game-canvas-container {
@@ -258,10 +270,12 @@
     overflow: hidden;
     background-color: #f8f9fa;
     border-radius: 15px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 [data-bs-theme="dark"] .game-canvas-container {
-    background-color: #343a40;
+    background-color: #212529;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
 }
 
 .game-canvas {
@@ -274,10 +288,13 @@
     margin-top: 20px;
     border-radius: 15px;
     background-color: #f8f9fa;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    text-align: center;
 }
 
 [data-bs-theme="dark"] .game-controls {
     background-color: #343a40;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .game-score-display {
@@ -300,10 +317,12 @@
     border-radius: 15px;
     margin-bottom: 20px;
     background-color: #f8f9fa;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 }
 
 [data-bs-theme="dark"] .game-instructions {
     background-color: #343a40;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .game-instructions h3 {
@@ -325,10 +344,12 @@
     padding: 20px;
     border-radius: 15px;
     background-color: #f8f9fa;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
 }
 
 [data-bs-theme="dark"] .game-highscores {
     background-color: #343a40;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
 }
 
 .game-highscores h3 {
@@ -362,16 +383,19 @@
     color: var(--primary);
 }
 
-/* Game end modal */
+/* ======== Game End Modal ======== */
 .game-end-modal .modal-content {
     border-radius: 15px;
     overflow: hidden;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 .game-end-modal .modal-header {
     background: var(--primary-gradient);
     color: white;
     border-bottom: none;
+    padding: 20px;
 }
 
 .game-end-modal .modal-body {
@@ -391,7 +415,87 @@
     margin-bottom: 20px;
 }
 
-/* Responsive adjustments */
+/* ======== Shared Game Styles ======== */
+.time-display {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.progress-bar {
+    height: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    background-color: #e9ecef;
+}
+
+.progress-value {
+    height: 100%;
+    border-radius: 5px;
+    background-color: var(--primary);
+    transition: width 1s linear;
+}
+
+/* ======== Game Stats Display ======== */
+.game-info {
+    display: flex;
+    justify-content: space-around;
+    margin: 20px auto;
+}
+
+.info-item {
+    text-align: center;
+    padding: 10px 15px;
+    border-radius: 10px;
+    background-color: #f8f9fa;
+    min-width: 80px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+[data-bs-theme="dark"] .info-item {
+    background-color: #343a40;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.info-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.info-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* ======== Personal Best Highlight ======== */
+.personal-best {
+    background-color: rgba(95, 101, 212, 0.1);
+    border-left: 3px solid var(--primary);
+}
+
+/* ======== Weekly Badge ======== */
+.weekly-badge {
+    background-color: #57A773;
+}
+
+.all-time-badge {
+    background-color: #D76464;
+}
+
+.time-period-badge {
+    display: inline-block;
+    padding: 0.25em 0.5em;
+    font-size: 0.75em;
+    font-weight: 700;
+    border-radius: 20px;
+    color: white;
+    margin-left: 5px;
+}
+
+/* ======== Responsive Adjustments ======== */
 @media (max-width: 992px) {
     .game-play-container {
         margin-bottom: 20px;
@@ -410,6 +514,14 @@
     .game-section-title {
         font-size: 1.5rem;
     }
+
+    .info-item {
+        padding: 8px 10px;
+    }
+
+    .info-value {
+        font-size: 1.2rem;
+    }
 }
 
 @media (max-width: 576px) {
@@ -420,5 +532,13 @@
     .filter-btn {
         padding: 6px 12px;
         font-size: 0.8rem;
+    }
+
+    .game-controls {
+        padding: 10px;
+    }
+
+    .game-end-score {
+        font-size: 2.5rem;
     }
 }
