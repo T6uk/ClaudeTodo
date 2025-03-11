@@ -39,22 +39,31 @@ def play_game(game_id):
     """Play a specific game"""
     game = Game.query.get_or_404(game_id)
 
-    # Get user's high score for this game
-    high_score = GameScore.query.filter_by(
-        user_id=current_user.id,
-        game_id=game_id
-    ).order_by(GameScore.score.desc()).first()
+    # Prevent potential infinite recursion by checking game template
+    try:
+        # Try to render the game template
+        template_path = f"games/play/{game.game_type}/{game.title.lower().replace(' ', '_')}.html"
 
-    # Get top scores for the game
-    top_scores = GameScore.query.filter_by(
-        game_id=game_id
-    ).order_by(GameScore.score.desc()).limit(10).all()
+        # Get user's high score for this game
+        high_score = GameScore.query.filter_by(
+            user_id=current_user.id,
+            game_id=game_id
+        ).order_by(GameScore.score.desc()).first()
 
-    return render_template(f"games/play/{game.game_type}/{game.title.lower().replace(' ', '_')}.html",
-                           title=game.title,
-                           game=game,
-                           high_score=high_score,
-                           top_scores=top_scores)
+        # Get top scores for the game
+        top_scores = GameScore.query.filter_by(
+            game_id=game_id
+        ).order_by(GameScore.score.desc()).limit(10).all()
+
+        return render_template(template_path,
+                               title=game.title,
+                               game=game,
+                               high_score=high_score,
+                               top_scores=top_scores)
+    except Exception as e:
+        # Log the error and redirect with a meaningful message
+        flash(f"Error loading game: {str(e)}", "danger")
+        return redirect(url_for("games.games"))
 
 
 @games_bp.route("/games/<int:game_id>/save-score", methods=["POST"])
