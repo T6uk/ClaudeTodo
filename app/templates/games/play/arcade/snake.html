@@ -1,7 +1,8 @@
 <!-- app/templates/games/play/arcade/snake.html -->
-{% extends "games/play/game_base.html" %}
+{% extends "base.html" %}
 
-{% block game_head %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/games.css') }}">
 <style>
     .game-board {
         width: 400px;
@@ -44,30 +45,62 @@
 </style>
 {% endblock %}
 
-{% block game_content %}
-<div class="game-board" id="gameBoard">
-    <div id="snake"></div>
+{% block content %}
+<div class="game-play-container">
+    <div class="row">
+        <div class="col-12 text-center mb-3">
+            <h2>Snake Game</h2>
+            <p>Use arrow keys to control the snake</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 text-center mb-3">
+            <div class="game-board" id="gameBoard">
+                <div id="snake"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 text-center">
+            <div class="game-controls">
+                <button id="startButton" class="btn btn-primary me-2">
+                    <i class="fas fa-play me-1"></i> Start
+                </button>
+                <button id="pauseButton" class="btn btn-warning me-2" disabled>
+                    <i class="fas fa-pause me-1"></i> Pause
+                </button>
+                <button id="resetButton" class="btn btn-secondary">
+                    <i class="fas fa-redo me-1"></i> Reset
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Game End Modal -->
+<div class="modal fade" id="gameEndModal" tabindex="-1" aria-labelledby="gameEndModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="gameEndModalLabel">Game Over</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="game-end-score" id="finalScore">0</div>
+                <div class="game-end-message" id="gameEndMessage">Well done!</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="resetGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
-{% block game_controls %}
-<div class="d-flex justify-content-center align-items-center">
-    <button id="startButton" class="btn btn-primary me-2">
-        <i class="fas fa-play me-1"></i> Start
-    </button>
-    <button id="pauseButton" class="btn btn-warning me-2" disabled>
-        <i class="fas fa-pause me-1"></i> Pause
-    </button>
-    <button id="resetButton" class="btn btn-secondary">
-        <i class="fas fa-redo me-1"></i> Reset
-    </button>
-</div>
-<div class="mt-3 text-center text-muted">
-    <span>Use Arrow Keys to control the snake</span>
-</div>
-{% endblock %}
-
-{% block game_scripts %}
+{% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Game constants
@@ -260,7 +293,8 @@
             pauseButton.disabled = true;
 
             // Show game over modal
-            endGame(score, 'Game Over! Your snake reached a length of ' + snake.length);
+            let message = `Game Over! Your snake reached a length of ${snake.length}`;
+            endGame(score, message);
         }
 
         // Handle keyboard input
@@ -311,5 +345,27 @@
         // Make resetGame function available globally
         window.resetGame = resetGame;
     });
+
+    // Utility functions for score and game end (these would typically be in a separate file)
+    function updateScore(score) {
+        document.getElementById('finalScore').textContent = score;
+    }
+
+    function endGame(score, message) {
+        document.getElementById('finalScore').textContent = score;
+        document.getElementById('gameEndMessage').textContent = message;
+
+        const gameEndModal = new bootstrap.Modal(document.getElementById('gameEndModal'));
+        gameEndModal.show();
+
+        // Optional: Send score to server
+        fetch('/games/score', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `game_id={{ game.id }}&score=${score}`
+        });
+    }
 </script>
 {% endblock %}
