@@ -70,8 +70,8 @@ class Meal(db.Model):
             'fat': self.fat,
             'meal_time': self.meal_time.isoformat() if self.meal_time else None,
             'notes': self.notes,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'user_id': self.user_id,
             'username': self.user.username
         }

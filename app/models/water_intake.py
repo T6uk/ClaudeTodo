@@ -43,6 +43,6 @@ class WaterIntake(db.Model):
             'id': self.id,
             'amount': self.amount,
             'date': self.date.isoformat() if self.date else None,
-            'created_at': self.created_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
             'user_id': self.user_id
         }

@@ -57,6 +57,7 @@ class Workout(db.Model):
 
     def to_dict(self):
         """Convert workout to dictionary"""
+        # Ensure all datetime fields are properly converted to ISO format strings
         return {
             'id': self.id,
             'title': self.title,
@@ -66,8 +67,8 @@ class Workout(db.Model):
             'calories_burned': self.calories_burned,
             'notes': self.notes,
             'date': self.date.isoformat() if self.date else None,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'user_id': self.user_id,
             'username': self.user.username
         }

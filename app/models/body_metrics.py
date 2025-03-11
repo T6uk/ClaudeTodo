@@ -81,7 +81,7 @@ class BodyMetrics(db.Model):
             'thighs': self.thighs,
             'date': self.date.isoformat() if self.date else None,
             'notes': self.notes,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'user_id': self.user_id
         }
