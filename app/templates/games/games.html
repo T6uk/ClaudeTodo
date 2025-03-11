@@ -1,0 +1,154 @@
+<!-- app/templates/games/games.html -->
+{% extends "base.html" %}
+
+{% block head %}
+<!-- Include games-specific CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/games.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>
+                <i class="fas fa-gamepad me-2"></i>
+                Games
+            </h1>
+            <p class="lead">Play games and compete for high scores</p>
+        </div>
+    </div>
+
+    <!-- Game filtering -->
+    <div class="game-header">
+        <div class="games-filter">
+            <button class="btn btn-outline-primary filter-btn active" data-filter="all">All Games</button>
+            {% for game_type in games_by_type.keys() %}
+                <button class="btn btn-outline-primary filter-btn" data-filter="{{ game_type }}">
+                    {{ game_type.capitalize() }}
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Featured games section -->
+    <div class="game-section">
+        <h2 class="game-section-title">Featured Games</h2>
+        <div class="row">
+            {% for game in all_games %}
+                {% if loop.index <= 3 %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card game-card">
+                            <div class="game-thumbnail">
+                                {% if game.thumbnail %}
+                                    <img src="{{ game.thumbnail }}" alt="{{ game.title }}">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100">
+                                        <i class="fas fa-gamepad fa-3x text-white"></i>
+                                    </div>
+                                {% endif %}
+                                {% if game.difficulty %}
+                                    <span class="difficulty-badge difficulty-{{ game.difficulty.lower() }}">
+                                        {{ game.difficulty }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="game-info">
+                                <h3 class="game-title">{{ game.title }}</h3>
+                                <div class="game-type">{{ game.game_type }}</div>
+                                <p class="game-description">{{ game.description|truncate(80) }}</p>
+                                <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-primary play-btn">
+                                    <i class="fas fa-play me-1"></i> Play Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Game sections by type -->
+    {% for game_type, games in games_by_type.items() %}
+        <div class="game-section game-type-section" data-type="{{ game_type }}">
+            <h2 class="game-section-title">{{ game_type.capitalize() }} Games</h2>
+            <div class="row">
+                {% for game in games %}
+                    <div class="col-md-4 col-lg-3 mb-4">
+                        <div class="card game-card">
+                            <div class="game-thumbnail">
+                                {% if game.thumbnail %}
+                                    <img src="{{ game.thumbnail }}" alt="{{ game.title }}">
+                                {% else %}
+                                    <div class="d-flex align-items-center justify-content-center h-100">
+                                        <i class="fas fa-gamepad fa-3x text-white"></i>
+                                    </div>
+                                {% endif %}
+                                {% if game.difficulty %}
+                                    <span class="difficulty-badge difficulty-{{ game.difficulty.lower() }}">
+                                        {{ game.difficulty }}
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div class="game-info">
+                                <h3 class="game-title">{{ game.title }}</h3>
+                                <div class="game-type">{{ game.game_type }}</div>
+                                <p class="game-description">{{ game.description|truncate(60) }}</p>
+                                <a href="{{ url_for('games.play_game', game_id=game.id) }}" class="btn btn-primary play-btn">
+                                    <i class="fas fa-play me-1"></i> Play Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Leaderboard section -->
+    <div class="game-section">
+        <h2 class="game-section-title">Leaderboards</h2>
+        <p class="mb-4">Compete with other players for the highest scores!</p>
+        <a href="{{ url_for('games.leaderboard') }}" class="btn btn-outline-primary">
+            <i class="fas fa-trophy me-1"></i> View All Leaderboards
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Game filtering functionality
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const gameSections = document.querySelectorAll('.game-type-section');
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+
+                if (filter === 'all') {
+                    // Show all sections
+                    gameSections.forEach(section => {
+                        section.style.display = 'block';
+                    });
+                } else {
+                    // Show only matching section
+                    gameSections.forEach(section => {
+                        if (section.getAttribute('data-type') === filter) {
+                            section.style.display = 'block';
+                        } else {
+                            section.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

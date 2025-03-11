@@ -1,0 +1,301 @@
+<!-- app/templates/games/play/puzzle/math_challenge.html -->
+{% extends "games/play/game_base.html" %}
+
+{% block game_head %}
+<style>
+    .math-game-container {
+        max-width: 500px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    .time-display {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    .progress-bar {
+        height: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        background-color: #e9ecef;
+    }
+
+    .progress-value {
+        height: 100%;
+        border-radius: 5px;
+        background-color: var(--primary);
+        transition: width 1s linear;
+    }
+
+    .math-problem {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 30px 0;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .answer-input {
+        max-width: 200px;
+        margin: 0 auto 20px;
+        text-align: center;
+        font-size: 1.5rem;
+        padding: 10px;
+        border-radius: 10px;
+        border: 2px solid #ced4da;
+    }
+
+    .answer-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.25rem rgba(161, 178, 212, 0.25);
+        outline: none;
+    }
+
+    .feedback {
+        font-size: 1.2rem;
+        font-weight: 600;
+        height: 30px;
+        margin-bottom: 20px;
+    }
+
+    .feedback-correct {
+        color: #57A773;
+    }
+
+    .feedback-incorrect {
+        color: #D76464;
+    }
+</style>
+{% endblock %}
+
+{% block game_content %}
+<div class="math-game-container">
+    <div class="time-display">
+        Time: <span id="timeDisplay">60</span>s
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-value" id="progressBar" style="width: 100%;"></div>
+    </div>
+
+    <div class="math-problem" id="mathProblem">
+        Ready?
+    </div>
+
+    <input type="number" class="answer-input form-control" id="answerInput" placeholder="Answer" disabled>
+
+    <div class="feedback" id="feedback"></div>
+</div>
+{% endblock %}
+
+{% block game_controls %}
+<button id="startButton" class="btn btn-primary me-2">
+    <i class="fas fa-play me-1"></i> Start
+</button>
+<button id="resetButton" class="btn btn-secondary">
+    <i class="fas fa-redo me-1"></i> Reset
+</button>
+{% endblock %}
+
+{% block game_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Game variables
+        const GAME_TIME = 60; // seconds
+        const OPERATORS = ['+', '-', '*'];
+        const MAX_NUMBER = 20;
+
+        let score = 0;
+        let timeLeft = GAME_TIME;
+        let gameInterval;
+        let gameActive = false;
+        let currentAnswer = null;
+
+        // DOM elements
+        const mathProblem = document.getElementById('mathProblem');
+        const answerInput = document.getElementById('answerInput');
+        const feedback = document.getElementById('feedback');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const startButton = document.getElementById('startButton');
+        const resetButton = document.getElementById('resetButton');
+
+        // Start game
+        function startGame() {
+            // Reset variables
+            score = 0;
+            timeLeft = GAME_TIME;
+            gameActive = true;
+
+            // Update display
+            updateScore(0);
+            timeDisplay.textContent = timeLeft;
+            progressBar.style.width = '100%';
+            feedback.textContent = '';
+
+            // Enable input
+            answerInput.disabled = false;
+            answerInput.value = '';
+            answerInput.focus();
+
+            // Disable start button
+            startButton.disabled = true;
+
+            // Create first problem
+            newMathProblem();
+
+            // Start timer
+            gameInterval = setInterval(updateTimer, 1000);
+        }
+
+        // Generate new math problem
+        function newMathProblem() {
+            if (!gameActive) return;
+
+            // Generate random numbers
+            const num1 = Math.floor(Math.random() * MAX_NUMBER) + 1;
+            const num2 = Math.floor(Math.random() * MAX_NUMBER) + 1;
+
+            // Select random operator
+            const operatorIndex = Math.floor(Math.random() * OPERATORS.length);
+            const operator = OPERATORS[operatorIndex];
+
+            // Calculate correct answer
+            let answer;
+            switch (operator) {
+                case '+':
+                    answer = num1 + num2;
+                    break;
+                case '-':
+                    // Make sure subtraction doesn't result in negative
+                    if (num1 < num2) {
+                        answer = num2 - num1;
+                        mathProblem.textContent = `${num2} ${operator} ${num1} = ?`;
+                    } else {
+                        answer = num1 - num2;
+                        mathProblem.textContent = `${num1} ${operator} ${num2} = ?`;
+                    }
+                    return; // We already set the problem text
+                case '*':
+                    answer = num1 * num2;
+                    break;
+            }
+
+            // Update problem display
+            mathProblem.textContent = `${num1} ${operator} ${num2} = ?`;
+
+            // Store correct answer
+            currentAnswer = answer;
+        }
+
+        // Handle answer submission
+        function checkAnswer() {
+            if (!gameActive || currentAnswer === null) return;
+
+            const userAnswer = parseInt(answerInput.value);
+
+            if (isNaN(userAnswer)) {
+                feedback.textContent = 'Please enter a number';
+                feedback.className = 'feedback feedback-incorrect';
+                return;
+            }
+
+            if (userAnswer === currentAnswer) {
+                // Correct answer
+                score += 10;
+                updateScore(score);
+
+                feedback.textContent = 'Correct!';
+                feedback.className = 'feedback feedback-correct';
+
+                // Clear input and create new problem
+                answerInput.value = '';
+                setTimeout(() => {
+                    feedback.textContent = '';
+                    newMathProblem();
+                }, 500);
+            } else {
+                // Incorrect answer
+                feedback.textContent = `Incorrect! Answer was ${currentAnswer}`;
+                feedback.className = 'feedback feedback-incorrect';
+
+                // Clear input and create new problem
+                answerInput.value = '';
+                setTimeout(() => {
+                    feedback.textContent = '';
+                    newMathProblem();
+                }, 1000);
+            }
+        }
+
+        // Update timer
+        function updateTimer() {
+            timeLeft--;
+            timeDisplay.textContent = timeLeft;
+            progressBar.style.width = (timeLeft / GAME_TIME * 100) + '%';
+
+            if (timeLeft <= 0) {
+                endGameTime();
+            }
+        }
+
+        // End game (time up)
+        function endGameTime() {
+            clearInterval(gameInterval);
+            gameActive = false;
+
+            mathProblem.textContent = 'Time Up!';
+            answerInput.disabled = true;
+
+            startButton.disabled = false;
+
+            // Show game end modal
+            let message = '';
+            if (score >= 200) message = 'Math genius!';
+            else if (score >= 100) message = 'Good job!';
+            else message = 'Keep practicing your math skills!';
+
+            endGame(score, message);
+        }
+
+        // Reset game
+        function resetGame() {
+            clearInterval(gameInterval);
+            gameActive = false;
+
+            score = 0;
+            timeLeft = GAME_TIME;
+            currentAnswer = null;
+
+            updateScore(0);
+            timeDisplay.textContent = timeLeft;
+            progressBar.style.width = '100%';
+
+            mathProblem.textContent = 'Ready?';
+            answerInput.disabled = true;
+            answerInput.value = '';
+            feedback.textContent = '';
+
+            startButton.disabled = false;
+        }
+
+        // Add event listeners
+        startButton.addEventListener('click', startGame);
+        resetButton.addEventListener('click', resetGame);
+
+        answerInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // Make resetGame function available globally
+        window.resetGame = resetGame;
+    });
+</script>
+{% endblock %}

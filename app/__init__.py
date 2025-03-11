@@ -54,6 +54,7 @@ def create_app(config_name=None):
     from app.routes.calendar import calendar_bp
     from app.routes.challenge import challenge_bp
     from app.routes.health import health_bp
+    from app.routes.games import games_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -61,6 +62,7 @@ def create_app(config_name=None):
     app.register_blueprint(calendar_bp)
     app.register_blueprint(challenge_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(games_bp)
 
     # Register error handlers
     register_error_handlers(app)

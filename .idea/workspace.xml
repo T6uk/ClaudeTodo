@@ -5,8 +5,24 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="new design">
+      <change afterPath="$PROJECT_DIR$/app/models/game.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/game_score.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/games.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/static/css/games.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/static/images/games" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/games/games.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/games/leaderboard.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/games/play/arcade/snake.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/games/play/game_base.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/games/play/puzzle/color_match.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/games/play/puzzle/math_challenge.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/init_games.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/challenge/challenges.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/challenge/challenges.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/templates/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/site.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/site.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +99,8 @@
       <workItem from="1741463874831" duration="507000" />
       <workItem from="1741509867248" duration="8560000" />
       <workItem from="1741530547567" duration="603000" />
-      <workItem from="1741671046090" duration="1663000" />
+      <workItem from="1741671046090" duration="2557000" />
+      <workItem from="1741692515555" duration="3604000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -213,7 +230,31 @@
       <option name="project" value="LOCAL" />
       <updated>1741672387508</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="new design">
+      <option name="closed" value="true" />
+      <created>1741673002721</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1741673002721</updated>
+    </task>
+    <task id="LOCAL-00018" summary="new design">
+      <option name="closed" value="true" />
+      <created>1741693796075</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1741693796075</updated>
+    </task>
+    <task id="LOCAL-00019" summary="new design">
+      <option name="closed" value="true" />
+      <created>1741694924768</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1741694924768</updated>
+    </task>
+    <option name="localTasksCounter" value="20" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
