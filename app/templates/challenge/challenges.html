@@ -847,6 +847,11 @@
                                         <small class="form-text text-muted">You will be automatically added as a participant.</small>
                                     </div>
                                 </div>
+                                <div class="row d-none">
+                                    <div class="col-md-12 mb-3">
+                                        {{ form.status(value="active") }}
+                                    </div>
+                                </div>
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                                     {{ form.submit(class="btn btn-primary") }}
                                 </div>
@@ -1084,8 +1089,7 @@
             </div>
             <div class="modal-body">
                 <form id="updateProgressForm" method="POST">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
+                    {{ form.hidden_tag() }}
                     <p>Current progress for: <strong id="progressChallengeTitle"></strong></p>
 
                     <div class="mb-3">
