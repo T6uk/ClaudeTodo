@@ -1,0 +1,437 @@
+/* Enhanced Cat animation styling */
+.navbar-cat-container {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.cat_wrapper {
+  position: absolute;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1000;
+  transition: bottom 0.5s ease;
+}
+
+.cat {
+  position: absolute;
+  bottom: 5px;
+  left: 100px;
+  height: 22px;
+  width: 44px;
+  transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center;
+  background-color: transparent;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+}
+
+/* body */
+.body {
+  position: absolute;
+  height: 22px;
+  width: 44px;
+  pointer-events: none;
+}
+
+.face_left .body {
+  animation: turn_body_left forwards 0.5s;
+}
+
+@keyframes turn_body_left {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(0.5, 1); }
+}
+
+.face_right .body {
+  animation: turn_body_right forwards 0.5s;
+}
+
+@keyframes turn_body_right {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(0.5, 1); }
+}
+
+/* head */
+.cat_head {
+  position: absolute;
+  height: 28px;
+  width: 35px;
+  right: -7px;
+  top: -22px;
+  transition: all 0.4s ease;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.first_pose .cat_head,
+.face_left .cat_head{
+  right: 16px;
+}
+
+/* tail */
+.tail {
+  position: absolute;
+  top: -18px;
+  height: 26px;
+  width: 11px;
+  animation: tail_motion forwards 1.5s infinite;
+  transform-origin: bottom right;
+  pointer-events: none;
+}
+
+@keyframes tail_motion {
+  0%,100% {
+    left: -3px;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    left: -8px;
+    transform: rotate(-50deg) scale(-1,1);
+  }
+}
+
+.first_pose .tail,
+.face_left .tail {
+  left: 33px;
+  animation: tail_motion_alt forwards 1.5s infinite;
+}
+
+@keyframes tail_motion_alt {
+  0%,100% {
+    left: 33px;
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    left: 28px;
+    transform: rotate(50deg) scale(-1,1);
+  }
+}
+
+/* legs */
+.leg {
+  position: absolute;
+  height: 14px;
+  width: 8px;
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+.front_legs,
+.back_legs {
+  position: absolute;
+  height: 22px;
+  transition: all 0.4s ease;
+  pointer-events: none;
+}
+
+.front_legs {
+  width: 22px;
+  right: 0;
+}
+
+.back_legs {
+  width: 18px;
+  left: 0;
+}
+
+.face_left .leg svg {
+  transform: scale(-1,1);
+}
+
+.face_right .front_legs { right: 0; }
+.first_pose .front_legs,
+.face_left .front_legs { right: 22px; }
+
+.face_right .back_legs { left: 0; }
+.first_pose .back_legs,
+.face_left .back_legs { left: 24px; }
+
+.one,
+.three  {
+  bottom: -11px;
+  right: 0;
+}
+
+.two,
+.four {
+  bottom: -11px;
+  left: 0px;
+}
+
+.one.walk,
+.three.walk {
+  animation: infinite 0.25s walk;
+}
+
+.two.walk,
+.four.walk {
+  animation: infinite 0.25s walk_alt;
+}
+
+@keyframes walk {
+  0%,100% {transform: rotate(-15deg);}
+  50% {transform: rotate(15deg);}
+}
+
+@keyframes walk_alt {
+  0%,100% {transform: rotate(15deg);}
+  50% {transform: rotate(-15deg);}
+}
+
+/* Running animation - faster leg movement */
+.one.run,
+.three.run {
+  animation: infinite 0.12s run;
+}
+
+.two.run,
+.four.run {
+  animation: infinite 0.12s run_alt;
+}
+
+@keyframes run {
+  0%,100% {transform: rotate(-25deg);}
+  50% {transform: rotate(25deg);}
+}
+
+@keyframes run_alt {
+  0%,100% {transform: rotate(25deg);}
+  50% {transform: rotate(-25deg);}
+}
+
+/* jump */
+.cat_wrapper.jump .one {
+  animation: infinite 0.25s walk;
+}
+
+.cat_wrapper.jump .two {
+  animation: infinite 0.25s walk_alt;
+}
+
+.cat_wrapper.jump .three,
+.cat_wrapper.jump .four {
+  animation: none;
+}
+
+.cat_wrapper.jump .cat.face_right .back_legs {
+  transform-origin: center;
+  transform: rotate(50deg);
+}
+
+.cat_wrapper.jump .cat.face_left .back_legs {
+  transform-origin: center;
+  transform: rotate(-50deg);
+}
+
+.cat_wrapper.jump .cat.face_right .front_legs {
+  transform-origin: center;
+  transform: rotate(-60deg);
+}
+
+.cat_wrapper.jump .cat.face_left .front_legs {
+  transform-origin: center;
+  transform: rotate(60deg);
+}
+
+.cat_wrapper.jump{
+  animation: jump forwards 0.8s;
+}
+
+@keyframes jump {
+  0%, 100%  {bottom: 0px;}
+  50% {bottom: 50px;}
+}
+
+.jump .face_left{
+  animation: forwards 0.4s body_stand_left;
+  transform-origin: right bottom;
+}
+
+.jump .face_right{
+  animation: forwards 0.4s body_stand_right;
+  transform-origin: left bottom;
+}
+
+@keyframes body_stand_right {
+  0% {transform: rotate(0deg);}
+  100% {transform: rotate(-45deg);}
+}
+
+@keyframes body_stand_left {
+  0% {transform: rotate(0deg);}
+  100% {transform: rotate(45deg);}
+}
+
+/* Sleeping animation */
+.cat_wrapper.sleeping .cat {
+  transition: all 0.5s ease;
+}
+
+.cat_wrapper.sleeping .cat_head {
+  top: -15px;
+  transition: all 0.5s ease;
+}
+
+.cat_wrapper.sleeping .tail {
+  animation: sleeping_tail 3s infinite;
+}
+
+@keyframes sleeping_tail {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(-10deg); }
+}
+
+.cat_wrapper.sleeping .leg {
+  animation: none !important;
+}
+
+/* ZZZ animation for sleeping cat */
+.zzz {
+  position: absolute;
+  top: -35px;
+  left: 15px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 3px rgba(0,0,0,0.5);
+  opacity: 0;
+  animation: zzz-animation 3s infinite;
+}
+
+@keyframes zzz-animation {
+  0%, 100% { opacity: 0; transform: translateY(0) scale(0.8); }
+  50% { opacity: 1; transform: translateY(-10px) scale(1); }
+}
+
+/* Eating animation */
+.cat_wrapper.eating .cat_head {
+  animation: eating_head 0.5s infinite;
+}
+
+@keyframes eating_head {
+  0%, 100% { top: -22px; }
+  50% { top: -19px; }
+}
+
+.cat_wrapper.eating .tail {
+  animation: eating_tail 2s infinite;
+}
+
+@keyframes eating_tail {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(20deg); }
+}
+
+/* Food bowl */
+.food-bowl {
+  position: absolute;
+  bottom: 0;
+  width: 24px;
+  height: 10px;
+  background-color: #ff9500;
+  border-radius: 10px 10px 5px 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.cat_wrapper.eating .food-bowl {
+  opacity: 1;
+}
+
+/* Grooming animation */
+.cat_wrapper.grooming .cat_head {
+  animation: grooming_head 0.8s infinite;
+}
+
+@keyframes grooming_head {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(-15deg); }
+}
+
+.cat_wrapper.grooming .tail {
+  animation: grooming_tail 1.5s infinite;
+}
+
+@keyframes grooming_tail {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(30deg); }
+}
+
+/* Cat eyes blinking */
+.cat .eyes {
+  animation: blink 4s infinite;
+}
+
+@keyframes blink {
+  0%, 96%, 100% { transform: scaleY(1); }
+  97%, 99% { transform: scaleY(0.1); }
+}
+
+.cat svg {
+  height: 100%;
+  width: 100%;
+}
+
+.cat polygon.eyes {
+  fill: var(--primary);
+  transition: fill 0.3s ease;
+}
+
+.cat polygon,
+.cat path {
+  fill: white;
+}
+
+/* Make cat more visible in dark mode */
+[data-bs-theme="dark"] .cat polygon,
+[data-bs-theme="dark"] .cat path {
+  fill: #f0f0f0;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.5));
+}
+
+/* Cat plays with mouse cursor */
+.cat:hover .cat_head {
+  top: -25px;
+  transition: top 0.2s ease;
+}
+
+/* Make the cat head move slightly up and down while walking */
+.cat.face_right .cat_head,
+.cat.face_left .cat_head {
+  animation: head_bob 0.5s infinite alternate;
+}
+
+@keyframes head_bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-2px); }
+}
+
+/* Occasional ear wiggle */
+.cat_wrapper.attentive .cat_head {
+  animation: ear_wiggle 0.3s;
+}
+
+@keyframes ear_wiggle {
+  0%, 100% { transform: rotateZ(0); }
+  25% { transform: rotateZ(-5deg); }
+  75% { transform: rotateZ(5deg); }
+}
+
+/* Cat gets excited when near edge of container */
+.cat_wrapper.excited .tail {
+  animation: tail_excited 0.2s infinite;
+}
+
+@keyframes tail_excited {
+  0%, 100% { transform: rotate(0); }
+  50% { transform: rotate(-30deg); }
+}

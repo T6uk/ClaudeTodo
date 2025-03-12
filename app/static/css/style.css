@@ -25,7 +25,7 @@ main {
 
 /* Custom theme colors */
 :root {
-    --primary: #A1B2D4;
+    --primary: #0f55e1;
     --primary-hover: #B7C9E8;
     --primary-light: rgba(161, 178, 212, 0.25);
     --primary-dark: #8090B2;
@@ -50,7 +50,7 @@ main {
 }
 
 [data-bs-theme="dark"] {
-    --primary: #00ADB5;
+    --primary: #f3ef0c;
     --primary-hover: #00C2CC;
     --primary-light: rgba(0, 173, 181, 0.25);
     --primary-dark: #008F96;
