@@ -1,0 +1,113 @@
+<div class="tab-pane fade" id="metrics-tab-pane" role="tabpanel" aria-labelledby="metrics-tab" tabindex="0">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">
+            <i class="fas fa-weight me-2"></i>
+            Body Measurements
+        </h4>
+        <div>
+            <a href="{{ url_for('health.weekly_report') }}" class="btn btn-success me-2">
+                <i class="fas fa-chart-line me-1"></i> Weekly Report
+            </a>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMetricsModal">
+                <i class="fas fa-plus me-1"></i> Add Measurements
+            </button>
+        </div>
+    </div>
+
+    <!-- Weight Chart -->
+    <div class="health-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Weight Trend</h5>
+        </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <canvas id="weightChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="health-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Measurement History</h5>
+                </div>
+                <div class="card-body">
+                    {% if metrics %}
+                        <div class="metrics-tracker">
+                            {% for metric in metrics %}
+                                <div class="metrics-entry">
+                                    <div class="metrics-date">
+                                        {{ metric.date.strftime('%b %d, %Y') }}
+                                    </div>
+                                    <div class="metrics-value">
+                                        {{ metric.weight|round(1) if metric.weight else '--' }} <span>kg</span>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary me-1 view-metrics-btn"
+                                                data-metrics-id="{{ metric.id }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#viewMetricsModal">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary me-1 edit-metrics-btn"
+                                                data-metrics-id="{{ metric.id }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#editMetricsModal">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger delete-metrics-btn"
+                                                data-metrics-id="{{ metric.id }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#deleteMetricsModal">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-health-state">
+                            <i class="fas fa-weight text-muted"></i>
+                            <h4>No measurements recorded</h4>
+                            <p>Start tracking your body measurements.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="health-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Health Tips</h5>
+                </div>
+                <div class="card-body">
+                    <div class="health-tip">
+                        <div class="health-tip-title">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            Weigh Yourself Consistently
+                        </div>
+                        <p class="mb-0">For the most accurate tracking, weigh yourself at the same time of day (preferably in the morning) wearing similar clothing.</p>
+                    </div>
+
+                    <div class="health-tip">
+                        <div class="health-tip-title">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            Focus on Trends, Not Daily Fluctuations
+                        </div>
+                        <p class="mb-0">Weight can fluctuate up to 5 pounds day-to-day due to water retention, food, and other factors. Focus on the overall trend over weeks.</p>
+                    </div>
+
+                    <div class="health-tip">
+                        <div class="health-tip-title">
+                            <i class="fas fa-lightbulb me-1"></i>
+                            Track More Than Just Weight
+                        </div>
+                        <p class="mb-0">Body measurements like waist, chest, and thighs can often show progress even when the scale doesn't.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

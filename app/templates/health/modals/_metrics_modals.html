@@ -1,0 +1,262 @@
+<!-- Add Body Metrics Modal -->
+<div class="modal fade" id="addMetricsModal" tabindex="-1" aria-labelledby="addMetricsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addMetricsModalLabel">
+                    <i class="fas fa-weight me-2"></i>
+                    Add Body Measurements
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newMetricsForm" method="POST" action="{{ url_for('health.create_metrics') }}">
+                    {{ metrics_form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.weight.label(class="form-label") }}
+                            {{ metrics_form.weight(class="form-control", placeholder="Weight in kg") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.height.label(class="form-label") }}
+                            {{ metrics_form.height(class="form-control", placeholder="Height in cm") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.body_fat.label(class="form-label") }}
+                            {{ metrics_form.body_fat(class="form-control", placeholder="Body fat percentage") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.date.label(class="form-label") }}
+                            {{ metrics_form.date(class="form-control", type="datetime-local") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.waist.label(class="form-label") }}
+                            {{ metrics_form.waist(class="form-control", placeholder="Waist in cm") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.chest.label(class="form-label") }}
+                            {{ metrics_form.chest(class="form-control", placeholder="Chest in cm") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.arms.label(class="form-label") }}
+                            {{ metrics_form.arms(class="form-control", placeholder="Arms in cm") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.thighs.label(class="form-label") }}
+                            {{ metrics_form.thighs(class="form-control", placeholder="Thighs in cm") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ metrics_form.notes.label(class="form-label") }}
+                        {{ metrics_form.notes(class="form-control", rows="2", placeholder="Optional notes about your measurements") }}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="newMetricsForm" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Save Measurements
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Metrics Modal -->
+<div class="modal fade" id="viewMetricsModal" tabindex="-1" aria-labelledby="viewMetricsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewMetricsModalLabel">
+                    <i class="fas fa-weight me-2"></i>
+                    Body Measurements
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-4">
+                    <div class="col-12 text-center">
+                        <h5 class="mb-3">Measurements for <span id="viewMetricsDate"></span></h5>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Body Composition</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">Weight:</span>
+                                    <span id="viewMetricsWeight" class="nutrition-info-value"></span>
+                                </div>
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">Height:</span>
+                                    <span id="viewMetricsHeight" class="nutrition-info-value"></span>
+                                </div>
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">BMI:</span>
+                                    <span id="viewMetricsBMI" class="nutrition-info-value"></span>
+                                </div>
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">Body Fat:</span>
+                                    <span id="viewMetricsBodyFat" class="nutrition-info-value"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Body Measurements</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">Waist:</span>
+                                    <span id="viewMetricsWaist" class="nutrition-info-value"></span>
+                                </div>
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">Chest:</span>
+                                    <span id="viewMetricsChest" class="nutrition-info-value"></span>
+                                </div>
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">Arms:</span>
+                                    <span id="viewMetricsArms" class="nutrition-info-value"></span>
+                                </div>
+                                <div class="nutrition-info">
+                                    <span class="nutrition-info-label">Thighs:</span>
+                                    <span id="viewMetricsThighs" class="nutrition-info-value"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <h5>Notes</h5>
+                    <p id="viewMetricsNotes" class="border p-3 rounded bg-light">No notes provided.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="editFromViewMetricsBtn">
+                    <i class="fas fa-edit me-1"></i> Edit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Metrics Modal -->
+<div class="modal fade" id="editMetricsModal" tabindex="-1" aria-labelledby="editMetricsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMetricsModalLabel">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Body Measurements
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editMetricsForm" method="POST">
+                    {{ metrics_form.hidden_tag() }}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.weight.label(class="form-label") }}
+                            {{ metrics_form.weight(class="form-control", id="editMetricsWeight") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.height.label(class="form-label") }}
+                            {{ metrics_form.height(class="form-control", id="editMetricsHeight") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.body_fat.label(class="form-label") }}
+                            {{ metrics_form.body_fat(class="form-control", id="editMetricsBodyFat") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.date.label(class="form-label") }}
+                            {{ metrics_form.date(class="form-control", type="datetime-local", id="editMetricsDate") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.waist.label(class="form-label") }}
+                            {{ metrics_form.waist(class="form-control", id="editMetricsWaist") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.chest.label(class="form-label") }}
+                            {{ metrics_form.chest(class="form-control", id="editMetricsChest") }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.arms.label(class="form-label") }}
+                            {{ metrics_form.arms(class="form-control", id="editMetricsArms") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ metrics_form.thighs.label(class="form-label") }}
+                            {{ metrics_form.thighs(class="form-control", id="editMetricsThighs") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ metrics_form.notes.label(class="form-label") }}
+                        {{ metrics_form.notes(class="form-control", rows="2", id="editMetricsNotes") }}
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="updateMetricsBtn">
+                    <i class="fas fa-save me-1"></i> Save Changes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Metrics Modal -->
+<div class="modal fade" id="deleteMetricsModal" tabindex="-1" aria-labelledby="deleteMetricsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteMetricsModalLabel">
+                    <i class="fas fa-trash-alt me-2"></i>
+                    Delete Measurements
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete these body measurements?</p>
+                <p><strong>Date:</strong> <span id="deleteMetricsDate"></span></p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-2"></i> This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteMetricsForm" method="POST">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt me-1"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

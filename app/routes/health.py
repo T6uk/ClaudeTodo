@@ -16,6 +16,7 @@ from app.forms.health_forms import WorkoutForm, MealForm, BodyMetricsForm, Water
 
 health_bp = Blueprint("health", __name__)
 
+
 def safe_iso_format(dt):
     """Safely convert a datetime to ISO format string"""
     if dt is None:
@@ -26,6 +27,7 @@ def safe_iso_format(dt):
         return dt.isoformat()
     except AttributeError:
         return str(dt)
+
 
 def safe_datetime_parse(dt_str):
     """Safely parse a datetime string to a datetime object"""
@@ -42,6 +44,7 @@ def safe_datetime_parse(dt_str):
     except (ValueError, AttributeError):
         # Fall back to datetime.utcnow if parsing fails
         return datetime.utcnow()
+
 
 @health_bp.route("/health")
 @login_required
@@ -77,7 +80,7 @@ def health():
         today = datetime.utcnow().date()
         water_today = WaterIntake.query.filter(
             WaterIntake.user_id == current_user.id,
-            func.date(WaterIntake.date) == today  # Use func.date instead of cast
+            func.date(WaterIntake.date) == today
         ).all()
 
         # Calculate total water intake for today
@@ -109,7 +112,8 @@ def health():
         nutrition_stats = {
             'total_meals': len(meals),
             'total_calories': sum(m.calories for m in meals if m.calories is not None),
-            'avg_calories_per_day': round(sum(m.calories for m in meals if m.calories is not None) / 30, 1) if meals else 0,
+            'avg_calories_per_day': round(sum(m.calories for m in meals if m.calories is not None) / 30,
+                                          1) if meals else 0,
             'total_protein': sum(m.protein for m in meals if m.protein is not None),
             'total_carbs': sum(m.carbs for m in meals if m.carbs is not None),
             'total_fat': sum(m.fat for m in meals if m.fat is not None),
@@ -187,30 +191,31 @@ def health():
         water_percentage = min(100, (total_water_today / 2500) * 100) if total_water_today > 0 else 0
 
         return render_template("health/health.html",
-                            title="Health Tracking",
-                            workouts=workouts,
-                            meals=meals,
-                            metrics=metrics,
-                            latest_metrics=latest_metrics,
-                            total_water_today=total_water_today,
-                            water_intakes=water_today,
-                            workout_stats=workout_stats,
-                            nutrition_stats=nutrition_stats,
-                            workout_form=workout_form,
-                            meal_form=meal_form,
-                            metrics_form=metrics_form,
-                            water_form=water_form,
-                            workout_dates=workout_dates,
-                            workout_durations=workout_durations,
-                            calorie_dates=calorie_dates,
-                            calorie_data=calorie_data,
-                            metrics_dates=metrics_dates,
-                            weights=weights,
-                            water_percentage=water_percentage)
+                               title="Health Tracking",
+                               workouts=workouts,
+                               meals=meals,
+                               metrics=metrics,
+                               latest_metrics=latest_metrics,
+                               total_water_today=total_water_today,
+                               water_intakes=water_today,
+                               workout_stats=workout_stats,
+                               nutrition_stats=nutrition_stats,
+                               workout_form=workout_form,
+                               meal_form=meal_form,
+                               metrics_form=metrics_form,
+                               water_form=water_form,
+                               workout_dates=workout_dates,
+                               workout_durations=workout_durations,
+                               calorie_dates=calorie_dates,
+                               calorie_data=calorie_data,
+                               metrics_dates=metrics_dates,
+                               weights=weights,
+                               water_percentage=water_percentage)
     except Exception as e:
         # Log the error and redirect to dashboard
         flash(f"Error loading health dashboard: {str(e)}", "danger")
         return redirect(url_for("main.dashboard"))
+
 
 def calculate_workout_streak(user_id):
     """Calculate the current workout streak for a user"""
@@ -273,6 +278,7 @@ def calculate_workout_streak(user_id):
         print(f"Error calculating workout streak: {str(e)}")
         return 0
 
+
 @health_bp.route("/health/workouts/create", methods=["POST"])
 @login_required
 def create_workout():
@@ -314,6 +320,7 @@ def create_workout():
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/workouts/<int:workout_id>")
 @login_required
 def get_workout(workout_id):
@@ -329,6 +336,7 @@ def get_workout(workout_id):
     workout_dict = workout.to_dict()
 
     return jsonify(workout_dict)
+
 
 @health_bp.route("/health/workouts/<int:workout_id>/update", methods=["POST"])
 @login_required
@@ -370,6 +378,7 @@ def update_workout(workout_id):
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/workouts/<int:workout_id>/delete", methods=["POST"])
 @login_required
 def delete_workout(workout_id):
@@ -390,6 +399,7 @@ def delete_workout(workout_id):
         flash(f"Error deleting workout: {str(e)}", "danger")
 
     return redirect(url_for("health.health"))
+
 
 @health_bp.route("/health/workouts/<int:workout_id>/exercises", methods=["GET", "POST"])
 @login_required
@@ -432,10 +442,11 @@ def add_exercises(workout_id):
     exercises = Exercise.query.filter_by(workout_id=workout.id).all()
 
     return render_template("health/add_exercises.html",
-                          title=f"Add Exercises to {workout.title}",
-                          workout=workout,
-                          exercises=exercises,
-                          form=form)
+                           title=f"Add Exercises to {workout.title}",
+                           workout=workout,
+                           exercises=exercises,
+                           form=form)
+
 
 @health_bp.route("/health/exercises/<int:exercise_id>/delete", methods=["POST"])
 @login_required
@@ -460,6 +471,7 @@ def delete_exercise(exercise_id):
 
     return redirect(url_for("health.add_exercises", workout_id=workout_id))
 
+
 @health_bp.route("/health/workouts/<int:workout_id>/complete", methods=["POST"])
 @login_required
 def complete_workout(workout_id):
@@ -480,6 +492,7 @@ def complete_workout(workout_id):
         flash(f"Error updating workout: {str(e)}", "danger")
 
     return redirect(url_for("health.health"))
+
 
 @health_bp.route("/health/workouts/<int:workout_id>/toggle-favorite", methods=["POST"])
 @login_required
@@ -503,6 +516,7 @@ def toggle_favorite(workout_id):
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/workouts/favorites")
 @login_required
 def favorite_workouts():
@@ -515,9 +529,10 @@ def favorite_workouts():
     workout_form = WorkoutForm()
 
     return render_template("health/favorites.html",
-                          title="Favorite Workouts",
-                          workouts=favorite_workouts,
-                          workout_form=workout_form)
+                           title="Favorite Workouts",
+                           workouts=favorite_workouts,
+                           workout_form=workout_form)
+
 
 @health_bp.route("/health/template/create/<int:workout_id>", methods=["POST"])
 @login_required
@@ -542,7 +557,7 @@ def create_template(workout_id):
             date=datetime.utcnow(),  # Set to current time
             user_id=current_user.id,
             completed=False,  # Templates are not completed
-            favorite=True     # Auto-favorite templates
+            favorite=True  # Auto-favorite templates
         )
 
         db.session.add(template)
@@ -569,6 +584,7 @@ def create_template(workout_id):
         flash(f"Error creating template: {str(e)}", "danger")
 
     return redirect(url_for("health.health"))
+
 
 @health_bp.route("/health/meals/create", methods=["POST"])
 @login_required
@@ -607,6 +623,7 @@ def create_meal():
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/meals/<int:meal_id>")
 @login_required
 def get_meal(meal_id):
@@ -620,6 +637,7 @@ def get_meal(meal_id):
 
     # Use the to_dict method which safely formats dates
     return jsonify(meal.to_dict())
+
 
 @health_bp.route("/health/meals/<int:meal_id>/update", methods=["POST"])
 @login_required
@@ -660,6 +678,7 @@ def update_meal(meal_id):
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/meals/<int:meal_id>/delete", methods=["POST"])
 @login_required
 def delete_meal(meal_id):
@@ -680,6 +699,7 @@ def delete_meal(meal_id):
         flash(f"Error deleting meal: {str(e)}", "danger")
 
     return redirect(url_for("health.health"))
+
 
 @health_bp.route("/health/body-metrics/create", methods=["POST"])
 @login_required
@@ -719,6 +739,7 @@ def create_metrics():
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/body-metrics/<int:metrics_id>")
 @login_required
 def get_metrics(metrics_id):
@@ -732,6 +753,7 @@ def get_metrics(metrics_id):
 
     # Use the to_dict method which safely formats dates
     return jsonify(metrics.to_dict())
+
 
 @health_bp.route("/health/body-metrics/<int:metrics_id>/update", methods=["POST"])
 @login_required
@@ -779,6 +801,7 @@ def update_metrics(metrics_id):
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/body-metrics/<int:metrics_id>/delete", methods=["POST"])
 @login_required
 def delete_metrics(metrics_id):
@@ -799,6 +822,7 @@ def delete_metrics(metrics_id):
         flash(f"Error deleting measurements: {str(e)}", "danger")
 
     return redirect(url_for("health.health"))
+
 
 @health_bp.route("/health/water/add", methods=["POST"])
 @login_required

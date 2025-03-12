@@ -1,0 +1,112 @@
+<div class="tab-pane fade" id="analytics-tab-pane" role="tabpanel" aria-labelledby="analytics-tab" tabindex="0">
+    <h4 class="mb-3">
+        <i class="fas fa-chart-line me-2"></i>
+        Health Analytics
+    </h4>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Workout Types</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="workoutTypeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Nutrition Breakdown</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="nutritionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Weekly Workout Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="weeklyWorkoutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Daily Calorie Intake</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="calorieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health trends analysis -->
+    <div class="health-card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Your Health Insights</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="health-tip">
+                        <div class="health-tip-title">
+                            <i class="fas fa-medal me-1"></i>
+                            Workout Consistency
+                        </div>
+                        <p>
+                            {% if workout_stats.total_workouts > 8 %}
+                                Great job! You've been very consistent with your workouts this month.
+                            {% elif workout_stats.total_workouts > 4 %}
+                                You're doing well with workout consistency. Try to maintain this rhythm.
+                            {% else %}
+                                Try to increase your workout frequency for better results.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="health-tip">
+                        <div class="health-tip-title">
+                            <i class="fas fa-utensils me-1"></i>
+                            Nutrition Balance
+                        </div>
+                        <p>
+                            {% if nutrition_stats.total_meals > 0 %}
+                                {% if nutrition_stats.total_protein > 0 %}
+                                    Your protein intake is {{ nutrition_stats.total_protein|round(1) }}g for the past 30 days.
+                                    {% if nutrition_stats.total_protein / 30 < 50 %}
+                                        Consider increasing your daily protein intake.
+                                    {% endif %}
+                                {% else %}
+                                    Try to track your protein intake for better nutritional insights.
+                                {% endif %}
+                            {% else %}
+                                Start tracking your meals to get nutrition insights.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

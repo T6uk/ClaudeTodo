@@ -1,0 +1,78 @@
+<div class="tab-pane fade" id="nutrition-tab-pane" role="tabpanel" aria-labelledby="nutrition-tab" tabindex="0">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">
+            <i class="fas fa-utensils me-2"></i>
+            Your Meals
+        </h4>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMealModal">
+            <i class="fas fa-plus me-1"></i> Add Meal
+        </button>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="health-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Daily Nutrition Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="nutrition-info">
+                        <span class="nutrition-info-label">Daily Target:</span>
+                        <span class="nutrition-info-value">2000 kcal</span>
+                    </div>
+                    <div class="nutrition-info">
+                        <span class="nutrition-info-label">Today's Intake:</span>
+                        <span class="nutrition-info-value">
+                            {{ nutrition_stats.total_calories|default(0, true)|int }} kcal
+                        </span>
+                    </div>
+                    <div class="nutrition-info">
+                        <span class="nutrition-info-label">Protein:</span>
+                        <span class="nutrition-info-value">
+                            {{ nutrition_stats.total_protein|default(0, true)|round(1) }} g
+                        </span>
+                    </div>
+                    <div class="nutrition-info">
+                        <span class="nutrition-info-label">Carbs:</span>
+                        <span class="nutrition-info-value">
+                            {{ nutrition_stats.total_carbs|default(0, true)|round(1) }} g
+                        </span>
+                    </div>
+                    <div class="nutrition-info">
+                        <span class="nutrition-info-label">Fat:</span>
+                        <span class="nutrition-info-value">
+                            {{ nutrition_stats.total_fat|default(0, true)|round(1) }} g
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <div class="health-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Macronutrient Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="macrosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if meals %}
+        <div class="meal-list">
+            {% for meal in meals %}
+                {% include 'health/components/_meal_card.html' %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-health-state">
+            <i class="fas fa-utensils text-muted"></i>
+            <h4>No meals recorded</h4>
+            <p>Start tracking your nutrition by clicking the "Add Meal" button.</p>
+        </div>
+    {% endif %}
+</div>

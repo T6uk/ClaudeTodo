@@ -1,0 +1,48 @@
+<!-- Add Water Intake Modal -->
+<div class="modal fade" id="addWaterModal" tabindex="-1" aria-labelledby="addWaterModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addWaterModalLabel">
+                    <i class="fas fa-tint me-2"></i>
+                    Add Water Intake
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="newWaterForm" method="POST" action="{{ url_for('health.add_water') }}">
+                    {{ water_form.hidden_tag() }}
+
+                    <div class="mb-3">
+                        {{ water_form.amount.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ water_form.amount(class="form-control", placeholder="Amount in ml", id="amount") }}
+                            <span class="input-group-text">ml</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ water_form.date.label(class="form-label") }}
+                        {{ water_form.date(class="form-control", type="datetime-local") }}
+                    </div>
+
+                    <div class="mt-3 mb-2">
+                        <p class="mb-2">Quick add:</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="250">250ml</button>
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="500">500ml</button>
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="750">750ml</button>
+                            <button type="button" class="btn btn-outline-primary quick-amount" data-amount="1000">1000ml</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" form="newWaterForm" class="btn btn-primary">
+                    <i class="fas fa-save me-1"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

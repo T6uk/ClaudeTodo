@@ -1,0 +1,74 @@
+<!-- Health overview cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="health-card">
+            <div class="card-header">
+                <i class="fas fa-running me-2"></i>
+                Workout Overview
+            </div>
+            <div class="card-body">
+                <div class="health-stat">
+                    <div class="stat-value">{{ workout_stats.total_workouts }}</div>
+                    <div class="stat-label">Total Workouts (Last 30 Days)</div>
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="health-stat">
+                            <div class="stat-value">{{ workout_stats.total_duration }}</div>
+                            <div class="stat-label">Total Minutes</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="health-stat">
+                            <div class="stat-value">{{ workout_stats.total_calories|default(0, true)|int }}</div>
+                            <div class="stat-label">Calories Burned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Water Intake Tracker -->
+    {% include 'health/components/_water_tracker.html' %}
+
+    <!-- Workout Streak and Body Metrics -->
+    <div class="col-md-4 mb-3">
+        {% include 'health/components/_streak_counter.html' %}
+
+        <div class="health-card">
+            <div class="card-header">
+                <i class="fas fa-weight me-2"></i>
+                Body Metrics
+            </div>
+            <div class="card-body">
+                {% if latest_metrics %}
+                    <div class="text-center mb-3">
+                        <span class="d-block text-muted small">Last updated: {{ latest_metrics.date.strftime('%Y-%m-%d') }}</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="health-stat">
+                                <div class="stat-value">{{ latest_metrics.weight|round(1) if latest_metrics.weight else '--' }}</div>
+                                <div class="stat-label">Weight (kg)</div>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="health-stat">
+                                <div class="stat-value">{{ latest_metrics.bmi|round(1) if latest_metrics.bmi else '--' }}</div>
+                                <div class="stat-label">BMI</div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <p class="mb-3">No body metrics recorded yet</p>
+                    </div>
+                {% endif %}
+                <button class="btn btn-primary btn-sm w-100" data-bs-toggle="modal" data-bs-target="#addMetricsModal">
+                    <i class="fas fa-plus me-1"></i> Update Measurements
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
