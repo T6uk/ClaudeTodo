@@ -1,0 +1,247 @@
+<!-- app/templates/health/favorites.html -->
+
+{% extends "base.html" %}
+
+{% block head %}
+<!-- Include health-specific CSS -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/health.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>
+                <i class="fas fa-star me-2"></i>
+                Favorite Workouts
+            </h1>
+            <p class="lead">Your saved workout templates and favorite routines</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('health.health') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Health Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="health-card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-star me-2"></i>Favorite Workouts</h5>
+                </div>
+                <div class="card-body">
+                    {% if workouts %}
+                        <div class="workout-list">
+                            {% for workout in workouts %}
+                                <div class="workout-item" data-workout-id="{{ workout.id }}">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-grow-1">
+                                            <h5 class="workout-title">
+                                                {{ workout.title }}
+                                                <span class="badge badge-workout-type badge-{{ workout.workout_type }}">
+                                                    {{ workout.workout_type.capitalize() }}
+                                                </span>
+
+                                                {% if workout.title.endswith('(Template)') %}
+                                                    <span class="badge bg-info">Template</span>
+                                                {% endif %}
+                                            </h5>
+                                            <div class="workout-meta">
+                                                <span class="me-3">
+                                                    <i class="fas fa-calendar-alt me-1"></i>
+                                                    {{ workout.date.strftime('%Y-%m-%d %H:%M') }}
+                                                </span>
+                                                <span class="me-3">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ workout.duration }} minutes
+                                                </span>
+                                                {% if workout.intensity %}
+                                                    <span class="me-3">
+                                                        <i class="fas fa-tachometer-alt me-1"></i>
+                                                        Intensity: {{ workout.intensity.capitalize() }}
+                                                    </span>
+                                                {% endif %}
+                                                {% if workout.calories_burned %}
+                                                    <span>
+                                                        <i class="fas fa-fire me-1"></i>
+                                                        {{ workout.calories_burned }} calories
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+
+                                            {% if workout.exercises.count() > 0 %}
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-dumbbell me-1"></i>
+                                                        {{ workout.exercises.count() }} exercises
+                                                    </small>
+                                                </div>
+                                            {% endif %}
+
+                                            {% if workout.notes %}
+                                                <p class="mt-2 mb-0">{{ workout.notes }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="workout-actions">
+                                        <button class="btn btn-sm btn-outline-primary me-1 view-workout-btn"
+                                                data-workout-id="{{ workout.id }}"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#viewWorkoutModal">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+
+                                        <!-- app/templates/health/favorites.html (continued) -->
+                                        {% if not workout.completed %}
+                                            <form method="POST" action="{{ url_for('health.create_workout') }}" class="d-inline">
+                                                {{ workout_form.hidden_tag() }}
+                                                <input type="hidden" name="title" value="{{ workout.title }}">
+                                                <input type="hidden" name="workout_type" value="{{ workout.workout_type }}">
+                                                <input type="hidden" name="duration" value="{{ workout.duration }}">
+                                                <input type="hidden" name="intensity" value="{{ workout.intensity or '' }}">
+                                                <input type="hidden" name="calories_burned" value="{{ workout.calories_burned or '' }}">
+                                                <input type="hidden" name="notes" value="{{ workout.notes or '' }}">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Start this workout">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+
+                                        <form method="POST" action="{{ url_for('health.toggle_favorite', workout_id=workout.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning" title="Remove from favorites">
+                                                <i class="fas fa-star-half-alt"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-health-state">
+                            <i class="fas fa-star text-muted"></i>
+                            <h4>No favorite workouts</h4>
+                            <p>Start adding workouts to your favorites by clicking the star icon on any workout.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Workout Modal -->
+<div class="modal fade" id="viewWorkoutModal" tabindex="-1" aria-labelledby="viewWorkoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewWorkoutModalLabel">
+                    <i class="fas fa-dumbbell me-2"></i>
+                    <span id="viewWorkoutTitle">Workout Details</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div id="viewWorkoutNotes" class="mb-3">
+                            <h5>Notes</h5>
+                            <p class="border p-3 rounded bg-light">No notes provided.</p>
+                        </div>
+
+                        <div id="viewWorkoutExercises" class="mb-3">
+                            <h5>Exercises</h5>
+                            <div id="exercisesList" class="border p-3 rounded bg-light">
+                                Loading exercises...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5 class="mb-0">Workout Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Type:</strong> <span id="viewWorkoutType"></span></p>
+                                <p><strong>Duration:</strong> <span id="viewWorkoutDuration"></span> minutes</p>
+                                <p><strong>Intensity:</strong> <span id="viewWorkoutIntensity"></span></p>
+                                <p><strong>Calories:</strong> <span id="viewWorkoutCalories"></span></p>
+                                <p><strong>Date:</strong> <span id="viewWorkoutDate"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="startWorkoutBtn" class="btn btn-primary">
+                    <i class="fas fa-play me-1"></i> Start Workout
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // View workout
+        const viewWorkoutButtons = document.querySelectorAll('.view-workout-btn');
+        viewWorkoutButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const workoutId = this.getAttribute('data-workout-id');
+                fetch(`/health/workouts/${workoutId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Fill modal with workout data
+                        document.getElementById('viewWorkoutTitle').textContent = data.title;
+                        document.getElementById('viewWorkoutType').textContent = data.workout_type.charAt(0).toUpperCase() + data.workout_type.slice(1);
+                        document.getElementById('viewWorkoutDuration').textContent = data.duration;
+                        document.getElementById('viewWorkoutIntensity').textContent = data.intensity ? data.intensity.charAt(0).toUpperCase() + data.intensity.slice(1) : 'Not specified';
+                        document.getElementById('viewWorkoutCalories').textContent = data.calories_burned ? data.calories_burned + ' kcal' : 'Not specified';
+                        document.getElementById('viewWorkoutDate').textContent = new Date(data.date).toLocaleString();
+
+                        // Set notes
+                        const notesEl = document.getElementById('viewWorkoutNotes').querySelector('p');
+                        notesEl.textContent = data.notes || 'No notes provided.';
+
+                        // Set exercises
+                        const exercisesListEl = document.getElementById('exercisesList');
+
+                        if (data.exercises && data.exercises.length > 0) {
+                            let exercisesHtml = '';
+                            data.exercises.forEach(exercise => {
+                                exercisesHtml += `
+                                    <div class="exercise-item mb-2 p-2 border-bottom">
+                                        <div class="fw-bold">${exercise.name}</div>
+                                        <div class="small">
+                                            ${exercise.sets && exercise.reps ? `${exercise.sets} sets × ${exercise.reps} reps` : ''}
+                                            ${exercise.weight ? `<span class="ms-2">${exercise.weight} kg</span>` : ''}
+                                            ${exercise.duration ? `<span class="ms-2">${exercise.duration} sec</span>` : ''}
+                                            ${exercise.distance ? `<span class="ms-2">${exercise.distance} km</span>` : ''}
+                                        </div>
+                                        ${exercise.notes ? `<div class="small text-muted mt-1">${exercise.notes}</div>` : ''}
+                                    </div>
+                                `;
+                            });
+                            exercisesListEl.innerHTML = exercisesHtml;
+                        } else {
+                            exercisesListEl.innerHTML = '<p class="text-center">No exercises recorded for this workout.</p>';
+                        }
+
+                        // Set up start workout button
+                        const startWorkoutBtn = document.getElementById('startWorkoutBtn');
+                        startWorkoutBtn.href = `/health/workouts/${data.id}/start`;
+                    })
+                    .catch(error => console.error('Error fetching workout:', error));
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -11,7 +11,8 @@ from app.models.workout import Workout
 from app.models.meal import Meal
 from app.models.body_metrics import BodyMetrics
 from app.models.water_intake import WaterIntake
-from app.forms.health_forms import WorkoutForm, MealForm, BodyMetricsForm, WaterIntakeForm
+from app.models.exercise import Exercise
+from app.forms.health_forms import WorkoutForm, MealForm, BodyMetricsForm, WaterIntakeForm, ExerciseForm
 
 health_bp = Blueprint("health", __name__)
 
@@ -94,7 +95,8 @@ def health():
             'avg_duration': round(sum(w.duration for w in workouts) / len(workouts), 1) if workouts else 0,
             'total_calories': sum(w.calories_burned for w in workouts if w.calories_burned is not None),
             'by_type': {},
-            'streak': calculate_workout_streak(current_user.id)
+            'streak': calculate_workout_streak(current_user.id),
+            'favorite_count': Workout.query.filter_by(user_id=current_user.id, favorite=True).count()
         }
 
         # Group workouts by type
@@ -204,7 +206,7 @@ def health():
                             calorie_data=calorie_data,
                             metrics_dates=metrics_dates,
                             weights=weights,
-                            water_percentage=water_percentage)  # Add water percentage
+                            water_percentage=water_percentage)
     except Exception as e:
         # Log the error and redirect to dashboard
         flash(f"Error loading health dashboard: {str(e)}", "danger")
@@ -288,13 +290,18 @@ def create_workout():
                 calories_burned=form.calories_burned.data,
                 notes=form.notes.data,
                 date=safe_datetime_parse(form.date.data),
-                user_id=current_user.id
+                user_id=current_user.id,
+                completed=form.completed.data,
+                favorite=form.favorite.data
             )
 
             db.session.add(workout)
             db.session.commit()
 
             flash("Workout logged successfully!", "success")
+
+            # Redirect to exercise add page if the workout was just created
+            return redirect(url_for("health.add_exercises", workout_id=workout.id))
         except Exception as e:
             db.session.rollback()
             flash(f"Error saving workout: {str(e)}", "danger")
@@ -346,6 +353,8 @@ def update_workout(workout_id):
             workout.calories_burned = form.calories_burned.data
             workout.notes = form.notes.data
             workout.date = safe_datetime_parse(form.date.data)
+            workout.completed = form.completed.data
+            workout.favorite = form.favorite.data
 
             db.session.commit()
             flash("Workout updated successfully!", "success")
@@ -379,6 +388,185 @@ def delete_workout(workout_id):
     except Exception as e:
         db.session.rollback()
         flash(f"Error deleting workout: {str(e)}", "danger")
+
+    return redirect(url_for("health.health"))
+
+@health_bp.route("/health/workouts/<int:workout_id>/exercises", methods=["GET", "POST"])
+@login_required
+def add_exercises(workout_id):
+    """Add exercises to a workout"""
+    workout = Workout.query.get_or_404(workout_id)
+
+    # Ensure the workout belongs to the current user
+    if workout.user_id != current_user.id:
+        flash("You don't have permission to modify this workout.", "danger")
+        return redirect(url_for("health.health"))
+
+    form = ExerciseForm()
+
+    if request.method == "POST" and form.validate_on_submit():
+        try:
+            exercise = Exercise(
+                name=form.name.data,
+                sets=form.sets.data,
+                reps=form.reps.data,
+                weight=form.weight.data,
+                duration=form.duration.data,
+                distance=form.distance.data,
+                notes=form.notes.data,
+                workout_id=workout.id
+            )
+
+            db.session.add(exercise)
+            db.session.commit()
+
+            flash("Exercise added successfully!", "success")
+
+            # Stay on the same page to add more exercises
+            return redirect(url_for("health.add_exercises", workout_id=workout.id))
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error adding exercise: {str(e)}", "danger")
+
+    # Get existing exercises for this workout
+    exercises = Exercise.query.filter_by(workout_id=workout.id).all()
+
+    return render_template("health/add_exercises.html",
+                          title=f"Add Exercises to {workout.title}",
+                          workout=workout,
+                          exercises=exercises,
+                          form=form)
+
+@health_bp.route("/health/exercises/<int:exercise_id>/delete", methods=["POST"])
+@login_required
+def delete_exercise(exercise_id):
+    """Delete an exercise from a workout"""
+    exercise = Exercise.query.get_or_404(exercise_id)
+    workout_id = exercise.workout_id
+
+    # Ensure the exercise belongs to a workout owned by the current user
+    workout = Workout.query.get_or_404(workout_id)
+    if workout.user_id != current_user.id:
+        flash("You don't have permission to modify this workout.", "danger")
+        return redirect(url_for("health.health"))
+
+    try:
+        db.session.delete(exercise)
+        db.session.commit()
+        flash("Exercise deleted successfully!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting exercise: {str(e)}", "danger")
+
+    return redirect(url_for("health.add_exercises", workout_id=workout_id))
+
+@health_bp.route("/health/workouts/<int:workout_id>/complete", methods=["POST"])
+@login_required
+def complete_workout(workout_id):
+    """Mark a workout as completed"""
+    workout = Workout.query.get_or_404(workout_id)
+
+    # Ensure the workout belongs to the current user
+    if workout.user_id != current_user.id:
+        flash("You don't have permission to modify this workout.", "danger")
+        return redirect(url_for("health.health"))
+
+    try:
+        workout.completed = True
+        db.session.commit()
+        flash("Workout marked as completed!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating workout: {str(e)}", "danger")
+
+    return redirect(url_for("health.health"))
+
+@health_bp.route("/health/workouts/<int:workout_id>/toggle-favorite", methods=["POST"])
+@login_required
+def toggle_favorite(workout_id):
+    """Toggle favorite status of a workout"""
+    workout = Workout.query.get_or_404(workout_id)
+
+    # Ensure the workout belongs to the current user
+    if workout.user_id != current_user.id:
+        flash("You don't have permission to modify this workout.", "danger")
+        return redirect(url_for("health.health"))
+
+    try:
+        workout.favorite = not workout.favorite
+        db.session.commit()
+        status = "added to" if workout.favorite else "removed from"
+        flash(f"Workout {status} favorites!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error updating workout: {str(e)}", "danger")
+
+    return redirect(url_for("health.health"))
+
+@health_bp.route("/health/workouts/favorites")
+@login_required
+def favorite_workouts():
+    """Show favorite workouts"""
+    favorite_workouts = Workout.query.filter_by(
+        user_id=current_user.id,
+        favorite=True
+    ).order_by(Workout.date.desc()).all()
+
+    workout_form = WorkoutForm()
+
+    return render_template("health/favorites.html",
+                          title="Favorite Workouts",
+                          workouts=favorite_workouts,
+                          workout_form=workout_form)
+
+@health_bp.route("/health/template/create/<int:workout_id>", methods=["POST"])
+@login_required
+def create_template(workout_id):
+    """Create a workout template from an existing workout"""
+    workout = Workout.query.get_or_404(workout_id)
+
+    # Ensure the workout belongs to the current user
+    if workout.user_id != current_user.id:
+        flash("You don't have permission to use this workout.", "danger")
+        return redirect(url_for("health.health"))
+
+    try:
+        # Create a new workout based on the existing one
+        template = Workout(
+            title=f"{workout.title} (Template)",
+            workout_type=workout.workout_type,
+            duration=workout.duration,
+            intensity=workout.intensity,
+            calories_burned=workout.calories_burned,
+            notes=workout.notes,
+            date=datetime.utcnow(),  # Set to current time
+            user_id=current_user.id,
+            completed=False,  # Templates are not completed
+            favorite=True     # Auto-favorite templates
+        )
+
+        db.session.add(template)
+        db.session.flush()  # Get the template ID without committing yet
+
+        # Copy all exercises
+        for exercise in workout.exercises:
+            new_exercise = Exercise(
+                name=exercise.name,
+                sets=exercise.sets,
+                reps=exercise.reps,
+                weight=exercise.weight,
+                duration=exercise.duration,
+                distance=exercise.distance,
+                notes=exercise.notes,
+                workout_id=template.id
+            )
+            db.session.add(new_exercise)
+
+        db.session.commit()
+        flash("Workout template created and added to favorites!", "success")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error creating template: {str(e)}", "danger")
 
     return redirect(url_for("health.health"))
 
@@ -642,6 +830,7 @@ def add_water():
 
     return redirect(url_for("health.health"))
 
+
 @health_bp.route("/health/water/<int:water_id>/delete", methods=["POST"])
 @login_required
 def delete_water(water_id):
@@ -662,6 +851,7 @@ def delete_water(water_id):
         flash(f"Error deleting water intake record: {str(e)}", "danger")
 
     return redirect(url_for("health.health"))
+
 
 @health_bp.route("/health/reports/weekly")
 @login_required
@@ -715,13 +905,34 @@ def weekly_report():
         if start_weight and end_weight:
             weight_change = end_weight.weight - start_weight.weight
 
+        # Get exercise data
+        total_exercises = 0
+        exercise_counts = {}
+
+        for workout in workouts:
+            exercises = Exercise.query.filter_by(workout_id=workout.id).all()
+            total_exercises += len(exercises)
+
+            # Count exercise types
+            for exercise in exercises:
+                exercise_name = exercise.name.lower()
+                if exercise_name in exercise_counts:
+                    exercise_counts[exercise_name] += 1
+                else:
+                    exercise_counts[exercise_name] = 1
+
+        # Get most common exercises
+        top_exercises = sorted(exercise_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+
         report = {
             'start_date': start_date,
             'end_date': end_date,
             'workouts': {
                 'count': len(workouts),
                 'minutes': workout_minutes,
-                'calories': workout_calories
+                'calories': workout_calories,
+                'exercise_count': total_exercises,
+                'top_exercises': top_exercises
             },
             'nutrition': {
                 'meals': len(meals),
@@ -735,10 +946,194 @@ def weekly_report():
         }
 
         return render_template("health/report.html",
-                            title="Weekly Health Report",
-                            report=report,
-                            workouts=workouts,
-                            meals=meals)
+                               title="Weekly Health Report",
+                               report=report,
+                               workouts=workouts,
+                               meals=meals)
     except Exception as e:
         flash(f"Error generating report: {str(e)}", "danger")
         return redirect(url_for("health.health"))
+
+
+@health_bp.route("/health/exercises")
+@login_required
+def exercise_library():
+    """View and manage exercise library"""
+    # Get all unique exercises performed by the user
+    exercises_query = db.session.query(
+        Exercise.name,
+        func.count(Exercise.id).label('count'),
+        func.max(Exercise.created_at).label('last_used')
+    ).filter(
+        Exercise.workout_id.in_(
+            db.session.query(Workout.id).filter_by(user_id=current_user.id)
+        )
+    ).group_by(Exercise.name).order_by(func.count(Exercise.id).desc())
+
+    exercises = exercises_query.all()
+
+    # Calculate statistics
+    stats = {
+        'total_unique': len(exercises),
+        'total_performed': sum(ex.count for ex in exercises)
+    }
+
+    return render_template("health/exercise_library.html",
+                           title="Exercise Library",
+                           exercises=exercises,
+                           stats=stats)
+
+
+@health_bp.route("/health/workouts/export/<int:workout_id>")
+@login_required
+def export_workout(workout_id):
+    """Export workout details to a printable format"""
+    workout = Workout.query.get_or_404(workout_id)
+
+    # Ensure the workout belongs to the current user
+    if workout.user_id != current_user.id:
+        flash("You don't have permission to view this workout.", "danger")
+        return redirect(url_for("health.health"))
+
+    # Get exercises for this workout
+    exercises = Exercise.query.filter_by(workout_id=workout.id).all()
+
+    return render_template("health/export_workout.html",
+                           title=f"Export: {workout.title}",
+                           workout=workout,
+                           exercises=exercises)
+
+
+@health_bp.route("/health/analytics")
+@login_required
+def health_analytics():
+    """Advanced health analytics dashboard"""
+    # Set date range
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=90)  # Last 90 days
+
+    # Get data
+    workouts = Workout.query.filter(
+        Workout.user_id == current_user.id,
+        Workout.date >= start_date,
+        Workout.date <= end_date
+    ).order_by(Workout.date).all()
+
+    meals = Meal.query.filter(
+        Meal.user_id == current_user.id,
+        Meal.meal_time >= start_date,
+        Meal.meal_time <= end_date
+    ).order_by(Meal.meal_time).all()
+
+    metrics = BodyMetrics.query.filter(
+        BodyMetrics.user_id == current_user.id,
+        BodyMetrics.date >= start_date,
+        BodyMetrics.date <= end_date
+    ).order_by(BodyMetrics.date).all()
+
+    # Calculate trend data for charts
+    # Workout frequency by week
+    weekly_workouts = {}
+    for i in range(0, 13):  # Last 13 weeks
+        week_start = end_date - timedelta(days=end_date.weekday(), weeks=i)
+        week_end = week_start + timedelta(days=6)
+        week_str = week_start.strftime('%b %d')
+
+        weekly_count = Workout.query.filter(
+            Workout.user_id == current_user.id,
+            Workout.date >= week_start,
+            Workout.date <= week_end
+        ).count()
+
+        weekly_workouts[week_str] = weekly_count
+
+    # Workout minutes by type
+    workout_minutes_by_type = {}
+    for workout in workouts:
+        if workout.workout_type not in workout_minutes_by_type:
+            workout_minutes_by_type[workout.workout_type] = 0
+        workout_minutes_by_type[workout.workout_type] += workout.duration
+
+    # Calculate calorie balance
+    calorie_balance = []
+    for i in range(0, 30):  # Last 30 days
+        day = end_date - timedelta(days=i)
+        day_str = day.strftime('%b %d')
+
+        day_meals = [m for m in meals if m.meal_time.date() == day.date()]
+        day_workouts = [w for w in workouts if w.date.date() == day.date()]
+
+        intake = sum(m.calories for m in day_meals if m.calories is not None)
+        burned = sum(w.calories_burned for w in day_workouts if w.calories_burned is not None)
+
+        calorie_balance.append({
+            'date': day_str,
+            'intake': intake,
+            'burned': burned,
+            'net': intake - burned
+        })
+
+    calorie_balance.reverse()  # Show oldest to newest
+
+    # Workout progress over time
+    progress_data = {}
+    for workout_type in workout_minutes_by_type.keys():
+        progress_data[workout_type] = []
+
+        for i in range(0, 12):  # Last 12 weeks
+            week_start = end_date - timedelta(days=end_date.weekday(), weeks=i)
+            week_end = week_start + timedelta(days=6)
+            week_str = week_start.strftime('%b %d')
+
+            week_workouts = Workout.query.filter(
+                Workout.user_id == current_user.id,
+                Workout.workout_type == workout_type,
+                Workout.date >= week_start,
+                Workout.date <= week_end
+            ).all()
+
+            if week_workouts:
+                total_duration = sum(w.duration for w in week_workouts)
+                progress_data[workout_type].append({
+                    'week': week_str,
+                    'duration': total_duration
+                })
+
+    # Prepare data for templates
+    chart_data = {
+        'weekly_workouts': {
+            'labels': list(weekly_workouts.keys()),
+            'data': list(weekly_workouts.values())
+        },
+        'workout_by_type': {
+            'labels': list(workout_minutes_by_type.keys()),
+            'data': list(workout_minutes_by_type.values())
+        },
+        'calorie_balance': calorie_balance,
+        'progress_data': progress_data
+    }
+
+    return render_template("health/analytics.html",
+                           title="Health Analytics",
+                           chart_data=chart_data,
+                           workouts=workouts,
+                           meals=meals,
+                           metrics=metrics)
+
+
+@health_bp.route("/health/goals")
+@login_required
+def health_goals():
+    """Manage health and fitness goals"""
+    # This would be expanded in a future version with a proper goals model
+    return render_template("health/goals.html",
+                           title="Health Goals")
+
+
+@health_bp.route("/health/nutrition-calculator")
+@login_required
+def nutrition_calculator():
+    """Nutrition calculator for meal planning"""
+    # This would be expanded in a future version
+    return render_template("health/nutrition_calculator.html",
+                           title="Nutrition Calculator")

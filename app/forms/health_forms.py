@@ -2,8 +2,42 @@
 Health forms for workout and meal tracking
 """
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, SelectField, IntegerField, FloatField, DateTimeField, SubmitField
+from wtforms import StringField, TextAreaField, SelectField, IntegerField, FloatField, DateTimeField, SubmitField, \
+    FieldList, FormField, BooleanField
 from wtforms.validators import DataRequired, Length, Optional, NumberRange
+
+
+class ExerciseForm(FlaskForm):
+    """Form for individual exercise entries"""
+    name = StringField('Exercise Name', validators=[
+        DataRequired(),
+        Length(min=2, max=100)
+    ])
+    sets = IntegerField('Sets', validators=[
+        Optional(),
+        NumberRange(min=1, message='Number of sets must be positive')
+    ])
+    reps = IntegerField('Reps', validators=[
+        Optional(),
+        NumberRange(min=1, message='Number of reps must be positive')
+    ])
+    weight = FloatField('Weight (kg)', validators=[
+        Optional(),
+        NumberRange(min=0, message='Weight must be a positive number')
+    ])
+    duration = IntegerField('Duration (seconds)', validators=[
+        Optional(),
+        NumberRange(min=1, message='Duration must be positive')
+    ])
+    distance = FloatField('Distance (km)', validators=[
+        Optional(),
+        NumberRange(min=0, message='Distance must be a positive number')
+    ])
+    notes = TextAreaField('Notes', validators=[
+        Optional(),
+        Length(max=200)
+    ])
+
 
 class WorkoutForm(FlaskForm):
     """Form for creating and editing workouts"""
@@ -42,7 +76,10 @@ class WorkoutForm(FlaskForm):
         Optional(),
         Length(max=500)
     ])
+    completed = BooleanField('Mark as Completed', default=True)
+    favorite = BooleanField('Add to Favorites', default=False)
     submit = SubmitField('Save Workout')
+
 
 class MealForm(FlaskForm):
     """Form for creating and editing meals"""
@@ -82,6 +119,7 @@ class MealForm(FlaskForm):
     ])
     submit = SubmitField('Save Meal')
 
+
 class BodyMetricsForm(FlaskForm):
     """Form for tracking body metrics"""
     weight = FloatField('Weight (kg)', validators=[
@@ -120,6 +158,7 @@ class BodyMetricsForm(FlaskForm):
         Length(max=500)
     ])
     submit = SubmitField('Save Measurements')
+
 
 class WaterIntakeForm(FlaskForm):
     """Form for tracking water intake"""

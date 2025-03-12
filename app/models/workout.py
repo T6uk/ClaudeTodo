@@ -1,3 +1,5 @@
+# app/models/workout.py
+
 """
 Workout model for tracking exercise activities
 """
@@ -21,6 +23,7 @@ class Workout(db.Model):
         created_at (datetime): Record creation timestamp
         updated_at (datetime): Record last update timestamp
         user_id (int): User ID who recorded the workout
+        exercises (relationship): Relationship to associated exercises
     """
     __tablename__ = 'workouts'
 
@@ -34,15 +37,18 @@ class Workout(db.Model):
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed = db.Column(db.Boolean, default=True)
+    favorite = db.Column(db.Boolean, default=False)
 
     # Foreign keys
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
     # Relationships
     user = db.relationship('User', backref=db.backref('workouts', lazy='dynamic'))
+    exercises = db.relationship('Exercise', backref='workout', lazy='dynamic', cascade='all, delete-orphan')
 
     def __init__(self, title, workout_type, duration, user_id, intensity=None,
-                 calories_burned=None, notes=None, date=None):
+                 calories_burned=None, notes=None, date=None, completed=True, favorite=False):
         self.title = title
         self.workout_type = workout_type
         self.duration = duration
@@ -51,6 +57,8 @@ class Workout(db.Model):
         self.notes = notes
         self.date = date or datetime.utcnow()
         self.user_id = user_id
+        self.completed = completed
+        self.favorite = favorite
 
     def __repr__(self):
         return f"<Workout {self.id}: {self.title}>"
@@ -70,5 +78,8 @@ class Workout(db.Model):
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None,
             'user_id': self.user_id,
-            'username': self.user.username
+            'username': self.user.username,
+            'completed': self.completed,
+            'favorite': self.favorite,
+            'exercises': [exercise.to_dict() for exercise in self.exercises]
         }

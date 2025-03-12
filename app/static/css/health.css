@@ -680,3 +680,136 @@
         font-size: 1.2rem;
     }
 }
+
+/* app/static/css/health.css (additional workout-specific styles) */
+
+/* Enhanced Workout item styling */
+.workout-item {
+    position: relative;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+    border-left: 5px solid #57A773;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+.workout-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+[data-bs-theme="dark"] .workout-item {
+    background-color: #2b3035;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.workout-item[data-workout-type="cardio"] {
+    border-left-color: #57A773; /* Green */
+}
+
+.workout-item[data-workout-type="strength"] {
+    border-left-color: #8090B2; /* Blue */
+}
+
+.workout-item[data-workout-type="flexibility"] {
+    border-left-color: #B7C9E8; /* Light blue */
+}
+
+.workout-item[data-workout-type="sports"] {
+    border-left-color: #A1B2D4; /* Medium blue */
+}
+
+.workout-item[data-workout-type="hiit"] {
+    border-left-color: #D76464; /* Red */
+}
+
+.workout-item[data-workout-type="crossfit"] {
+    border-left-color: #F3C969; /* Yellow */
+}
+
+.workout-item[data-workout-type="yoga"] {
+    border-left-color: #C4D6E8; /* Very light blue */
+}
+
+.workout-item[data-workout-type="other"] {
+    border-left-color: #6c757d; /* Gray */
+}
+
+.workout-favorite {
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.favorite-badge {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: #ffc107;
+    font-size: 1.5rem;
+    z-index: 1;
+}
+
+.workout-title {
+    font-weight: 700;
+    margin-bottom: 5px;
+    color: var(--primary);
+    padding-right: 30px; /* Make room for the favorite badge */
+}
+
+.workout-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.workout-actions {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+}
+
+.workout-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin-left: 5px;
+    transition: all 0.2s ease;
+}
+
+.workout-actions .btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Exercise item styling */
+.exercise-list-compact {
+    margin-top: 10px;
+}
+
+.exercise-item-compact {
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+[data-bs-theme="dark"] .exercise-item-compact {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Filter and search for workouts */
+.workout-filter.active {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+#workoutSearch {
+    margin-bottom: 15px;
+    border-radius: 20px;
+    padding-left: 40px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: 15px center;
+    background-size: 15px;
+}
