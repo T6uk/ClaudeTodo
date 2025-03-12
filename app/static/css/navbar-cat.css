@@ -1,0 +1,91 @@
+/* app/static/css/navbar-cat.css */
+/* Navbar Cat Styling */
+#navbar-cat-container {
+    position: absolute;
+    height: 50px;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    pointer-events: none;
+    z-index: 100;
+    overflow: hidden;
+}
+
+#navbar-cat {
+    position: absolute;
+    width: 60px;
+    height: 40px;
+    bottom: 0;
+    left: 0;
+    background-repeat: no-repeat;
+    background-size: contain;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: transform 0.2s ease;
+    transform-origin: center bottom;
+}
+
+/* Cat States */
+.cat-sitting {
+    background-image: url('../images/cat/cat-sitting.svg');
+    animation: slight-breathe 4s infinite ease-in-out;
+}
+
+.cat-running {
+    background-image: url('../images/cat/cat-running.svg');
+    animation: run-cycle 0.4s infinite steps(4);
+}
+
+.cat-sleeping {
+    background-image: url('../images/cat/cat-sleeping.svg');
+    animation: sleep-cycle 3s infinite ease-in-out;
+}
+
+.cat-eating {
+    background-image: url('../images/cat/cat-eating.svg');
+    animation: eat-cycle 0.6s infinite ease-in-out;
+}
+
+.cat-playing {
+    background-image: url('../images/cat/cat-playing.svg');
+    animation: play-cycle 0.5s infinite ease-in-out;
+}
+
+/* Flip the cat horizontally */
+.flip-horizontal {
+    transform: scaleX(-1);
+}
+
+/* Cat Animations */
+@keyframes slight-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes run-cycle {
+    0% { background-position: 0 0; }
+    100% { background-position: -240px 0; } /* 4 frames, each 60px wide */
+}
+
+@keyframes sleep-cycle {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+}
+
+@keyframes eat-cycle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
+@keyframes play-cycle {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(5deg); }
+    50% { transform: rotate(0deg); }
+    75% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Dark mode adjustments */
+[data-bs-theme="dark"] #navbar-cat {
+    filter: brightness(1.2);
+}
