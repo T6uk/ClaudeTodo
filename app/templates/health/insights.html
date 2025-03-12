@@ -235,6 +235,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/health_insights.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize workout distribution chart

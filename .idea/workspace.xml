@@ -4,26 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="workouts">
-      <change afterPath="$PROJECT_DIR$/app/static/js/health_charts.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/static/js/health_operations.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/components/_health_cards.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/components/_health_tabs.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/components/_meal_card.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/components/_streak_counter.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/components/_water_tracker.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/components/_workout_card.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/modals/_meal_modals.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/modals/_workout_modals.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/tabs/_analytics_tab.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/tabs/_metrics_tab.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/tabs/_nutrition_tab.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/tabs/_workouts_tab.html" afterDir="false" />
+    <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="insights">
+      <change afterPath="$PROJECT_DIR$/app/static/js/health_insights.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/health.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/health.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/health/health.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/health/health.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/instance/site.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/site.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/run.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/js/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/templates/health/insights.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/health/insights.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -104,7 +89,7 @@
       <workItem from="1741692515555" duration="4311000" />
       <workItem from="1741705760013" duration="7566000" />
       <workItem from="1741717899592" duration="1001000" />
-      <workItem from="1741776710093" duration="6956000" />
+      <workItem from="1741776710093" duration="12350000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -338,7 +323,23 @@
       <option name="project" value="LOCAL" />
       <updated>1741778861035</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="health structure">
+      <option name="closed" value="true" />
+      <created>1741802714663</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1741802714663</updated>
+    </task>
+    <task id="LOCAL-00031" summary="insights">
+      <option name="closed" value="true" />
+      <created>1741810030692</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1741810030692</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -365,6 +366,8 @@
     <MESSAGE value="new design" />
     <MESSAGE value="games" />
     <MESSAGE value="workouts" />
-    <option name="LAST_COMMIT_MESSAGE" value="workouts" />
+    <MESSAGE value="health structure" />
+    <MESSAGE value="insights" />
+    <option name="LAST_COMMIT_MESSAGE" value="insights" />
   </component>
 </project>

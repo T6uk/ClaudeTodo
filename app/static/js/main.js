@@ -1,15 +1,15 @@
-// Main JavaScript for Personal Website
-
-// Wait for document to be fully loaded
+// app/static/js/main.js
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-dismiss alerts after 5 seconds
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(function(alert) {
-        setTimeout(function() {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        }, 5000);
-    });
+    // Auto-dismiss alerts after 5 seconds - except on insights page
+    if (!window.location.href.includes('/health/insights')) {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    }
 
     // Update navbar appearance on theme change
     window.addEventListener('themechange', function(e) {
