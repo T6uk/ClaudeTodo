@@ -5,13 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="insights">
-      <change afterPath="$PROJECT_DIR$/app/static/css/navbar-cat.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/static/images/cat/cat-eating.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/static/images/cat/cat-running.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/static/images/cat/cat-sitting.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/static/images/cat/cat-sleeping.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/static/js/navbar-cat.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/css/navbar-cat.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/css/navbar-cat.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/css/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/images/cat/cats.svg" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/images/cat/cats.svg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/static/js/navbar-cat.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/navbar-cat.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/base.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -64,6 +62,7 @@
       <recent name="C:\Users\ormet\OneDrive\Desktop\Claude Todo Site\todo" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\ormet\OneDrive\Desktop\Claude Todo Site\app\static\images\cat" />
       <recent name="C:\Users\ormet\OneDrive\Desktop\Claude Todo Site" />
       <recent name="C:\Users\ormet\OneDrive\Desktop\Claude Todo Site\app" />
       <recent name="C:\Users\ormet\OneDrive\Desktop\Claude Todo Site\blueprints" />
@@ -93,7 +92,7 @@
       <workItem from="1741692515555" duration="4311000" />
       <workItem from="1741705760013" duration="7566000" />
       <workItem from="1741717899592" duration="1001000" />
-      <workItem from="1741776710093" duration="12891000" />
+      <workItem from="1741776710093" duration="13933000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -351,7 +350,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741810597809</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="insights">
+      <option name="closed" value="true" />
+      <created>1741811389191</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1741811389191</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

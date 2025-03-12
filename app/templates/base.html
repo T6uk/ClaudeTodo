@@ -17,7 +17,6 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/typography.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar-cat.css') }}">
 
     <!-- Additional head content -->
     {% block head %}{% endblock %}
@@ -81,10 +80,6 @@
                     </li>
                 </ul>
             </div>
-             <!-- Navbar Cat Container -->
-            <div id="navbar-cat-container">
-                <div id="navbar-cat" class="cat-sitting" title="Meow!"></div>
-            </div>
         </div>
     </nav>
 
@@ -131,8 +126,6 @@
 
     <!-- Custom JavaScript -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-
-    <script src="{{ url_for('static', filename='js/navbar-cat.js') }}"></script>
 
     <!-- Additional scripts -->
     {% block scripts %}{% endblock %}
