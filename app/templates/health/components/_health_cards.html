@@ -1,4 +1,4 @@
-<!-- Health overview cards -->
+<!-- app/templates/health/components/_health_cards.html (complete updated version) -->
 <div class="row mb-4">
     <div class="col-md-4 mb-3">
         <div class="health-card">
@@ -25,6 +25,9 @@
                         </div>
                     </div>
                 </div>
+                <a href="{{ url_for('health.user_insights') }}" class="btn btn-primary btn-sm w-100 mt-2">
+                    <i class="fas fa-lightbulb me-1"></i> View Personalized Insights
+                </a>
             </div>
         </div>
     </div>

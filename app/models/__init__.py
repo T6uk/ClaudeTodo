@@ -12,3 +12,4 @@ from app.models.body_metrics import BodyMetrics
 from app.models.water_intake import WaterIntake
 from app.models.game import Game
 from app.models.game_score import GameScore
+from app.models.dashboard_widget import DashboardWidget

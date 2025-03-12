@@ -1,0 +1,49 @@
+<!-- app/templates/dashboard/widgets/_weight_chart.html -->
+<div class="widget-weight-chart">
+    <canvas id="miniWeightChart" height="150"></canvas>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the context of the canvas element
+    const ctx = document.getElementById('miniWeightChart').getContext('2d');
+
+    // Extract weight data
+    const metricsDates = {{ metrics_dates|tojson|safe }};
+    const weights = {{ weights|tojson|safe }};
+
+    // Create the chart
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: metricsDates,
+            datasets: [{
+                label: 'Weight (kg)',
+                data: weights,
+                backgroundColor: 'rgba(161, 178, 212, 0.2)',
+                borderColor: 'rgba(161, 178, 212, 1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    ticks: {
+                        precision: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+});
+</script>

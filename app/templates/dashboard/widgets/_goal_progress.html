@@ -1,0 +1,76 @@
+<div class="widget-goal-progress">
+    <div class="text-center mb-3">Weekly Goals Progress</div>
+
+    <!-- Workout Goal -->
+    {% if workout_stats is defined %}
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <small>Workouts: {{ workout_stats.total_workouts }}/5</small>
+            <small>{{ (workout_stats.total_workouts / 5 * 100)|round|int }}%</small>
+        </div>
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-success"
+                 style="width: {{ (workout_stats.total_workouts / 5 * 100)|round|int }}%"></div>
+        </div>
+    </div>
+    {% else %}
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <small>Workouts: 0/5</small>
+            <small>0%</small>
+        </div>
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar bg-success" style="width: 0%"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Water Goal -->
+    {% if total_water_today is defined and water_percentage is defined %}
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <small>Daily Water: {{ total_water_today|round|int }}/2500 ml</small>
+            <small>{{ water_percentage|round|int }}%</small>
+        </div>
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar" style="width: {{ water_percentage }}%"></div>
+        </div>
+    </div>
+    {% else %}
+    <div class="mb-3">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <small>Daily Water: 0/2500 ml</small>
+            <small>0%</small>
+        </div>
+        <div class="progress" style="height: 8px;">
+            <div class="progress-bar" style="width: 0%"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Protein Goal -->
+    {% set protein_goal = 56 %}
+    {% if nutrition_stats is defined %}
+        {% set protein_percent = (nutrition_stats.total_protein / protein_goal * 100)|default(0, true) %}
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small>Daily Protein: {{ nutrition_stats.total_protein|default(0, true)|round(1) }}/{{ protein_goal }}g</small>
+                <small>{{ protein_percent|round|int }}%</small>
+            </div>
+            <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-warning"
+                     style="width: {{ protein_percent|round|int }}%"></div>
+            </div>
+        </div>
+    {% else %}
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small>Daily Protein: 0/{{ protein_goal }}g</small>
+                <small>0%</small>
+            </div>
+            <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-warning" style="width: 0%"></div>
+            </div>
+        </div>
+    {% endif %}
+</div>

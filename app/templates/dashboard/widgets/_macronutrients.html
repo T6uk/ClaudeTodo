@@ -1,0 +1,59 @@
+<!-- app/templates/dashboard/widgets/_macronutrients.html -->
+<div class="widget-macronutrients">
+    <canvas id="miniMacrosChart" height="150"></canvas>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get the context of the canvas element
+    const ctx = document.getElementById('miniMacrosChart').getContext('2d');
+
+    // Extract nutrition data
+    const protein = {{ nutrition_stats.total_protein|default(0, true) }};
+    const carbs = {{ nutrition_stats.total_carbs|default(0, true) }};
+    const fat = {{ nutrition_stats.total_fat|default(0, true) }};
+    const total = protein + carbs + fat;
+
+    // Create the chart
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Protein', 'Carbs', 'Fat'],
+            datasets: [{
+                data: [protein, carbs, fat],
+                backgroundColor: [
+                    'rgba(87, 167, 115, 0.8)',
+                    'rgba(183, 201, 232, 0.8)',
+                    'rgba(215, 100, 100, 0.8)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 10
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const value = context.raw.toFixed(1);
+                            const percentage = total > 0 ? Math.round(context.raw / total * 100) : 0;
+                            return `${context.label}: ${value}g (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>

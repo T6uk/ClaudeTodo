@@ -47,6 +47,11 @@ def create_app(config_name=None):
     migrate.init_app(app, db)
     login_manager.init_app(app)
 
+    @app.template_filter('abs')
+    def abs_filter(n):
+        """Absolute value filter for templates"""
+        return abs(n)
+
     # Register blueprints
     from app.routes.main import main_bp
     from app.routes.auth import auth_bp
@@ -55,6 +60,7 @@ def create_app(config_name=None):
     from app.routes.challenge import challenge_bp
     from app.routes.health import health_bp
     from app.routes.games import games_bp
+    from app.routes.dashboard import dashboard_bp  # Add this line
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -63,6 +69,7 @@ def create_app(config_name=None):
     app.register_blueprint(challenge_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(games_bp)
+    app.register_blueprint(dashboard_bp)  # Add this line
 
     # Register error handlers
     register_error_handlers(app)

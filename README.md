@@ -1,110 +1,63 @@
 # Personal Website
 
-A personal website built with Flask, featuring a user authentication system.
+A secure, customizable personal dashboard and productivity platform built with Flask and Bootstrap.
 
 ## Features
 
-- User authentication (register, login, logout)
-- User profile management
-- Responsive design with Bootstrap 5
-- SQLAlchemy ORM integration
-- Flask-Login for session management
+### User Authentication
+- Secure login and registration system with password hashing
+- User profiles with customizable details
+- "Remember me" functionality
 
-## Project Structure
+### Dashboard Customization
+- Personalized dashboard with drag-and-drop widget organization
+- Resizable widgets for optimal viewing experience
+- Enable/disable widgets based on your needs
+- Add new widgets from a variety of data visualization options
 
-```
-PersonalWebSite/
-│
-├── app/                      # Main application package
-│   ├── __init__.py           # App initialization and factory
-│   ├── config.py             # Configuration settings
-│   ├── models/               # SQLAlchemy data models
-│   │   ├── __init__.py
-│   │   └── user.py           # User model
-│   ├── routes/               # Route definitions
-│   │   ├── __init__.py
-│   │   ├── auth.py           # Authentication routes
-│   │   └── main.py           # Main routes
-│   ├── forms/                # WTForms forms
-│   │   ├── __init__.py
-│   │   └── auth_forms.py     # Authentication forms
-│   ├── static/               # Static assets
-│   │   ├── css/
-│   │   │   └── style.css
-│   │   └── js/
-│   │       └── main.js
-│   └── templates/            # Jinja2 templates
-│       ├── base.html         # Base template
-│       ├── index.html        # Home page
-│       ├── dashboard.html    # User dashboard
-│       ├── auth/             # Authentication templates
-│       │   ├── login.html
-│       │   ├── register.html
-│       │   └── profile.html
-│       └── errors/           # Error pages
-│           ├── 404.html
-│           └── 500.html
-│
-├── .env                      # Environment variables
-├── .gitignore                # Git ignore file
-├── README.md                 # Project README
-├── requirements.txt          # Python dependencies
-└── run.py                    # Application entry point
-```
+### Health Tracking
+- Track workouts, nutrition, and body metrics
+- Monitor daily water intake
+- View progress with interactive charts and reports
+- Maintain a workout streak for motivation
 
-## Installation
+### Task Management
+- Create and manage todo items
+- Assign tasks to users
+- Track due dates and priorities
+- Mark tasks as completed
 
-1. Clone the repository:
-   ```
-   git clone https://github.com/T6uk/PersonalWebSite.git
-   cd PersonalWebSite
-   ```
+### Calendar
+- Schedule and organize events
+- Invite other users to events
+- Color-coded events for better visibility
+- View events in daily, weekly, or monthly format
 
-2. Create and activate a virtual environment:
-   ```
-   python -m venv venv
-   
-   # On Windows
-   venv\Scripts\activate
-   
-   # On macOS/Linux
-   source venv/bin/activate
-   ```
+### Challenges
+- Create and participate in challenges with other users
+- Track progress toward challenge goals
+- View leaderboards of participants
 
-3. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+### Gaming Section
+- Take a break with integrated games
+- Track high scores and performance
 
-4. Create a `.env` file with required environment variables (see `.env` example)
+## Technology Stack
+- Flask web framework
+- SQLAlchemy ORM
+- Bootstrap 5 for responsive design
+- JavaScript for interactivity
+- Chart.js for data visualization
+- SortableJS for drag-and-drop functionality
 
-5. Initialize the database:
-   ```
-   flask db init
-   flask db migrate -m "Initial migration"
-   flask db upgrade
-   ```
+## Installation and Setup
 
-6. Run the application:
-   ```
-   python run.py
-   ```
-
-## Usage
-
-- Access the application at `http://localhost:5000`
-- Register a new account
-- Log in with your credentials
-- View your dashboard and profile
-
-## Development
-
-- Create database migrations when models change:
-  ```
-  flask db migrate -m "Description of changes"
-  flask db upgrade
-  ```
-
-## License
-
-This project is open-source and available under the MIT License.
+1. Clone the repository
+2. Create a virtual environment: `python -m venv venv`
+3. Activate the virtual environment:
+   - Windows: `venv\Scripts\activate`
+   - macOS/Linux: `source venv/bin/activate`
+4. Install dependencies: `pip install -r requirements.txt`
+5. Set up environment variables in `.env`
+6. Initialize the database: `flask db upgrade`
+7. Run the application: `flask run`

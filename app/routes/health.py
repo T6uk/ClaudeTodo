@@ -13,6 +13,7 @@ from app.models.body_metrics import BodyMetrics
 from app.models.water_intake import WaterIntake
 from app.models.exercise import Exercise
 from app.forms.health_forms import WorkoutForm, MealForm, BodyMetricsForm, WaterIntakeForm, ExerciseForm
+from app.utils.insights import generate_user_insights
 
 health_bp = Blueprint("health", __name__)
 
@@ -1161,3 +1162,49 @@ def nutrition_calculator():
     # This would be expanded in a future version
     return render_template("health/nutrition_calculator.html",
                            title="Nutrition Calculator")
+
+
+@health_bp.route("/health/insights")
+@login_required
+def user_insights():
+    """Show personalized health insights and recommendations"""
+    try:
+        # Generate insights for the current user
+        insights = generate_user_insights(current_user.id)
+
+        # Get some recent data for context
+        recent_workouts = Workout.query.filter_by(
+            user_id=current_user.id
+        ).order_by(Workout.date.desc()).limit(5).all()
+
+        # Get latest metrics
+        latest_metrics = BodyMetrics.query.filter_by(
+            user_id=current_user.id
+        ).order_by(BodyMetrics.date.desc()).first()
+
+        # Get workout stats for visualization
+        workout_data = {}
+        for workout_type in ['cardio', 'strength', 'flexibility', 'hiit', 'yoga', 'sports', 'crossfit', 'other']:
+            count = Workout.query.filter_by(
+                user_id=current_user.id,
+                workout_type=workout_type
+            ).count()
+
+            if count > 0:
+                workout_data[workout_type] = count
+
+        # Create a simple workout form for the recommended workout
+        workout_form = WorkoutForm()
+        workout_form.date.data = datetime.utcnow()
+
+        return render_template("health/insights.html",
+                               title="Health Insights",
+                               insights=insights,
+                               recent_workouts=recent_workouts,
+                               latest_metrics=latest_metrics,
+                               workout_data=workout_data,
+                               workout_form=workout_form,
+                               datetime=datetime)
+    except Exception as e:
+        flash(f"Error generating insights: {str(e)}", "danger")
+        return redirect(url_for("health.health"))
