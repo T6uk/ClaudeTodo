@@ -4,19 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="games">
-      <change afterPath="$PROJECT_DIR$/app/models/exercise.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/static/js/workout.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/add_exercises.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/templates/health/favorites.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/forms/health_forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/forms/health_forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/workout.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/workout.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/health.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/health.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/health.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/css/health.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/templates/health/health.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/health/health.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/instance/site.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/site.db" afterDir="false" />
-    </list>
+    <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="workouts" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -96,7 +84,7 @@
       <workItem from="1741692515555" duration="4311000" />
       <workItem from="1741705760013" duration="7566000" />
       <workItem from="1741717899592" duration="1001000" />
-      <workItem from="1741776710093" duration="1789000" />
+      <workItem from="1741776710093" duration="2065000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -314,7 +302,15 @@
       <option name="project" value="LOCAL" />
       <updated>1741776906574</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="workouts">
+      <option name="closed" value="true" />
+      <created>1741778535822</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1741778535822</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -340,6 +336,7 @@
     <MESSAGE value="todo page design" />
     <MESSAGE value="new design" />
     <MESSAGE value="games" />
-    <option name="LAST_COMMIT_MESSAGE" value="games" />
+    <MESSAGE value="workouts" />
+    <option name="LAST_COMMIT_MESSAGE" value="workouts" />
   </component>
 </project>
