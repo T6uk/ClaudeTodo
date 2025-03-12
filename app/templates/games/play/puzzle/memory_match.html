@@ -252,11 +252,63 @@
         transform: translateY(-3px);
         box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
     }
+
+    /* Game completion celebratory animation */
+    @keyframes celebrate {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
+
+    .celebrate {
+        animation: celebrate 0.5s ease-in-out 3;
+    }
+
+    /* Game progress indicator */
+    .progress-indicator {
+        margin: 15px auto;
+        max-width: 550px;
+        height: 8px;
+        background-color: #e9ecef;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-indicator-value {
+        height: 100%;
+        background-color: #57A773;
+        width: 0%;
+        transition: width 0.3s ease;
+    }
+
+    /* Sound toggle button */
+    .sound-toggle {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: rgba(255, 255, 255, 0.2);
+        border: none;
+        color: white;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .sound-toggle:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+    }
 </style>
 {% endblock %}
 
 {% block game_content %}
-<div class="memory-match-container">
+<div class="memory-match-container position-relative">
+    <button class="sound-toggle" id="soundToggle" title="Toggle sound">
+        <i class="fas fa-volume-up" id="soundIcon"></i>
+    </button>
+
     <div class="game-stats">
         <div class="stat-item">
             <div class="stat-value" id="scoreDisplay">0</div>
@@ -274,6 +326,11 @@
             <div class="stat-value" id="comboDisplay">0</div>
             <div class="stat-label">Combo</div>
         </div>
+    </div>
+
+    <!-- Progress matches indicator -->
+    <div class="progress-indicator">
+        <div class="progress-indicator-value" id="matchesProgress"></div>
     </div>
 
     <div class="level-select mb-3">
@@ -350,6 +407,8 @@
         let maxCombo = 0;
         let gameVariant = 'classic';
         let soundEnabled = true;
+        let gamePaused = false;
+        let gameEnded = false; // Add a flag to prevent multiple end game calls
 
         // Card symbols by theme (unicode symbols and emojis)
         const cardSymbols = {
@@ -366,7 +425,8 @@
             match: new Audio('https://freesound.org/data/previews/131/131660_2398403-lq.mp3'),
             wrong: new Audio('https://freesound.org/data/previews/142/142608_1840739-lq.mp3'),
             win: new Audio('https://freesound.org/data/previews/320/320775_5260872-lq.mp3'),
-            timeTick: new Audio('https://freesound.org/data/previews/254/254316_4404552-lq.mp3')
+            timeTick: new Audio('https://freesound.org/data/previews/254/254316_4404552-lq.mp3'),
+            levelUp: new Audio('https://freesound.org/data/previews/270/270404_5123851-lq.mp3')
         };
 
         // Preload sounds
@@ -377,7 +437,7 @@
 
         // Play sound if enabled
         function playSound(sound) {
-            if (soundEnabled) {
+            if (soundEnabled && sounds[sound]) {
                 sounds[sound].currentTime = 0;
                 sounds[sound].play().catch(e => console.log("Audio play error:", e));
             }
@@ -390,6 +450,7 @@
         const timeDisplay = document.getElementById('timeDisplay');
         const comboDisplay = document.getElementById('comboDisplay');
         const progressBar = document.getElementById('progressBar');
+        const matchesProgress = document.getElementById('matchesProgress');
         const levelSelect = document.getElementById('levelSelect');
         const themeSelect = document.getElementById('themeSelect');
         const difficultyStars = document.getElementById('difficultyStars');
@@ -397,6 +458,8 @@
         const resetButton = document.getElementById('resetButton');
         const gameToast = document.getElementById('gameToast');
         const variantButtons = document.querySelectorAll('.variant-btn');
+        const soundToggle = document.getElementById('soundToggle');
+        const soundIcon = document.getElementById('soundIcon');
 
         // Set up difficulty settings
         const DIFFICULTY = {
@@ -475,6 +538,12 @@
             difficultyStars.innerHTML = stars;
         }
 
+        // Update matches progress indicator
+        function updateMatchesProgress() {
+            const percentage = (matches / totalPairs) * 100;
+            matchesProgress.style.width = `${percentage}%`;
+        }
+
         // Set up initial game state
         function initGame() {
             // Clear any existing timer
@@ -491,6 +560,8 @@
             matches = 0;
             combo = 0;
             maxCombo = 0;
+            gamePaused = false;
+            gameEnded = false; // Reset game ended flag
 
             // Get difficulty settings
             const difficulty = levelSelect.value;
@@ -508,6 +579,7 @@
             scoreDisplay.textContent = '0';
             movesDisplay.textContent = '0';
             comboDisplay.textContent = '0';
+            updateMatchesProgress();
 
             if (gameVariant !== 'challenge') {
                 timeDisplay.textContent = formatTime(timeLeft);
@@ -520,6 +592,12 @@
 
             // Clear the game board
             gameBoard.innerHTML = '';
+
+            // Remove any pause overlay
+            const pauseOverlay = document.getElementById('pauseOverlay');
+            if (pauseOverlay) {
+                pauseOverlay.remove();
+            }
 
             // Show game variant description
             showToast(VARIANTS[gameVariant].description);
@@ -639,6 +717,8 @@
             if (lockBoard) return;
             if (this === firstCard) return;
             if (this.classList.contains('matched')) return;
+            if (!gameActive || gameEnded) return;
+            if (gamePaused) return;
 
             // Play flip sound
             playSound('flip');
@@ -669,6 +749,7 @@
                     setTimeout(() => {
                         outOfMoves();
                     }, 800);
+                    return; // Prevent further processing
                 }
             }
 
@@ -677,6 +758,8 @@
 
         // Check if the two flipped cards match
         function checkForMatch() {
+            if (!firstCard || !secondCard) return; // Safety check
+
             // Get the symbols from both cards
             const firstSymbol = firstCard.querySelector('.card-back').textContent;
             const secondSymbol = secondCard.querySelector('.card-back').textContent;
@@ -697,6 +780,12 @@
                 // Add match animation
                 firstCard.classList.add('match-success', 'matched');
                 secondCard.classList.add('match-success', 'matched');
+
+                // Increment matches counter
+                matches++;
+
+                // Update matches progress display
+                updateMatchesProgress();
 
                 // Show combo animation if > 1
                 if (combo > 1) {
@@ -724,9 +813,6 @@
                 score += pointsEarned;
                 updateScore(score);
 
-                // Track matches
-                matches++;
-
                 // Add time bonus for timed mode
                 if (gameVariant === 'timed') {
                     const timeBonus = DIFFICULTY[difficulty].timePerMatch;
@@ -736,8 +822,16 @@
 
                 // Check if game is complete
                 if (matches >= totalPairs) {
+                    console.log("All pairs matched! matches:", matches, "totalPairs:", totalPairs);
+
+                    // Lock the board immediately to prevent further moves
+                    lockBoard = true;
+
+                    // Set a short timeout to allow animations to complete
                     setTimeout(() => {
-                        finishGame();
+                        if (!gameEnded) {
+                            finishGame();
+                        }
                     }, 800);
                 }
             } else {
@@ -760,14 +854,16 @@
                 secondCard.classList.add('match-fail');
 
                 setTimeout(() => {
-                    firstCard.classList.remove('match-fail');
-                    secondCard.classList.remove('match-fail');
+                    if (firstCard) firstCard.classList.remove('match-fail');
+                    if (secondCard) secondCard.classList.remove('match-fail');
                 }, 400);
             }
         }
 
-        // Disable matched cards
+// Disable matched cards
         function disableCards() {
+            if (!firstCard || !secondCard) return; // Safety check
+
             firstCard.removeEventListener('click', flipCard);
             secondCard.removeEventListener('click', flipCard);
 
@@ -779,8 +875,10 @@
             lockBoard = true;
 
             setTimeout(() => {
-                firstCard.classList.remove('flipped');
-                secondCard.classList.remove('flipped');
+                if (firstCard && secondCard) {
+                    firstCard.classList.remove('flipped');
+                    secondCard.classList.remove('flipped');
+                }
 
                 resetBoard();
             }, 1000);
@@ -797,6 +895,7 @@
             if (gameActive) return;
 
             gameActive = true;
+            gameEnded = false; // Reset game ended flag
             lockBoard = false;
             startTime = Date.now();
 
@@ -806,11 +905,21 @@
             moves = 0;
             combo = 0;
             maxCombo = 0;
+            updateMatchesProgress();
 
             // Update display
             scoreDisplay.textContent = '0';
             movesDisplay.textContent = '0';
             comboDisplay.textContent = '0';
+
+            // Reset all scores in the game system
+            if (document.getElementById('finalScore')) {
+                document.getElementById('finalScore').textContent = "0";
+            }
+
+            if (document.getElementById('scoreInput')) {
+                document.getElementById('scoreInput').value = "0";
+            }
 
             // Update control buttons
             startButton.disabled = true;
@@ -826,7 +935,7 @@
 
         // Update timer display
         function updateTimer() {
-            if (!gameActive) return;
+            if (!gameActive || gamePaused || gameEnded) return;
 
             timeLeft--;
 
@@ -854,17 +963,36 @@
             // Check for game over
             if (timeLeft <= 0) {
                 clearInterval(gameTimer);
-                timeOut();
+                if (!gameEnded) {
+                    timeOut();
+                }
             }
         }
 
         // Time out - game over
         function timeOut() {
+            console.log("Time out called. Current score:", score);
+            if (gameEnded) return; // Prevent multiple calls
+
+            gameEnded = true;
             lockBoard = true;
             gameActive = false;
 
             // Play sound
             playSound('wrong');
+
+            // Ensure score is up-to-date in the UI
+            scoreDisplay.textContent = score;
+
+            // Make sure the hidden score input is updated
+            if (document.getElementById('scoreInput')) {
+                document.getElementById('scoreInput').value = score;
+            }
+
+            // Update final score display if it exists
+            if (document.getElementById('finalScore')) {
+                document.getElementById('finalScore').textContent = score;
+            }
 
             // Enable buttons
             startButton.disabled = false;
@@ -874,33 +1002,73 @@
 
             // Show message
             endGame(score, 'Time\'s up! You matched ' + matches + ' out of ' + totalPairs + ' pairs.');
+
+            console.log("Final score sent to endGame:", score);
         }
 
         // Out of moves - challenge mode
         function outOfMoves() {
+            console.log("Out of moves called. Current score:", score);
+            if (gameEnded) return; // Prevent multiple calls
+
+            gameEnded = true;
             lockBoard = true;
             gameActive = false;
 
             // Play sound
             playSound('wrong');
 
+            // Ensure score is up-to-date in the UI
+            scoreDisplay.textContent = score;
+
+            // Make sure the hidden score input is updated
+            if (document.getElementById('scoreInput')) {
+                document.getElementById('scoreInput').value = score;
+            }
+
+            // Update final score display if it exists
+            if (document.getElementById('finalScore')) {
+                document.getElementById('finalScore').textContent = score;
+            }
+
             // Enable buttons
             startButton.disabled = false;
             levelSelect.disabled = false;
             themeSelect.disabled = false;
             variantButtons.forEach(btn => btn.disabled = false);
+
             // Show message for challenge mode out of moves
             endGame(score, 'Out of moves! You matched ' + matches + ' out of ' + totalPairs + ' pairs.');
+
+            console.log("Final score sent to endGame:", score);
         }
 
         // Finish game - all matches found
         function finishGame() {
+            console.log("Finish game called. Score:", score, "Matches:", matches, "Total Pairs:", totalPairs);
+            if (gameEnded) return; // Prevent multiple calls to finish game
+
+            gameEnded = true;
             clearInterval(gameTimer);
             lockBoard = true;
             gameActive = false;
 
+            // Double check that all pairs are found (safety check)
+            if (matches !== totalPairs) {
+                console.log("Game finished but matches don't equal totalPairs:", matches, totalPairs);
+                // Force the correct value just to be safe
+                matches = totalPairs;
+                updateMatchesProgress(); // Update visual progress
+            }
+
             // Play win sound
             playSound('win');
+            playSound('levelUp');
+
+            // Add celebration effect to matched cards
+            document.querySelectorAll('.matched').forEach(card => {
+                card.classList.add('celebrate');
+            });
 
             // Calculate bonuses
             let timeBonus = 0;
@@ -922,6 +1090,16 @@
 
             // Update score display
             scoreDisplay.textContent = score;
+
+            // Make sure the hidden score input is updated
+            if (document.getElementById('scoreInput')) {
+                document.getElementById('scoreInput').value = score;
+            }
+
+            // Update final score display if it exists
+            if (document.getElementById('finalScore')) {
+                document.getElementById('finalScore').textContent = score;
+            }
 
             // Calculate elapsed time
             const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
@@ -950,7 +1128,16 @@
                 message += ` Max combo (${maxCombo}×): +${comboBonus} points!`;
             }
 
+            // Update matches progress to 100%
+            updateMatchesProgress();
+
+            // Show success toast
+            showToast('🎉 All pairs matched! Great job!');
+
+            // Call the game end modal
             endGame(score, message);
+
+            console.log("Final score sent to endGame:", score);
         }
 
         // Reset game
@@ -963,6 +1150,69 @@
             levelSelect.disabled = false;
             themeSelect.disabled = false;
             variantButtons.forEach(btn => btn.disabled = false);
+        }
+
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+
+            // Update icon
+            if (soundEnabled) {
+                soundIcon.className = 'fas fa-volume-up';
+                showToast('Sound enabled');
+            } else {
+                soundIcon.className = 'fas fa-volume-mute';
+                showToast('Sound muted');
+            }
+        }
+
+        // Pause game
+        function pauseGame() {
+            if (!gameActive || gameEnded) return;
+
+            gamePaused = !gamePaused;
+
+            if (gamePaused) {
+                // Pause the game
+                clearInterval(gameTimer);
+                showToast('Game paused');
+
+                // Show a pause overlay
+                const pauseOverlay = document.createElement('div');
+                pauseOverlay.id = 'pauseOverlay';
+                pauseOverlay.style.position = 'absolute';
+                pauseOverlay.style.top = '0';
+                pauseOverlay.style.left = '0';
+                pauseOverlay.style.width = '100%';
+                pauseOverlay.style.height = '100%';
+                pauseOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                pauseOverlay.style.display = 'flex';
+                pauseOverlay.style.justifyContent = 'center';
+                pauseOverlay.style.alignItems = 'center';
+                pauseOverlay.style.zIndex = '100';
+                pauseOverlay.style.borderRadius = '15px';
+
+                const pauseText = document.createElement('div');
+                pauseText.textContent = 'PAUSED';
+                pauseText.style.color = 'white';
+                pauseText.style.fontSize = '2rem';
+                pauseText.style.fontWeight = 'bold';
+
+                pauseOverlay.appendChild(pauseText);
+                gameBoard.parentElement.appendChild(pauseOverlay);
+            } else {
+                // Resume the game
+                if (gameVariant === 'timed') {
+                    gameTimer = setInterval(updateTimer, 1000);
+                }
+                showToast('Game resumed');
+
+                // Remove pause overlay
+                const pauseOverlay = document.getElementById('pauseOverlay');
+                if (pauseOverlay) {
+                    pauseOverlay.remove();
+                }
+            }
         }
 
         // Update game variant
@@ -987,6 +1237,7 @@
         resetButton.addEventListener('click', resetGame);
         levelSelect.addEventListener('change', initGame);
         themeSelect.addEventListener('change', initGame);
+        soundToggle.addEventListener('click', toggleSound);
 
         // Variant button listeners
         variantButtons.forEach(button => {
@@ -995,11 +1246,23 @@
             });
         });
 
-        // Toggle sound with keyboard shortcut 'M'
+        // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
+            // Toggle sound with M key
             if (e.key.toLowerCase() === 'm') {
-                soundEnabled = !soundEnabled;
-                showToast(soundEnabled ? 'Sound enabled' : 'Sound muted');
+                toggleSound();
+            }
+
+            // Pause game with P or Escape key
+            if ((e.key.toLowerCase() === 'p' || e.key === 'Escape') && gameActive && !gameEnded) {
+                pauseGame();
+                e.preventDefault();
+            }
+
+            // Start/restart game with Enter key
+            if (e.key === 'Enter' && !gameActive) {
+                startGame();
+                e.preventDefault();
             }
         });
 
