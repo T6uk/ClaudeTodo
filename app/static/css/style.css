@@ -612,3 +612,13 @@ h1::after {
     from { opacity: 0; }
     to { opacity: 1; }
 }
+
+.box{
+  width: 800px;
+  height: 600px;
+  overflow: hidden;
+}
+
+#fly{
+  // display:none;
+}
