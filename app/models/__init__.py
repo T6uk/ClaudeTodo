@@ -13,3 +13,4 @@ from app.models.water_intake import WaterIntake
 from app.models.game import Game
 from app.models.game_score import GameScore
 from app.models.dashboard_widget import DashboardWidget
+from app.models.diary import DiaryEntry

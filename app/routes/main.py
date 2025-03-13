@@ -36,6 +36,7 @@ def dashboard():
     from app.models.water_intake import WaterIntake
     from app.routes.health import calculate_workout_streak
     from sqlalchemy import func
+    from app.models.diary import DiaryEntry  # Add this line
 
     # Default to showing data from the past 30 days
     end_date = datetime.utcnow()
@@ -66,6 +67,11 @@ def dashboard():
         WaterIntake.user_id == current_user.id,
         func.date(WaterIntake.date) == today
     ).all()
+
+    # Get recent diary entries
+    diary_entries = DiaryEntry.query.filter_by(
+        user_id=current_user.id
+    ).order_by(DiaryEntry.created_at.desc()).limit(5).all()
 
     # Calculate total water intake for today
     total_water_today = sum(intake.amount for intake in water_today)
@@ -117,4 +123,5 @@ def dashboard():
                            water_intakes=water_today,
                            workout_stats=workout_stats,
                            nutrition_stats=nutrition_stats,
-                           water_percentage=water_percentage)
+                           water_percentage=water_percentage,
+                           diary_entries=diary_entries)  # Add this line

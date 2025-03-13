@@ -60,7 +60,8 @@ def create_app(config_name=None):
     from app.routes.challenge import challenge_bp
     from app.routes.health import health_bp
     from app.routes.games import games_bp
-    from app.routes.dashboard import dashboard_bp  # Add this line
+    from app.routes.dashboard import dashboard_bp
+    from app.routes.diary import diary_bp  # Add this line
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -69,7 +70,8 @@ def create_app(config_name=None):
     app.register_blueprint(challenge_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(games_bp)
-    app.register_blueprint(dashboard_bp)  # Add this line
+    app.register_blueprint(dashboard_bp)
+    app.register_blueprint(diary_bp)  # Add this line
 
     # Register error handlers
     register_error_handlers(app)

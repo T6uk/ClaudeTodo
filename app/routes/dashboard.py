@@ -59,7 +59,9 @@ def customize():
         {"id": "workout_calendar", "name": "Workout Calendar", "description": "Calendar view of your workouts"},
         {"id": "macronutrients", "name": "Macronutrients", "description": "Breakdown of your macronutrient intake"},
         {"id": "calories_chart", "name": "Calories Chart", "description": "Chart of your calorie intake"},
-        {"id": "goal_progress", "name": "Goal Progress", "description": "Progress towards your health goals"}
+        {"id": "goal_progress", "name": "Goal Progress", "description": "Progress towards your health goals"},
+        {"id": "recent_diary", "name": "Recent Diary Entries", "description": "Your latest diary entries"}
+
     ]
 
     return render_template("dashboard/customize.html",
