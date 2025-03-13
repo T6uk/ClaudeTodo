@@ -613,12 +613,49 @@ h1::after {
     to { opacity: 1; }
 }
 
-.box{
-  width: 800px;
-  height: 600px;
-  overflow: hidden;
+/* app/static/css/cat.css */
+.cat-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100px; /* Increase width for larger cat visibility */
+    overflow: visible;
+    display: flex;
+    align-items: center;
+    z-index: 5;
 }
 
-#fly{
-  // display:none;
+.cat-container svg {
+    width: 300px; /* Make the SVG larger */
+    height: auto;
+    transform: scale(1.5); /* Scale up the cat */
+    transform-origin: left center; /* Scale from the left side */
+    margin-left: -16.5rem; /* Adjust position */
+    position: relative;
+    top: 0; /* Fine-tune vertical position */
+}
+
+/* Adjust navbar brand position to make room for the larger cat */
+.navbar-brand {
+    margin-left: 80px; /* Push the brand text to give space for the cat */
+    position: relative;
+    z-index: 10; /* Ensure the brand text is above the cat if they overlap */
+}
+
+/* Ensure the navbar maintains its height */
+.navbar {
+    min-height: 60px;
+    overflow: visible; /* Allow the cat to overflow without affecting navbar size */
+}
+
+/* This ensures the animation doesn't cause scroll issues */
+body {
+    overflow-x: hidden;
+}
+
+/* Fix z-index for navbar content to ensure it's above the cat */
+.navbar-collapse {
+    position: relative;
+    z-index: 10;
 }
