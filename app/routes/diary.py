@@ -735,9 +735,7 @@ def generate_calendar_data(year, month, entries_by_day):
     return calendar_data
 
 
-@diary_bp.route("/diary/insights")
-@login_required
-def diary_insights():
+def diary_insights(user_id):
     """Generate writing insights from diary entries"""
     # Get basic stats
     entry_count = DiaryEntry.query.filter_by(user_id=current_user.id).count()
@@ -755,8 +753,8 @@ def diary_insights():
     ).group_by('hour').all()
 
     # Convert to a more usable format
-    hours = [int(hour) for hour, _ in time_analysis]
-    counts = [int(count) for _, count in time_analysis]
+    hours = [int(hour) for hour, _ in time_analysis] if time_analysis else list(range(24))
+    counts = [int(count) for _, count in time_analysis] if time_analysis else [0] * 24
 
     # Find peak writing times
     if time_analysis:
@@ -780,7 +778,7 @@ def diary_insights():
         DiaryEntry.user_id == current_user.id,
         DiaryEntry.category != None,
         DiaryEntry.category != ''
-    ).group_by(DiaryEntry.category).order_by(desc('count')).limit(3).all()
+    ).group_by(DiaryEntry.category).order_by(desc('count')).limit(3).all() or []
 
     # Most common moods
     top_moods = db.session.query(
@@ -790,18 +788,18 @@ def diary_insights():
         DiaryEntry.user_id == current_user.id,
         DiaryEntry.mood != None,
         DiaryEntry.mood != ''
-    ).group_by(DiaryEntry.mood).order_by(desc('count')).limit(3).all()
+    ).group_by(DiaryEntry.mood).order_by(desc('count')).limit(3).all() or []
 
     # Create consistency score (0-100)
     # Based on frequency, average word count, and streak factors
-    streak_data = calculate_streaks(db.session.query(
+    entries_by_date = db.session.query(
         func.date(DiaryEntry.created_at).label('date'),
         func.count(DiaryEntry.id).label('count')
     ).filter(
         DiaryEntry.user_id == current_user.id
-    ).group_by('date').all())
+    ).group_by('date').all()
 
-    current_streak, longest_streak = streak_data
+    current_streak, longest_streak = calculate_streaks(entries_by_date)
 
     # Weekly frequency
     weekly_frequency = db.session.query(
