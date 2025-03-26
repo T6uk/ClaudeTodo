@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/diary.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container diary-container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>
+                <i class="fas fa-book me-2"></i>
+                Diary Dashboard
+            </h1>
+            <p class="lead">Overview of your journaling activity</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Stats cards -->
+        <div class="col-md-3 mb-4">
+            <div class="card diary-stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-book-open fa-2x mb-2 text-primary"></i>
+                    <div class="diary-stat-number">{{ stats.total_entries }}</div>
+                    <div class="diary-stat-label">Total Entries</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card diary-stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-fire fa-2x mb-2 text-danger"></i>
+                    <div class="diary-stat-number">{{ stats.current_streak }}</div>
+                    <div class="diary-stat-label">Day Streak</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card diary-stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-star fa-2x mb-2 text-warning"></i>
+                    <div class="diary-stat-number">{{ stats.favorites }}</div>
+                    <div class="diary-stat-label">Favorites</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card diary-stats-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-pencil-alt fa-2x mb-2 text-info"></i>
+                    <div class="diary-stat-number">{{ stats.this_month }}</div>
+                    <div class="diary-stat-label">This Month</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main content -->
+        <div class="col-lg-8">
+            <!-- Quick actions -->
+            <div class="card diary-entry-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-bolt me-1"></i> Quick Actions
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('diary.create_entry') }}" class="btn btn-primary w-100">
+                                <i class="fas fa-plus-circle me-1"></i> New Entry
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('diary.diary_calendar') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-calendar-alt me-1"></i> Calendar
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('diary.statistics') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-chart-pie me-1"></i> Statistics
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('diary.insights') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-lightbulb me-1"></i> Insights
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('diary.export_options') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-file-export me-1"></i> Export
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="{{ url_for('diary.favorites') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-star me-1"></i> Favorites
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent entries -->
+            <div class="card diary-entry-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-history me-1"></i> Recent Entries
+                </div>
+                <div class="card-body">
+                    {% if recent_entries %}
+                        {% for entry in recent_entries %}
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h5 class="mb-1">
+                                            <a href="{{ url_for('diary.view_entry', entry_id=entry.id) }}" class="text-decoration-none">
+                                                {{ entry.title }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-1 small">
+                                            {{ entry.created_at.strftime('%A, %B %d, %Y at %I:%M %p') }}
+                                            {% if entry.is_private %}
+                                                <i class="fas fa-lock ms-1" title="Private entry"></i>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        {% if entry.is_favorite %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <p class="mb-0 mt-2">{{ entry.content|truncate(150) }}</p>
+                            </div>
+                        {% endfor %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('diary.diary') }}" class="btn btn-outline-primary btn-sm">
+                                View All Entries
+                            </a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <p>No entries yet. Start writing to see your entries here.</p>
+                            <a href="{{ url_for('diary.create_entry') }}" class="btn btn-primary">
+                                <i class="fas fa-plus-circle me-1"></i> Create First Entry
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Writing streak -->
+            <div class="card diary-entry-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-fire me-1"></i> Writing Streak
+                </div>
+                <div class="card-body text-center py-4">
+                    <div class="display-1 fw-bold text-primary">{{ stats.current_streak }}</div>
+                    <p class="lead mb-0">days</p>
+
+                    {% if stats.current_streak > 0 %}
+                        <p class="mt-3">
+                            Keep up the good work! Your longest streak is {{ stats.longest_streak }} days.
+                        </p>
+                    {% else %}
+                        <p class="mt-3">
+                            Write an entry today to start your streak!
+                        </p>
+                        <a href="{{ url_for('diary.create_entry') }}" class="btn btn-primary mt-2">
+                            <i class="fas fa-plus-circle me-1"></i> Write Now
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Mood distribution -->
+            <div class="card diary-entry-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-smile me-1"></i> Mood Distribution
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="moodChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar preview -->
+            <div class="card diary-entry-card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-calendar-alt me-1"></i> This Month
+                </div>
+                <div class="card-body p-0">
+                    <div class="calendar-mini p-3">
+                        <div class="month-header text-center mb-3">
+                            <h5 class="m-0">{{ current_month }}</h5>
+                        </div>
+                        <table class="w-100">
+                            <thead>
+                                <tr>
+                                    <th>Su</th>
+                                    <th>Mo</th>
+                                    <th>Tu</th>
+                                    <th>We</th>
+                                    <th>Th</th>
+                                    <th>Fr</th>
+                                    <th>Sa</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for week in calendar_data %}
+                                <tr>
+                                    {% for day in week %}
+                                        {% if day.day %}
+                                            <td class="text-center p-1 {% if day.today %}bg-primary text-white rounded{% endif %} {% if day.has_entry %}fw-bold{% endif %}">
+                                                {{ day.day }}
+                                            </td>
+                                        {% else %}
+                                            <td></td>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="{{ url_for('diary.diary_calendar') }}" class="btn btn-sm btn-outline-primary">
+                        Full Calendar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Mood distribution chart
+    const moodCtx = document.getElementById('moodChart').getContext('2d');
+
+    const moodData = {
+        labels: [{% for mood, count in stats.moods %}'{{ mood|capitalize }}',{% endfor %}],
+        datasets: [{
+            data: [{% for mood, count in stats.moods %}{{ count }},{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 193, 7, 0.8)',  // happy
+                'rgba(13, 110, 253, 0.8)', // sad
+                'rgba(220, 53, 69, 0.8)',  // angry
+                'rgba(108, 117, 125, 0.8)', // anxious
+                'rgba(32, 201, 151, 0.8)',  // calm
+                'rgba(255, 102, 0, 0.8)',   // excited
+                'rgba(111, 66, 193, 0.8)',  // tired
+                'rgba(23, 162, 184, 0.8)',  // neutral
+            ]
+        }]
+    };
+
+    new Chart(moodCtx, {
+        type: 'doughnut',
+        data: moodData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        boxWidth: 15,
+                        font: { size: 11 }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

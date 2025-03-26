@@ -16,6 +16,31 @@
         </div>
     </div>
 
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('diary.dashboard') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                </a>
+                <a href="{{ url_for('diary.create_entry') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i> New Entry
+                </a>
+                <a href="{{ url_for('diary.diary_calendar') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-calendar-alt me-1"></i> Calendar
+                </a>
+                <a href="{{ url_for('diary.statistics') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-chart-pie me-1"></i> Statistics
+                </a>
+                <a href="{{ url_for('diary.insights') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-lightbulb me-1"></i> Insights
+                </a>
+                <a href="{{ url_for('diary.export_options') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-file-export me-1"></i> Export
+                </a>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <!-- Main content area -->
         <div class="col-lg-8 mb-4">
@@ -108,6 +133,19 @@
                                             {{ entry.category }}
                                         </span>
                                     {% endif %}
+
+                                    {% if entry.get_tags() %}
+                                        {% for tag in entry.get_tags()[:2] %}
+                                            <span class="diary-badge tag-badge">
+                                                <i class="fas fa-tag me-1"></i> {{ tag }}
+                                            </span>
+                                        {% endfor %}
+                                        {% if entry.get_tags()|length > 2 %}
+                                            <span class="diary-badge tag-badge">
+                                                +{{ entry.get_tags()|length - 2 }}
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
                                 </div>
                                 <a href="{{ url_for('diary.view_entry', entry_id=entry.id) }}" class="btn btn-outline-primary btn-sm">
                                     Read More
@@ -119,7 +157,7 @@
 
                 <!-- Pagination -->
                 {% if pagination.pages > 1 %}
-                <nav aria-label="Page navigation">
+                <nav aria-label="Page navigation" class="mt-4">
                     <ul class="pagination justify-content-center">
                         {% if pagination.has_prev %}
                             <li class="page-item">
@@ -293,6 +331,26 @@
                     </ul>
                 </div>
                 {% endif %}
+
+                <!-- Tags Cloud -->
+                {% if stats.tags and stats.tags|length > 0 %}
+                <div class="card diary-sidebar-card">
+                    <div class="card-header">
+                        <i class="fas fa-tags me-1"></i> Popular Tags
+                    </div>
+                    <div class="card-body">
+                        <div class="tag-cloud">
+                            {% for tag, count in stats.tags %}
+                                <a href="{{ url_for('diary.tag_entries', tag=tag) }}"
+                                   class="tag-cloud-item"
+                                   style="font-size: {{ (count / stats.tags[0][1] * 1.5 + 0.8)|round(1) }}rem;">
+                                    {{ tag }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -327,12 +385,47 @@ document.addEventListener('DOMContentLoaded', function() {
                         this.classList.add('far', 'not-favorite');
                     }
 
-                    // Show toast notification if desired
+                    // Show toast notification
+                    showToast(data.message, data.is_favorite ? 'success' : 'secondary');
                 }
             })
             .catch(error => console.error('Error:', error));
         });
     });
+
+    // Simple toast notification function
+    function showToast(message, type = 'primary') {
+        const toast = document.createElement('div');
+        toast.className = 'position-fixed bottom-0 end-0 p-3';
+        toast.style.zIndex = '5';
+        toast.innerHTML = `
+            <div class="toast align-items-center text-white bg-${type}" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(toast);
+
+        // Initialize and show the toast if Bootstrap is available
+        if (typeof bootstrap !== 'undefined') {
+            const toastEl = new bootstrap.Toast(toast.querySelector('.toast'), { autohide: true, delay: 3000 });
+            toastEl.show();
+
+            // Remove toast element after it's hidden
+            toast.querySelector('.toast').addEventListener('hidden.bs.toast', function() {
+                document.body.removeChild(toast);
+            });
+        } else {
+            // Fallback if Bootstrap isn't available
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        }
+    }
 });
 </script>
 {% endblock %}

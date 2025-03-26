@@ -18,8 +18,7 @@ def home():
     """
     if not current_user.is_authenticated:
         return redirect(url_for("auth.login"))
-
-    return render_template("index.html", title="Home")
+    return redirect(url_for("todo.todos"))
 
 
 @main_bp.route("/dashboard")

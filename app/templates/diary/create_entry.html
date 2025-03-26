@@ -20,6 +20,25 @@
         <div class="col-lg-10 mx-auto">
             <div class="card diary-entry-card">
                 <div class="card-body">
+                    <!-- Draft Recovery Modal -->
+                    <div class="modal fade" id="draftRecoveryModal" tabindex="-1" aria-labelledby="draftRecoveryModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="draftRecoveryModalLabel">Recover Draft</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>We found a draft from <span id="draftTimestamp"></span>. Would you like to restore it?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" id="discardDraftBtn" data-bs-dismiss="modal">Discard</button>
+                                    <button type="button" class="btn btn-primary" id="restoreDraftBtn">Restore Draft</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <form method="POST" action="{{ url_for('diary.create_entry') }}" id="diaryEntryForm">
                         {{ form.hidden_tag() }}
 
@@ -30,28 +49,123 @@
 
                         <div class="mb-3">
                             {{ form.content.label(class="form-label") }}
+                            <div class="content-editor-tools d-flex justify-content-between mb-2">
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" id="boldBtn" title="Bold">
+                                        <i class="fas fa-bold"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" id="italicBtn" title="Italic">
+                                        <i class="fas fa-italic"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary me-1" id="listBtn" title="Bullet List">
+                                        <i class="fas fa-list-ul"></i>
+                                    </button>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span id="wordCount" class="text-muted me-3">0 words</span>
+                                    <span id="autosaveIndicator" class="text-success d-none"><i class="fas fa-save me-1"></i> Draft saved</span>
+                                </div>
+                            </div>
                             {{ form.content(class="form-control diary-editor", rows="12", placeholder="Write your thoughts here...") }}
+                        </div>
+
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <i class="fas fa-smile me-1"></i> How are you feeling?
+                            </div>
+                            <div class="card-body">
+                                <div class="mood-selector">
+                                    <div class="mood-option" data-mood="happy">
+                                        <i class="fas fa-smile"></i>
+                                        <span>Happy</span>
+                                    </div>
+                                    <div class="mood-option" data-mood="sad">
+                                        <i class="fas fa-frown"></i>
+                                        <span>Sad</span>
+                                    </div>
+                                    <div class="mood-option" data-mood="angry">
+                                        <i class="fas fa-angry"></i>
+                                        <span>Angry</span>
+                                    </div>
+                                    <div class="mood-option" data-mood="anxious">
+                                        <i class="fas fa-tired"></i>
+                                        <span>Anxious</span>
+                                    </div>
+                                    <div class="mood-option" data-mood="calm">
+                                        <i class="fas fa-peace"></i>
+                                        <span>Calm</span>
+                                    </div>
+                                    <div class="mood-option" data-mood="excited">
+                                        <i class="fas fa-grin-stars"></i>
+                                        <span>Excited</span>
+                                    </div>
+                                    <div class="mood-option" data-mood="tired">
+                                        <i class="fas fa-bed"></i>
+                                        <span>Tired</span>
+                                    </div>
+                                    <div class="mood-option" data-mood="neutral">
+                                        <i class="fas fa-meh"></i>
+                                        <span>Neutral</span>
+                                    </div>
+                                </div>
+                                {{ form.mood(class="d-none") }}
+
+                                <div class="text-center mt-3">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="analyzeSentimentBtn">
+                                        <i class="fas fa-magic me-1"></i> Analyze Sentiment
+                                    </button>
+                                </div>
+
+                                <div class="sentiment-results mt-3 d-none">
+                                    <div class="alert alert-info">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <i class="fas fa-robot fa-2x"></i>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-1">Sentiment Analysis</h5>
+                                                <p class="mb-0" id="sentimentResult"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                {{ form.mood.label(class="form-label") }}
-                                {{ form.mood(class="form-select") }}
-                            </div>
-                            <div class="col-md-6">
                                 {{ form.category.label(class="form-label") }}
                                 {{ form.category(class="form-select") }}
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-label">Tags</div>
+                                <div class="input-group">
+                                    <input type="text" id="tagInput" class="form-control" placeholder="Add tag and press Enter">
+                                    <button class="btn btn-outline-secondary" type="button" id="addTagBtn">Add</button>
+                                </div>
+                                <div class="tags-container mt-2" id="tagsContainer"></div>
+                                <input type="hidden" id="tagsList" name="tags">
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 {{ form.weather.label(class="form-label") }}
-                                {{ form.weather(class="form-control", placeholder="e.g., Sunny, Rainy, Cloudy...") }}
+                                <div class="input-group">
+                                    {{ form.weather(class="form-control", placeholder="e.g., Sunny, Rainy, Cloudy...") }}
+                                    <button class="btn btn-outline-secondary" type="button" id="getCurrentWeatherBtn">
+                                        <i class="fas fa-cloud-sun"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 {{ form.location.label(class="form-label") }}
-                                {{ form.location(class="form-control", placeholder="Where are you?") }}
+                                <div class="input-group">
+                                    {{ form.location(class="form-control", placeholder="Where are you?") }}
+                                    <button class="btn btn-outline-secondary" type="button" id="getCurrentLocationBtn">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -84,4 +198,489 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Basic text editor functionality
+    const contentInput = document.getElementById('content');
+    const boldBtn = document.getElementById('boldBtn');
+    const italicBtn = document.getElementById('italicBtn');
+    const listBtn = document.getElementById('listBtn');
+
+    if (boldBtn) {
+        boldBtn.addEventListener('click', function() {
+            insertAroundSelection(contentInput, '**', '**');
+        });
+    }
+
+    if (italicBtn) {
+        italicBtn.addEventListener('click', function() {
+            insertAroundSelection(contentInput, '_', '_');
+        });
+    }
+
+    if (listBtn) {
+        listBtn.addEventListener('click', function() {
+            insertList(contentInput);
+        });
+    }
+
+    function insertAroundSelection(input, before, after) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const text = input.value;
+        const selection = text.substring(start, end);
+
+        input.value = text.substring(0, start) + before + selection + after + text.substring(end);
+
+        // Reset cursor position
+        input.focus();
+        input.setSelectionRange(start + before.length, end + before.length);
+    }
+
+    function insertList(input) {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const text = input.value;
+        const selection = text.substring(start, end);
+
+        // Split the selection into lines and add bullets
+        let listItems = selection.split('\n').map(line => '- ' + line).join('\n');
+
+        // If selection is empty, insert a single list item
+        if (!selection.trim()) {
+            listItems = '- ';
+        }
+
+        // Insert the list
+        input.value = text.substring(0, start) + '\n' + listItems + '\n' + text.substring(end);
+
+        // Reset cursor position
+        input.focus();
+        input.setSelectionRange(start + 3, start + 3); // Position after the first bullet
+    }
+
+    // Tag functionality
+    const tagInput = document.getElementById('tagInput');
+    const addTagBtn = document.getElementById('addTagBtn');
+    const tagsContainer = document.getElementById('tagsContainer');
+    const tagsListInput = document.getElementById('tagsList');
+
+    let tags = [];
+
+    function updateTagsInput() {
+        tagsListInput.value = JSON.stringify(tags);
+    }
+
+    function addTag(tag) {
+        if (!tag.trim() || tags.includes(tag.trim())) return;
+
+        tags.push(tag.trim());
+        updateTagsInput();
+
+        const tagElement = document.createElement('span');
+        tagElement.className = 'diary-badge category-badge me-2 mb-2';
+        tagElement.innerHTML = `${tag} <i class="fas fa-times ms-1 remove-tag" data-tag="${tag}"></i>`;
+        tagsContainer.appendChild(tagElement);
+
+        // Clear input
+        tagInput.value = '';
+    }
+
+    if (addTagBtn) {
+        addTagBtn.addEventListener('click', function() {
+            addTag(tagInput.value);
+        });
+    }
+
+    if (tagInput) {
+        tagInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addTag(this.value);
+            }
+        });
+    }
+
+    // Remove tag when clicked
+    if (tagsContainer) {
+        tagsContainer.addEventListener('click', function(e) {
+            if (e.target.classList.contains('remove-tag')) {
+                const tag = e.target.getAttribute('data-tag');
+                const index = tags.indexOf(tag);
+
+                if (index !== -1) {
+                    tags.splice(index, 1);
+                    updateTagsInput();
+                    e.target.parentElement.remove();
+                }
+            }
+        });
+    }
+
+    // Location functionality
+    const getCurrentLocationBtn = document.getElementById('getCurrentLocationBtn');
+    const locationInput = document.getElementById('location');
+
+    if (getCurrentLocationBtn && locationInput) {
+        getCurrentLocationBtn.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // Use reverse geocoding to get location name
+                    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.address) {
+                                const city = data.address.city || data.address.town || data.address.village;
+                                const state = data.address.state;
+
+                                if (city && state) {
+                                    locationInput.value = `${city}, ${state}`;
+                                } else if (city) {
+                                    locationInput.value = city;
+                                } else {
+                                    locationInput.value = data.display_name;
+                                }
+                            }
+
+                            getCurrentLocationBtn.disabled = false;
+                            getCurrentLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+                        })
+                        .catch(err => {
+                            locationInput.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                            getCurrentLocationBtn.disabled = false;
+                            getCurrentLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+                        });
+
+                }, function(error) {
+                    alert("Couldn't get your location: " + error.message);
+                    getCurrentLocationBtn.disabled = false;
+                    getCurrentLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+                });
+            } else {
+                alert("Geolocation is not supported by your browser");
+                getCurrentLocationBtn.disabled = false;
+                getCurrentLocationBtn.innerHTML = '<i class="fas fa-map-marker-alt"></i>';
+            }
+        });
+    }
+
+    // Weather functionality
+    const getCurrentWeatherBtn = document.getElementById('getCurrentWeatherBtn');
+    const weatherInput = document.getElementById('weather');
+
+    if (getCurrentWeatherBtn && weatherInput && locationInput) {
+        getCurrentWeatherBtn.addEventListener('click', function() {
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            if ('geolocation' in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    // Use OpenWeatherMap API to get weather
+                    // Note: You'd need to replace API_KEY with your actual API key
+                    // This is a simplified example that won't work without an API key
+                    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=API_KEY&units=metric`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.weather && data.weather[0]) {
+                                const description = data.weather[0].description;
+                                const temp = Math.round(data.main.temp);
+                                weatherInput.value = `${description}, ${temp}°C`;
+                            }
+
+                            getCurrentWeatherBtn.disabled = false;
+                            getCurrentWeatherBtn.innerHTML = '<i class="fas fa-cloud-sun"></i>';
+                        })
+                        .catch(err => {
+                            // Fallback to a generic condition
+                            const conditions = ['Sunny', 'Cloudy', 'Partly Cloudy', 'Rainy', 'Clear'];
+                            const randomCondition = conditions[Math.floor(Math.random() * conditions.length)];
+                            weatherInput.value = randomCondition;
+
+                            getCurrentWeatherBtn.disabled = false;
+                            getCurrentWeatherBtn.innerHTML = '<i class="fas fa-cloud-sun"></i>';
+                        });
+
+                }, function(error) {
+                    alert("Couldn't get your location: " + error.message);
+                    getCurrentWeatherBtn.disabled = false;
+                    getCurrentWeatherBtn.innerHTML = '<i class="fas fa-cloud-sun"></i>';
+                });
+            } else {
+                alert("Geolocation is not supported by your browser");
+                getCurrentWeatherBtn.disabled = false;
+                getCurrentWeatherBtn.innerHTML = '<i class="fas fa-cloud-sun"></i>';
+            }
+        });
+    }
+
+    // Sentiment analysis
+    const analyzeSentimentBtn = document.getElementById('analyzeSentimentBtn');
+    const sentimentResults = document.querySelector('.sentiment-results');
+    const sentimentResult = document.getElementById('sentimentResult');
+    const moodInput = document.getElementById('mood');
+
+    if (analyzeSentimentBtn && contentInput && sentimentResults && sentimentResult) {
+        analyzeSentimentBtn.addEventListener('click', function() {
+            const content = contentInput.value;
+
+            if (!content.trim()) {
+                alert("Please write something before analyzing sentiment");
+                return;
+            }
+
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Analyzing...';
+
+            // Create a temporary form to submit for sentiment analysis
+            const tempForm = document.createElement('form');
+            tempForm.method = 'POST';
+            tempForm.action = '/diary/analyze_sentiment';
+
+            // Add content as hidden input
+            const contentField = document.createElement('input');
+            contentField.type = 'hidden';
+            contentField.name = 'content';
+            contentField.value = content;
+            tempForm.appendChild(contentField);
+
+            // Add auto_update field - set to true to update mood automatically
+            const autoUpdateField = document.createElement('input');
+            autoUpdateField.type = 'hidden';
+            autoUpdateField.name = 'auto_update';
+            autoUpdateField.value = 'true';
+            tempForm.appendChild(autoUpdateField);
+
+            // Use fetch to submit
+            const formData = new FormData(tempForm);
+
+            fetch('/diary/analyze_sentiment', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-magic me-1"></i> Analyze Sentiment';
+
+                if (data.success) {sentimentResults.classList.remove('d-none');
+
+                    let message = '';
+                    let icon = '';
+
+                    if (data.sentiment === 'positive') {
+                        message = 'Your entry has a positive tone. ';
+                        icon = '<i class="fas fa-smile text-success me-1"></i>';
+                    } else if (data.sentiment === 'negative') {
+                        message = 'Your entry has a negative tone. ';
+                        icon = '<i class="fas fa-frown text-danger me-1"></i>';
+                    } else {
+                        message = 'Your entry has a neutral tone. ';
+                        icon = '<i class="fas fa-meh text-info me-1"></i>';
+                    }
+
+                    // Add details about the analysis
+                    message += `Found ${data.positive_words} positive words and ${data.negative_words} negative words.`;
+
+                    // If mood was updated
+                    if (data.mood_updated) {
+                        message += ' Your mood has been automatically set based on this analysis.';
+
+                        // Select the corresponding mood option
+                        const mood = data.sentiment === 'positive' ?
+                            (data.score > 0.5 ? 'happy' : 'calm') :
+                            (data.score < -0.5 ? 'angry' : 'sad');
+
+                        document.querySelector(`.mood-option[data-mood="${mood}"]`)?.classList.add('selected');
+                        if (moodInput) moodInput.value = mood;
+                    }
+
+                    sentimentResult.innerHTML = icon + message;
+                } else {
+                    sentimentResults.classList.add('d-none');
+                    alert('Failed to analyze sentiment. Please try again.');
+                }
+            })
+            .catch(error => {
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-magic me-1"></i> Analyze Sentiment';
+                sentimentResults.classList.add('d-none');
+                alert('Error analyzing sentiment. Please try again.');
+                console.error('Error:', error);
+            });
+        });
+    }
+
+    // Mood selector functionality
+    const moodOptions = document.querySelectorAll('.mood-option');
+
+    if (moodOptions.length && moodInput) {
+        // Set the initial selected mood if there is one
+        const currentMood = moodInput.value;
+        if (currentMood) {
+            document.querySelector(`.mood-option[data-mood="${currentMood}"]`)?.classList.add('selected');
+        }
+
+        moodOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                moodOptions.forEach(opt => opt.classList.remove('selected'));
+
+                // Add selected class to clicked option
+                this.classList.add('selected');
+
+                // Update hidden input
+                moodInput.value = this.getAttribute('data-mood');
+            });
+        });
+    }
+
+    // Word count and autosave functionality
+    const wordCountElement = document.getElementById('wordCount');
+    const autosaveIndicator = document.getElementById('autosaveIndicator');
+    const titleInput = document.getElementById('title');
+    const diaryEntryForm = document.getElementById('diaryEntryForm');
+
+    if (contentInput && wordCountElement) {
+        // Word count functionality
+        function updateWordCount() {
+            const text = contentInput.value.trim();
+            const wordCount = text ? text.split(/\s+/).filter(word => word.length > 0).length : 0;
+            wordCountElement.textContent = `${wordCount} words`;
+        }
+
+        // Initial word count
+        updateWordCount();
+
+        // Update word count on input
+        contentInput.addEventListener('input', updateWordCount);
+    }
+
+    // Autosave functionality
+    if (diaryEntryForm && titleInput && contentInput && autosaveIndicator) {
+        const STORAGE_PREFIX = 'diary_draft_';
+        const AUTOSAVE_INTERVAL = 10000; // 10 seconds
+        let autoSaveTimer;
+        let lastSaved = {
+            title: titleInput.value,
+            content: contentInput.value
+        };
+
+        // Check for draft
+        const savedTitle = localStorage.getItem(`${STORAGE_PREFIX}title`);
+        const savedContent = localStorage.getItem(`${STORAGE_PREFIX}content`);
+        const savedTimestamp = localStorage.getItem(`${STORAGE_PREFIX}timestamp`);
+        const draftRecoveryModal = document.getElementById('draftRecoveryModal');
+
+        // Determine if this is a new entry or edit page
+        const isEditPage = window.location.href.includes('/edit');
+
+        if (!isEditPage && savedTitle && savedContent && savedTimestamp && draftRecoveryModal) {
+            const saveTime = new Date(parseInt(savedTimestamp));
+            const now = new Date();
+            const hoursSinceUpdate = (now - saveTime) / (1000 * 60 * 60);
+
+            // Only restore draft if it's less than 24 hours old
+            if (hoursSinceUpdate < 24) {
+                // Show modal with Bootstrap
+                const draftModal = new bootstrap.Modal(draftRecoveryModal);
+
+                // Set timestamp in modal
+                const draftTimestampEl = document.getElementById('draftTimestamp');
+                if (draftTimestampEl) {
+                    draftTimestampEl.textContent = saveTime.toLocaleString();
+                }
+
+                // Set up buttons
+                const restoreDraftBtn = document.getElementById('restoreDraftBtn');
+                const discardDraftBtn = document.getElementById('discardDraftBtn');
+
+                if (restoreDraftBtn) {
+                    restoreDraftBtn.addEventListener('click', function() {
+                        titleInput.value = savedTitle;
+                        contentInput.value = savedContent;
+                        draftModal.hide();
+
+                        // Update word count
+                        updateWordCount();
+                    });
+                }
+
+                if (discardDraftBtn) {
+                    discardDraftBtn.addEventListener('click', function() {
+                        clearSavedDraft();
+                        draftModal.hide();
+                    });
+                }
+
+                draftModal.show();
+            } else {
+                // Draft too old, clear it
+                clearSavedDraft();
+            }
+        }
+
+        // Save draft function
+        function saveDraft() {
+            const title = titleInput.value.trim();
+            const content = contentInput.value.trim();
+
+            // Only save if content changed
+            if (title !== lastSaved.title || content !== lastSaved.content) {
+                if (title || content) {
+                    localStorage.setItem(`${STORAGE_PREFIX}title`, title);
+                    localStorage.setItem(`${STORAGE_PREFIX}content`, content);
+                    localStorage.setItem(`${STORAGE_PREFIX}timestamp`, Date.now().toString());
+
+                    lastSaved.title = title;
+                    lastSaved.content = content;
+
+                    // Show save indicator
+                    if (autosaveIndicator) {
+                        autosaveIndicator.classList.remove('d-none');
+
+                        setTimeout(() => {
+                            autosaveIndicator.classList.add('d-none');
+                        }, 2000);
+                    }
+                }
+            }
+        }
+
+        function clearSavedDraft() {
+            localStorage.removeItem(`${STORAGE_PREFIX}title`);
+            localStorage.removeItem(`${STORAGE_PREFIX}content`);
+            localStorage.removeItem(`${STORAGE_PREFIX}timestamp`);
+        }
+
+        // Set up autosave events
+        titleInput.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveDraft, 2000);
+        });
+
+        contentInput.addEventListener('input', () => {
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(saveDraft, 2000);
+        });
+
+        // Regular autosave interval
+        setInterval(saveDraft, AUTOSAVE_INTERVAL);
+
+        // Clear draft on form submission
+        diaryEntryForm.addEventListener('submit', clearSavedDraft);
+    }
+});
+</script>
 {% endblock %}

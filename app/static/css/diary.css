@@ -433,3 +433,111 @@
         font-size: 2.2rem;
     }
 }
+
+/* Enhanced diary.css */
+
+/* Text editor toolbar */
+.content-editor-tools {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-bottom: none;
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    padding: 0.5rem;
+}
+
+[data-bs-theme="dark"] .content-editor-tools {
+    background-color: #343a40;
+    border-color: #495057;
+}
+
+/* Tags styling */
+.tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 30px;
+}
+
+.tag {
+    background-color: rgba(161, 178, 212, 0.2);
+    border-radius: 20px;
+    padding: 2px 10px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.remove-tag {
+    cursor: pointer;
+    margin-left: 5px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.remove-tag:hover {
+    opacity: 1;
+}
+
+/* Enhanced mood selector */
+.mood-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.mood-option {
+    padding: 10px;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+[data-bs-theme="dark"] .mood-option {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.mood-option:hover {
+    transform: translateY(-3px);
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+[data-bs-theme="dark"] .mood-option:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mood-option.selected {
+    border-color: var(--primary);
+    background-color: var(--primary-light);
+}
+
+.mood-option i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.mood-happy i { color: #FFC107; }
+.mood-sad i { color: #0D6EFD; }
+.mood-angry i { color: #DC3545; }
+.mood-anxious i { color: #6C757D; }
+.mood-calm i { color: #20C997; }
+.mood-excited i { color: #FF6600; }
+.mood-tired i { color: #6F42C1; }
+.mood-neutral i { color: #17A2B8; }
+
+/* Sentiment analysis results */
+.sentiment-results {
+    transition: all 0.3s ease;
+}
+
+/* Draft autosave indicator */
+#autosaveIndicator {
+    font-size: 0.85rem;
+    transition: opacity 0.5s ease;
+}

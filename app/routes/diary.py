@@ -2,7 +2,7 @@
 """
 Enhanced Diary routes for personal journal entries
 """
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, abort, Response
 from flask_login import current_user, login_required
 from datetime import datetime, timedelta
 from sqlalchemy import desc, or_, func, extract
@@ -455,22 +455,22 @@ def statistics():
                            stats=stats)
 
 
-@diary_bp.route("/diary/export", methods=["GET"])
+@diary_bp.route("/diary/export", methods=["GET", "POST"])
 @login_required
 def export_diary():
-    """Export diary entries as CSV"""
+    """Export diary entries in multiple formats (CSV, PDF, TXT)"""
     format_type = request.args.get('format', 'csv')
 
-    if format_type not in ['csv', 'txt']:
+    if format_type not in ['csv', 'txt', 'pdf']:
         flash("Invalid export format.", "warning")
         return redirect(url_for("diary.diary"))
 
     # Filter parameters
     category = request.args.get('category', '')
     mood = request.args.get('mood', '')
-    favorites_only = request.args.get('favorites_only', False, type=bool)
     date_from = request.args.get('date_from', '')
     date_to = request.args.get('date_to', '')
+    favorites_only = request.args.get('favorites_only', False, type=bool)
 
     # Build query
     query = DiaryEntry.query.filter_by(user_id=current_user.id)
@@ -501,72 +501,226 @@ def export_diary():
     # Get entries
     entries = query.order_by(DiaryEntry.created_at).all()
 
+    if not entries:
+        flash("No entries found matching your criteria.", "warning")
+        return redirect(url_for("diary.diary"))
+
+    # Generate file name
+    current_date = datetime.now().strftime('%Y%m%d')
+    filename_base = f"diary_export_{current_date}"
+
+    # Handle different formats
     if format_type == 'csv':
-        # Generate CSV
-        output = io.StringIO()
-        writer = csv.writer(output)
+        return export_csv(entries, f"{filename_base}.csv")
+    elif format_type == 'txt':
+        return export_txt(entries, f"{filename_base}.txt")
+    elif format_type == 'pdf':
+        return export_pdf(entries, f"{filename_base}.pdf")
 
-        # Write header
-        writer.writerow(['Date', 'Title', 'Content', 'Mood', 'Category', 'Location', 'Weather', 'Favorite', 'Private'])
 
-        # Write entries
+def export_csv(entries, filename):
+    """Generate and return CSV export"""
+    output = io.StringIO()
+    writer = csv.writer(output)
+
+    # Write header
+    writer.writerow(['Date', 'Title', 'Content', 'Mood', 'Category', 'Location',
+                     'Weather', 'Favorite', 'Private'])
+
+    # Write entries
+    for entry in entries:
+        writer.writerow([
+            entry.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            entry.title,
+            entry.content,
+            entry.mood or '',
+            entry.category or '',
+            entry.location or '',
+            entry.weather or '',
+            'Yes' if entry.is_favorite else 'No',
+            'Yes' if entry.is_private else 'No'
+        ])
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/csv",
+        headers={"Content-Disposition": f"attachment;filename={filename}"}
+    )
+
+
+def export_txt(entries, filename):
+    """Generate and return TXT export"""
+    output = io.StringIO()
+
+    for entry in entries:
+        output.write(f"Date: {entry.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n")
+        output.write(f"Title: {entry.title}\n")
+        if entry.mood:
+            output.write(f"Mood: {entry.mood}\n")
+        if entry.category:
+            output.write(f"Category: {entry.category}\n")
+        if entry.location:
+            output.write(f"Location: {entry.location}\n")
+        if entry.weather:
+            output.write(f"Weather: {entry.weather}\n")
+        output.write(f"Favorite: {'Yes' if entry.is_favorite else 'No'}\n")
+        output.write(f"Private: {'Yes' if entry.is_private else 'No'}\n")
+        output.write("\nContent:\n")
+        output.write(f"{entry.content}\n")
+        output.write("\n" + "-" * 50 + "\n\n")
+
+    output.seek(0)
+    return Response(
+        output.getvalue(),
+        mimetype="text/plain",
+        headers={"Content-Disposition": f"attachment;filename={filename}"}
+    )
+
+
+def export_pdf(entries, filename):
+    """Generate and return PDF export"""
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.lib import colors
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from io import BytesIO
+
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+
+        # Create custom styles
+        title_style = styles["Heading1"]
+        heading_style = styles["Heading2"]
+        normal_style = styles["Normal"]
+
+        # Create content elements
+        elements = []
+
+        # Add document title
+        elements.append(Paragraph("Diary Export", title_style))
+        elements.append(Spacer(1, 20))
+
+        # Add each entry
         for entry in entries:
-            writer.writerow([
-                entry.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-                entry.title,
-                entry.content,
-                entry.mood or '',
-                entry.category or '',
-                entry.location or '',
-                entry.weather or '',
-                'Yes' if entry.is_favorite else 'No',
-                'Yes' if entry.is_private else 'No'
-            ])
+            # Entry title and date
+            elements.append(Paragraph(entry.title, heading_style))
+            elements.append(Paragraph(f"Date: {entry.created_at.strftime('%Y-%m-%d %H:%M:%S')}", normal_style))
 
-        # Prepare response
-        output.seek(0)
-        filename = f"diary_export_{datetime.now().strftime('%Y%m%d')}.csv"
-
-        # Create response
-        from flask import Response
-        return Response(
-            output.getvalue(),
-            mimetype="text/csv",
-            headers={"Content-Disposition": f"attachment;filename={filename}"}
-        )
-    else:
-        # Generate plain text
-        output = io.StringIO()
-
-        for entry in entries:
-            output.write(f"Date: {entry.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n")
-            output.write(f"Title: {entry.title}\n")
+            # Metadata table
+            data = []
             if entry.mood:
-                output.write(f"Mood: {entry.mood}\n")
+                data.append(["Mood", entry.mood])
             if entry.category:
-                output.write(f"Category: {entry.category}\n")
+                data.append(["Category", entry.category])
             if entry.location:
-                output.write(f"Location: {entry.location}\n")
+                data.append(["Location", entry.location])
             if entry.weather:
-                output.write(f"Weather: {entry.weather}\n")
-            output.write(f"Favorite: {'Yes' if entry.is_favorite else 'No'}\n")
-            output.write(f"Private: {'Yes' if entry.is_private else 'No'}\n")
-            output.write("\nContent:\n")
-            output.write(f"{entry.content}\n")
-            output.write("\n" + "-" * 50 + "\n\n")
+                data.append(["Weather", entry.weather])
 
-        # Prepare response
-        output.seek(0)
-        filename = f"diary_export_{datetime.now().strftime('%Y%m%d')}.txt"
+            if data:
+                metadata_table = Table(data, colWidths=[100, 300])
+                metadata_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+                    ('TEXTCOLOR', (0, 0), (0, -1), colors.black),
+                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black)
+                ]))
+                elements.append(metadata_table)
 
-        # Create response
-        from flask import Response
+            # Content
+            elements.append(Spacer(1, 10))
+            elements.append(Paragraph("Content:", normal_style))
+
+            # Split content by newlines to preserve formatting
+            for paragraph in entry.content.split('\n'):
+                if paragraph.strip():
+                    elements.append(Paragraph(paragraph, normal_style))
+
+            elements.append(Spacer(1, 30))
+
+        # Build PDF
+        doc.build(elements)
+        buffer.seek(0)
 
         return Response(
-            output.getvalue(),
-            mimetype="text/plain",
+            buffer.getvalue(),
+            mimetype="application/pdf",
             headers={"Content-Disposition": f"attachment;filename={filename}"}
         )
+    except ImportError:
+        flash("PDF export requires ReportLab package. Using text format instead.", "warning")
+        return export_txt(entries, filename.replace('.pdf', '.txt'))
+
+
+# Add a new sentiment analysis endpoint
+@diary_bp.route("/diary/analyze_sentiment", methods=["POST"])
+@login_required
+def analyze_sentiment():
+    """Analyze the sentiment of diary entries"""
+    # Get entry ID from request
+    entry_id = request.form.get('entry_id')
+
+    if not entry_id:
+        return jsonify({"success": False, "message": "No entry specified"}), 400
+
+    entry = DiaryEntry.query.get_or_404(entry_id)
+
+    # Ensure the entry belongs to the current user
+    if entry.user_id != current_user.id:
+        return jsonify({"success": False, "message": "Access denied"}), 403
+
+    # Simple sentiment analysis using word-based approach
+    positive_words = ['happy', 'joy', 'love', 'excited', 'grateful', 'pleased', 'glad',
+                      'delighted', 'positive', 'wonderful', 'great', 'good', 'fantastic']
+    negative_words = ['sad', 'angry', 'upset', 'disappointed', 'hurt', 'frustrated',
+                      'unhappy', 'annoyed', 'negative', 'terrible', 'bad', 'worst']
+
+    content = entry.content.lower()
+    words = content.split()
+
+    positive_count = sum(1 for word in words if any(pos in word for pos in positive_words))
+    negative_count = sum(1 for word in words if any(neg in word for neg in negative_words))
+
+    # Calculate sentiment score (-1 to 1)
+    total = positive_count + negative_count
+    sentiment_score = 0
+    if total > 0:
+        sentiment_score = (positive_count - negative_count) / total
+
+    # Determine sentiment category
+    sentiment = "neutral"
+    if sentiment_score > 0.25:
+        sentiment = "positive"
+    elif sentiment_score < -0.25:
+        sentiment = "negative"
+
+    # Update entry mood if auto_update is set to true
+    auto_update = request.form.get('auto_update') == 'true'
+    if auto_update and sentiment != "neutral":
+        # Map sentiment to mood
+        mood_mapping = {
+            "positive": "happy" if sentiment_score > 0.5 else "calm",
+            "negative": "sad" if sentiment_score > -0.5 else "angry"
+        }
+
+        if not entry.mood and sentiment in mood_mapping:
+            entry.mood = mood_mapping[sentiment]
+            db.session.commit()
+
+    return jsonify({
+        "success": True,
+        "sentiment": sentiment,
+        "score": sentiment_score,
+        "positive_words": positive_count,
+        "negative_words": negative_count,
+        "mood_updated": auto_update and sentiment != "neutral"
+    })
 
 
 def calculate_streaks(entries_by_date):
@@ -847,6 +1001,406 @@ def diary_insights(user_id):
     else:
         growth_percentage = 0
 
+    insights = {
+        'entry_count': entry_count,
+        'peak_writing_time': peak_hour_formatted,
+        'time_data': {
+            'hours': hours,
+            'counts': counts
+        },
+        'avg_entry_length': int(avg_entry_length),
+        'top_categories': top_categories,
+        'top_moods': top_moods,
+        'consistency_score': consistency_score,
+        'current_streak': current_streak,
+        'longest_streak': longest_streak,
+        'current_month_count': current_month_count,
+        'prev_month_count': prev_month_count,
+        'growth_percentage': growth_percentage
+    }
+
+    return render_template("diary/insights.html",
+                           title="Diary Insights",
+                           insights=insights)
+
+
+@diary_bp.route("/diary/export-options")
+@login_required
+def export_options():
+    """Show export options page"""
+    # Get categories for filtering
+    categories = db.session.query(
+        DiaryEntry.category,
+        func.count(DiaryEntry.id)
+    ).filter(
+        DiaryEntry.user_id == current_user.id,
+        DiaryEntry.category != None,
+        DiaryEntry.category != ''
+    ).group_by(DiaryEntry.category).all()
+
+    # Get moods for filtering
+    moods = db.session.query(
+        DiaryEntry.mood,
+        func.count(DiaryEntry.id)
+    ).filter(
+        DiaryEntry.user_id == current_user.id,
+        DiaryEntry.mood != None,
+        DiaryEntry.mood != ''
+    ).group_by(DiaryEntry.mood).all()
+
+    return render_template("diary/export_options.html",
+                           title="Export Diary",
+                           categories=categories,
+                           moods=moods)
+
+
+@diary_bp.route("/diary/dashboard")
+@login_required
+def dashboard():
+    """Diary dashboard with overview and stats"""
+    # Get diary stats
+    stats = get_diary_stats(current_user.id)
+
+    # Get recent entries
+    recent_entries = DiaryEntry.query.filter_by(
+        user_id=current_user.id
+    ).order_by(DiaryEntry.created_at.desc()).limit(5).all()
+
+    # Generate mini calendar data
+    import calendar
+    from datetime import date
+
+    # Get current month calendar
+    today = date.today()
+    cal = calendar.monthcalendar(today.year, today.month)
+
+    # Format month name
+    current_month = today.strftime('%B %Y')
+
+    # Get days with entries this month
+    first_day = date(today.year, today.month, 1)
+    if today.month == 12:
+        next_month = date(today.year + 1, 1, 1)
+    else:
+        next_month = date(today.year, today.month + 1, 1)
+
+    # Get dates with entries
+    dates_with_entries = db.session.query(
+        func.date(DiaryEntry.created_at)
+    ).filter(
+        DiaryEntry.user_id == current_user.id,
+        DiaryEntry.created_at >= first_day,
+        DiaryEntry.created_at < next_month
+    ).group_by(
+        func.date(DiaryEntry.created_at)
+    ).all()
+
+    # Convert to set for faster lookups
+    entry_dates = {d[0] for d in dates_with_entries}
+
+    # Generate calendar data for template
+    calendar_data = []
+    for week in cal:
+        week_data = []
+        for day in week:
+            if day == 0:  # Day is outside current month
+                week_data.append({
+                    'day': None,
+                    'has_entry': False,
+                    'today': False
+                })
+            else:
+                # Check if this is today
+                is_today = (today.day == day)
+
+                # Check if there's an entry on this day
+                check_date = date(today.year, today.month, day)
+                has_entry = check_date in entry_dates
+
+                week_data.append({
+                    'day': day,
+                    'has_entry': has_entry,
+                    'today': is_today
+                })
+        calendar_data.append(week_data)
+
+    return render_template("diary/dashboard.html",
+                           title="Diary Dashboard",
+                           stats=stats,
+                           recent_entries=recent_entries,
+                           current_month=current_month,
+                           calendar_data=calendar_data)
+
+
+@diary_bp.route("/diary/entry/<int:entry_id>/export/<format>")
+@login_required
+def export_entry(entry_id, format):
+    """Export a single diary entry in the specified format"""
+    entry = DiaryEntry.query.get_or_404(entry_id)
+
+    # Ensure the entry belongs to the current user
+    if entry.user_id != current_user.id:
+        abort(403)  # Forbidden
+
+    # Generate filename
+    date_str = entry.created_at.strftime('%Y%m%d')
+    title_slug = "".join(c if c.isalnum() else "_" for c in entry.title.lower())
+    filename = f"diary_entry_{date_str}_{title_slug[:30]}"
+
+    if format == 'txt':
+        # Plain text export
+        content = f"Title: {entry.title}\n"
+        content += f"Date: {entry.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n"
+
+        if entry.mood:
+            content += f"Mood: {entry.mood}\n"
+        if entry.category:
+            content += f"Category: {entry.category}\n"
+        if entry.location:
+            content += f"Location: {entry.location}\n"
+        if entry.weather:
+            content += f"Weather: {entry.weather}\n"
+
+        if entry.get_tags():
+            content += f"Tags: {', '.join(entry.get_tags())}\n"
+
+        content += "\n" + entry.content
+
+        response = Response(
+            content,
+            mimetype="text/plain",
+            headers={"Content-Disposition": f"attachment;filename={filename}.txt"}
+        )
+        return response
+
+    elif format == 'pdf':
+        try:
+            from reportlab.lib.pagesizes import letter
+            from reportlab.lib import colors
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from io import BytesIO
+
+            buffer = BytesIO()
+            doc = SimpleDocTemplate(buffer, pagesize=letter)
+            styles = getSampleStyleSheet()
+
+            # Create custom styles
+            title_style = styles["Heading1"]
+            heading_style = styles["Heading2"]
+            normal_style = styles["Normal"]
+
+            # Create content elements
+            elements = []
+
+            # Add entry title
+            elements.append(Paragraph(entry.title, title_style))
+            elements.append(Spacer(1, 12))
+
+            # Add date
+            elements.append(Paragraph(f"Date: {entry.created_at.strftime('%Y-%m-%d %H:%M:%S')}", normal_style))
+            elements.append(Spacer(1, 12))
+
+            # Add metadata table
+            data = []
+            if entry.mood:
+                data.append(["Mood", entry.mood])
+            if entry.category:
+                data.append(["Category", entry.category])
+            if entry.location:
+                data.append(["Location", entry.location])
+            if entry.weather:
+                data.append(["Weather", entry.weather])
+            if entry.get_tags():
+                data.append(["Tags", ", ".join(entry.get_tags())])
+
+            if data:
+                metadata_table = Table(data, colWidths=[100, 300])
+                metadata_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+                    ('TEXTCOLOR', (0, 0), (0, -1), colors.black),
+                    ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+                    ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black)
+                ]))
+                elements.append(metadata_table)
+                elements.append(Spacer(1, 12))
+
+            # Add content header
+            elements.append(Paragraph("Content:", heading_style))
+            elements.append(Spacer(1, 6))
+
+            # Split content by newlines to preserve formatting
+            for paragraph in entry.content.split('\n'):
+                if paragraph.strip():
+                    elements.append(Paragraph(paragraph, normal_style))
+                    elements.append(Spacer(1, 6))
+
+            # Build PDF
+            doc.build(elements)
+            buffer.seek(0)
+
+            return Response(
+                buffer.getvalue(),
+                mimetype="application/pdf",
+                headers={"Content-Disposition": f"attachment;filename={filename}.pdf"}
+            )
+        except ImportError:
+            flash("PDF export requires ReportLab package. Using text format instead.", "warning")
+            return redirect(url_for('diary.export_entry', entry_id=entry.id, format='txt'))
+
+    elif format == 'md':
+        # Markdown export
+        content = f"# {entry.title}\n\n"
+        content += f"**Date:** {entry.created_at.strftime('%Y-%m-%d %H:%M:%S')}\n\n"
+
+        metadata = []
+        if entry.mood:
+            metadata.append(f"**Mood:** {entry.mood}")
+        if entry.category:
+            metadata.append(f"**Category:** {entry.category}")
+        if entry.location:
+            metadata.append(f"**Location:** {entry.location}")
+        if entry.weather:
+            metadata.append(f"**Weather:** {entry.weather}")
+
+        if metadata:
+            content += "\n".join(metadata) + "\n\n"
+
+        if entry.get_tags():
+            content += f"**Tags:** {', '.join(entry.get_tags())}\n\n"
+
+        content += "## Content\n\n" + entry.content
+
+        response = Response(
+            content,
+            mimetype="text/markdown",
+            headers={"Content-Disposition": f"attachment;filename={filename}.md"}
+        )
+        return response
+
+    else:
+        flash("Invalid export format.", "warning")
+        return redirect(url_for('diary.view_entry', entry_id=entry.id))
+
+
+@diary_bp.route("/diary/insights")
+@login_required
+def insights():
+    """Show diary insights and patterns"""
+    # Check if there are enough entries to generate insights
+    entry_count = DiaryEntry.query.filter_by(user_id=current_user.id).count()
+
+    if entry_count < 5:
+        flash("You need at least 5 entries before we can generate meaningful insights.", "info")
+        return redirect(url_for("diary.diary"))
+
+    # Time analysis - when does the user write the most?
+    time_analysis = db.session.query(
+        func.extract('hour', DiaryEntry.created_at).label('hour'),
+        func.count(DiaryEntry.id).label('count')
+    ).filter(
+        DiaryEntry.user_id == current_user.id
+    ).group_by('hour').all()
+
+    # Convert to a more usable format
+    hours = [int(hour) for hour, _ in time_analysis] if time_analysis else list(range(24))
+    counts = [int(count) for _, count in time_analysis] if time_analysis else [0] * 24
+
+    # Find peak writing times
+    if time_analysis:
+        peak_hour = max(time_analysis, key=lambda x: x[1])
+        peak_hour_formatted = f"{int(peak_hour[0]):02d}:00 - {int(peak_hour[0]) + 1:02d}:00"
+    else:
+        peak_hour_formatted = "N/A"
+
+    # Get most common moods
+    top_moods = db.session.query(
+        DiaryEntry.mood,
+        func.count(DiaryEntry.id).label('count')
+    ).filter(
+        DiaryEntry.user_id == current_user.id,
+        DiaryEntry.mood != None,
+        DiaryEntry.mood != ''
+    ).group_by(DiaryEntry.mood).order_by(desc('count')).limit(3).all()
+
+    # Get most common categories
+    top_categories = db.session.query(
+        DiaryEntry.category,
+        func.count(DiaryEntry.id).label('count')
+    ).filter(
+        DiaryEntry.user_id == current_user.id,
+        DiaryEntry.category != None,
+        DiaryEntry.category != ''
+    ).group_by(DiaryEntry.category).order_by(desc('count')).limit(3).all()
+
+    # Calculate average entry length
+    avg_entry_length = db.session.query(
+        func.avg(DiaryEntry.word_count)
+    ).filter(
+        DiaryEntry.user_id == current_user.id,
+        DiaryEntry.word_count != None
+    ).scalar() or 0
+
+    # Calculate writing streak
+    entries_by_date = db.session.query(
+        func.date(DiaryEntry.created_at).label('date'),
+        func.count(DiaryEntry.id).label('count')
+    ).filter(
+        DiaryEntry.user_id == current_user.id
+    ).group_by('date').all()
+
+    current_streak, longest_streak = calculate_streaks(entries_by_date)
+
+    # Calculate month-over-month growth
+    current_month = datetime.utcnow().month
+    current_year = datetime.utcnow().year
+
+    if current_month == 1:
+        prev_month = 12
+        prev_year = current_year - 1
+    else:
+        prev_month = current_month - 1
+        prev_year = current_year
+
+    current_month_count = DiaryEntry.query.filter(
+        DiaryEntry.user_id == current_user.id,
+        extract('month', DiaryEntry.created_at) == current_month,
+        extract('year', DiaryEntry.created_at) == current_year
+    ).count()
+
+    prev_month_count = DiaryEntry.query.filter(
+        DiaryEntry.user_id == current_user.id,
+        extract('month', DiaryEntry.created_at) == prev_month,
+        extract('year', DiaryEntry.created_at) == prev_year
+    ).count()
+
+    if prev_month_count > 0:
+        growth_percentage = ((current_month_count - prev_month_count) / prev_month_count) * 100
+    else:
+        growth_percentage = 100 if current_month_count > 0 else 0
+
+    # Calculate consistency score (0-100)
+    weekly_frequency = db.session.query(
+        func.count(func.distinct(func.date(DiaryEntry.created_at)))
+    ).filter(
+        DiaryEntry.user_id == current_user.id,
+        DiaryEntry.created_at >= datetime.utcnow() - timedelta(days=30)
+    ).scalar() or 0
+
+    # Normalize to per week
+    weekly_frequency = (weekly_frequency / 30) * 7
+
+    # Calculate consistency score components
+    frequency_score = min(100, weekly_frequency * 20)  # 5 days a week = 100
+    streak_score = min(100, longest_streak * 10)  # 10 day streak = 100
+    length_score = min(100, avg_entry_length / 3)  # 300 words = 100
+
+    consistency_score = int((frequency_score + streak_score + length_score) / 3)
+
+    # Compile insights
     insights = {
         'entry_count': entry_count,
         'peak_writing_time': peak_hour_formatted,
