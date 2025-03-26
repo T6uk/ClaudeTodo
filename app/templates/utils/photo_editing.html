@@ -231,6 +231,39 @@
     .editor-tab.active {
         display: block;
     }
+
+    .grid-overlay-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .grid-line {
+        position: absolute;
+        background-color: rgba(255, 255, 255, 0.7);
+    }
+
+    .grid-line-horizontal {
+        width: 100%;
+        height: 1px;
+    }
+
+    .grid-line-vertical {
+        height: 100%;
+        width: 1px;
+    }
+
+    .grid-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -290,6 +323,9 @@
                 </button>
                 <button type="button" class="btn btn-outline-primary tool-btn" data-tool="adjust">
                     <i class="fas fa-sliders-h"></i> Adjust
+                </button>
+                <button type="button" class="btn btn-outline-primary tool-btn" data-tool="grid">
+                    <i class="fas fa-th"></i> Grid
                 </button>
             </div>
         </div>
@@ -416,7 +452,7 @@
                 <div class="col-4 col-md-2 filter-option">
                     <img class="filter-preview" data-filter="sepia" src="" alt="Sepia">
                     <p class="filter-name">Sepia</p>
-</div>
+                </div>
                 <div class="col-4 col-md-2 filter-option">
                     <img class="filter-preview" data-filter="blur" src="" alt="Blur">
                     <p class="filter-name">Blur</p>
@@ -498,6 +534,71 @@
             </div>
         </div>
 
+        <!-- Grid Controls -->
+        <div class="tool-controls editor-tab" id="grid-controls">
+            <div class="grid-buttons">
+                <div class="section-title">
+                    <i class="fas fa-th"></i>
+                    <h3 class="h5 mb-0">Add Grid Overlay</h3>
+                </div>
+                <button class="btn btn-success" id="download-grid-btn">
+                    <i class="fas fa-download me-2"></i> Download with Grid
+                </button>
+            </div>
+
+            <div class="mb-3">
+                <label for="grid-type" class="form-label">Grid Type</label>
+                <select class="form-select" id="grid-type">
+                    <option value="rule-of-thirds">Rule of Thirds</option>
+                    <option value="golden-ratio">Golden Ratio</option>
+                    <option value="custom">Custom Grid</option>
+                </select>
+            </div>
+
+            <div id="custom-grid-options" class="mb-3" style="display: none;">
+                <div class="row mb-2">
+                    <div class="col-6">
+                        <label for="grid-columns" class="form-label">Columns</label>
+                        <input type="number" class="form-control" id="grid-columns" min="1" max="20" value="3">
+                    </div>
+                    <div class="col-6">
+                        <label for="grid-rows" class="form-label">Rows</label>
+                        <input type="number" class="form-control" id="grid-rows" min="1" max="20" value="3">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="grid-color" class="form-label">Grid Color</label>
+                <input type="color" class="form-control form-control-color" id="grid-color" value="#ffffff">
+            </div>
+
+            <div class="mb-3">
+                <label for="grid-opacity" class="form-label">Grid Opacity</label>
+                <div class="d-flex align-items-center">
+                    <input type="range" class="form-range" id="grid-opacity" min="0.1" max="1" step="0.1" value="0.7">
+                    <span class="ms-2" id="grid-opacity-value">0.7</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="grid-thickness" class="form-label">Grid Line Thickness</label>
+                <div class="d-flex align-items-center">
+                    <input type="range" class="form-range" id="grid-thickness" min="1" max="5" step="1" value="1">
+                    <span class="ms-2" id="grid-thickness-value">1px</span>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="apply-grid-btn">
+                    <i class="fas fa-th me-2"></i> Apply Grid
+                </button>
+                <button class="btn btn-outline-secondary" id="remove-grid-btn">
+                    <i class="fas fa-eraser me-2"></i> Remove Grid
+                </button>
+            </div>
+        </div>
+
         <!-- Result view -->
         <div class="image-result" id="image-result">
             <h3 class="h5 mb-3">Result</h3>
@@ -526,850 +627,17 @@
 {% endblock %}
 
 {% block scripts %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // DOM Elements - Upload & Preview
-        const dropZone = document.getElementById('drop-zone');
-        const imageUpload = document.getElementById('image-upload');
-        const browseBtn = document.getElementById('browse-btn');
-        const imagePreview = document.getElementById('image-preview');
-        const previewActions = document.getElementById('preview-actions');
-        const changeImageBtn = document.getElementById('change-image-btn');
-        const removeImageBtn = document.getElementById('remove-image-btn');
-        const toolSelector = document.getElementById('tool-selector');
-
-        // Tool Controls
-        const scalingControls = document.getElementById('scaling-controls');
-        const rotationControls = document.getElementById('rotation-controls');
-        const cropControls = document.getElementById('crop-controls');
-        const filterControls = document.getElementById('filter-controls');
-        const adjustControls = document.getElementById('adjust-controls');
-
-        // Result Elements
-        const imageResult = document.getElementById('image-result');
-        const resultPreview = document.getElementById('result-preview');
-        const editAgainBtn = document.getElementById('edit-again-btn');
-        const applyMoreBtn = document.getElementById('apply-more-btn');
-        const downloadBtn = document.getElementById('download-btn');
-
-        // Current image state
-        let originalImage = null;
-        let currentImage = null;
-        let aspectRatio = 1;
-        let currentTool = 'scaling';
-
-        // Initialize
-        init();
-
-        function init() {
-            // File Upload via Browse Button
-            browseBtn.addEventListener('click', function() {
-                imageUpload.click();
-            });
-
-            // Handle file selection
-            imageUpload.addEventListener('change', function(e) {
-                handleFiles(e.target.files);
-            });
-
-            // Drag and Drop handlers
-            dropZone.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                dropZone.classList.add('active');
-            });
-
-            dropZone.addEventListener('dragleave', function() {
-                dropZone.classList.remove('active');
-            });
-
-            dropZone.addEventListener('drop', function(e) {
-                e.preventDefault();
-                dropZone.classList.remove('active');
-
-                if (e.dataTransfer.files.length) {
-                    handleFiles(e.dataTransfer.files);
-                }
-            });
-
-            // Change image button
-            changeImageBtn.addEventListener('click', function() {
-                imageUpload.click();
-            });
-
-            // Remove image button
-            removeImageBtn.addEventListener('click', function() {
-                resetImageEditor();
-            });
-
-            // Tool selector buttons
-            document.querySelectorAll('.tool-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const tool = this.getAttribute('data-tool');
-                    setActiveTool(tool);
-                });
-            });
-
-            // Edit again button
-            editAgainBtn.addEventListener('click', function() {
-                imageResult.style.display = 'none';
-                showToolControls();
-            });
-
-            // Apply more edits button
-            applyMoreBtn.addEventListener('click', function() {
-                // Update current image state
-                currentImage = resultPreview.src;
-
-                // Hide result view
-                imageResult.style.display = 'none';
-
-                // Update preview
-                imagePreview.src = currentImage;
-
-                // Show tool controls
-                showToolControls();
-            });
-
-            // Initialize tool specific controls
-            initializeScalingControls();
-            initializeRotationControls();
-            initializeCropControls();
-            initializeFilterControls();
-            initializeAdjustControls();
-        }
-
-        // Functions to handle image upload and display
-        function handleFiles(files) {
-            if (files && files[0]) {
-                const file = files[0];
-
-                // Check if file is an image
-                if (!file.type.match('image.*')) {
-                    alert('Please select an image file');
-                    return;
-                }
-
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    // Store original image
-                    originalImage = e.target.result;
-                    currentImage = originalImage;
-
-                    // Display the image preview
-                    imagePreview.src = e.target.result;
-                    imagePreview.classList.remove('d-none');
-                    dropZone.style.display = 'none';
-                    previewActions.classList.remove('d-none');
-                    toolSelector.classList.remove('d-none');
-
-                    // Show scaling controls by default
-                    setActiveTool('scaling');
-
-                    // Create a new image to get dimensions
-                    const img = new Image();
-                    img.onload = function() {
-                        aspectRatio = img.width / img.height;
-
-                        // Set initial values for width and height inputs
-                        document.getElementById('width-input').value = img.width;
-                        document.getElementById('height-input').value = img.height;
-
-                        // Initialize filter previews
-                        initializeFilterPreviews(e.target.result);
-
-                        // Initialize crop preview
-                        document.getElementById('crop-preview').src = e.target.result;
-                    };
-                    img.src = e.target.result;
-                };
-
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function resetImageEditor() {
-            imagePreview.classList.add('d-none');
-            imagePreview.src = '';
-            dropZone.style.display = 'flex';
-            previewActions.classList.add('d-none');
-            toolSelector.classList.add('d-none');
-            hideAllToolControls();
-            imageResult.style.display = 'none';
-
-            // Reset values
-            originalImage = null;
-            currentImage = null;
-            imageUpload.value = '';
-
-            // Reset tool states
-            resetAllTools();
-        }
-
-        function setActiveTool(tool) {
-            currentTool = tool;
-
-            // Update button states
-            document.querySelectorAll('.tool-btn').forEach(btn => {
-                if (btn.getAttribute('data-tool') === tool) {
-                    btn.classList.add('active');
-                    btn.classList.remove('btn-outline-primary');
-                    btn.classList.add('btn-primary');
-                } else {
-                    btn.classList.remove('active');
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-outline-primary');
-                }
-            });
-
-            // Hide all tool controls
-            hideAllToolControls();
-
-            // Show the selected tool controls
-            switch(tool) {
-                case 'scaling':
-                    scalingControls.classList.add('active');
-                    break;
-                case 'rotation':
-                    rotationControls.classList.add('active');
-                    break;
-                case 'crop':
-                    cropControls.classList.add('active');
-                    initCropPreview();
-                    break;
-                case 'filter':
-                    filterControls.classList.add('active');
-                    break;
-                case 'adjust':
-                    adjustControls.classList.add('active');
-                    break;
-            }
-        }
-
-        function hideAllToolControls() {
-            document.querySelectorAll('.editor-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-        }
-
-        function showToolControls() {
-            setActiveTool(currentTool);
-        }
-
-        function showResult(imageData) {
-            // Update result preview
-            resultPreview.src = imageData;
-            downloadBtn.href = imageData;
-
-            // Hide tool controls
-            hideAllToolControls();
-
-            // Show result view
-            imageResult.style.display = 'block';
-        }
-
-        // Initialize scaling controls
-        function initializeScalingControls() {
-            const widthInput = document.getElementById('width-input');
-            const heightInput = document.getElementById('height-input');
-            const maintainAspect = document.getElementById('maintain-aspect');
-            const scaleBtn = document.getElementById('scale-btn');
-
-            widthInput.addEventListener('input', function() {
-                if (maintainAspect.checked && aspectRatio) {
-                    const newWidth = parseInt(widthInput.value) || 0;
-                    const newHeight = Math.round(newWidth / aspectRatio);
-                    heightInput.value = newHeight;
-                }
-            });
-
-            heightInput.addEventListener('input', function() {
-                if (maintainAspect.checked && aspectRatio) {
-                    const newHeight = parseInt(heightInput.value) || 0;
-                    const newWidth = Math.round(newHeight * aspectRatio);
-                    widthInput.value = newWidth;
-                }
-            });
-
-            scaleBtn.addEventListener('click', function() {
-                const width = parseInt(widthInput.value);
-                const height = parseInt(heightInput.value);
-
-                if (!width || !height) {
-                    alert('Please enter both width and height values');
-                    return;
-                }
-
-                scaleImage(width, height);
-            });
-        }
-
-        // Initialize rotation controls
-        function initializeRotationControls() {
-            const rotateLeft = document.getElementById('rotate-left');
-            const rotateRight = document.getElementById('rotate-right');
-            const flipHorizontal = document.getElementById('flip-horizontal');
-            const flipVertical = document.getElementById('flip-vertical');
-            const angleInput = document.getElementById('angle-input');
-            const angleSlider = document.getElementById('angle-slider');
-            const rotateBtn = document.getElementById('rotate-btn');
-
-            rotateLeft.addEventListener('click', function() {
-                angleInput.value = -90;
-                angleSlider.value = -90;
-                rotateImage(-90);
-            });
-
-rotateRight.addEventListener('click', function() {
-                angleInput.value = 90;
-                angleSlider.value = 90;
-                rotateImage(90);
-            });
-
-            flipHorizontal.addEventListener('click', function() {
-                // Send to server for flipping horizontally
-                // This is a placeholder for future implementation
-                alert('Horizontal flip will be implemented soon');
-            });
-
-            flipVertical.addEventListener('click', function() {
-                // Send to server for flipping vertically
-                // This is a placeholder for future implementation
-                alert('Vertical flip will be implemented soon');
-            });
-
-            angleInput.addEventListener('input', function() {
-                angleSlider.value = this.value;
-            });
-
-            angleSlider.addEventListener('input', function() {
-                angleInput.value = this.value;
-            });
-
-            rotateBtn.addEventListener('click', function() {
-                const angle = parseInt(angleInput.value) || 0;
-                rotateImage(angle);
-            });
-        }
-
-        // Initialize crop controls
-        function initializeCropControls() {
-            const cropBtn = document.getElementById('crop-btn');
-            const cropOverlay = document.getElementById('crop-overlay');
-            const cropContainer = document.getElementById('cropper-container');
-
-            // Handles
-            const handleNW = document.getElementById('handle-nw');
-            const handleNE = document.getElementById('handle-ne');
-            const handleSW = document.getElementById('handle-sw');
-            const handleSE = document.getElementById('handle-se');
-
-            let isDragging = false;
-            let isResizing = false;
-            let currentHandle = null;
-            let startX, startY, startLeft, startTop, startWidth, startHeight;
-
-            // Make crop overlay draggable
-            cropOverlay.addEventListener('mousedown', function(e) {
-                if (e.target === cropOverlay) {
-                    isDragging = true;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    startLeft = cropOverlay.offsetLeft;
-                    startTop = cropOverlay.offsetTop;
-                    e.preventDefault();
-                }
-            });
-
-            // Make handles resizable
-            [handleNW, handleNE, handleSW, handleSE].forEach(handle => {
-                handle.addEventListener('mousedown', function(e) {
-                    isResizing = true;
-                    currentHandle = this.id;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    startLeft = cropOverlay.offsetLeft;
-                    startTop = cropOverlay.offsetTop;
-                    startWidth = cropOverlay.offsetWidth;
-                    startHeight = cropOverlay.offsetHeight;
-                    e.preventDefault();
-                    e.stopPropagation();
-                });
-            });
-
-            // Handle mouse move for both dragging and resizing
-            document.addEventListener('mousemove', function(e) {
-                if (isDragging) {
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
-
-                    let newLeft = startLeft + dx;
-                    let newTop = startTop + dy;
-
-                    // Constrain to container
-                    newLeft = Math.max(0, Math.min(newLeft, cropContainer.offsetWidth - cropOverlay.offsetWidth));
-                    newTop = Math.max(0, Math.min(newTop, cropContainer.offsetHeight - cropOverlay.offsetHeight));
-
-                    cropOverlay.style.left = newLeft + 'px';
-                    cropOverlay.style.top = newTop + 'px';
-                } else if (isResizing) {
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
-
-                    let newLeft = startLeft;
-                    let newTop = startTop;
-                    let newWidth = startWidth;
-                    let newHeight = startHeight;
-
-                    switch (currentHandle) {
-                        case 'handle-nw':
-                            newLeft = startLeft + dx;
-                            newTop = startTop + dy;
-                            newWidth = startWidth - dx;
-                            newHeight = startHeight - dy;
-                            break;
-                        case 'handle-ne':
-                            newTop = startTop + dy;
-                            newWidth = startWidth + dx;
-                            newHeight = startHeight - dy;
-                            break;
-                        case 'handle-sw':
-                            newLeft = startLeft + dx;
-                            newWidth = startWidth - dx;
-                            newHeight = startHeight + dy;
-                            break;
-                        case 'handle-se':
-                            newWidth = startWidth + dx;
-                            newHeight = startHeight + dy;
-                            break;
-                    }
-
-                    // Ensure minimum size and constrain to container
-                    if (newWidth >= 20 && newHeight >= 20) {
-                        if (newLeft >= 0 && newLeft + newWidth <= cropContainer.offsetWidth) {
-                            cropOverlay.style.left = newLeft + 'px';
-                            cropOverlay.style.width = newWidth + 'px';
-                        }
-
-                        if (newTop >= 0 && newTop + newHeight <= cropContainer.offsetHeight) {
-                            cropOverlay.style.top = newTop + 'px';
-                            cropOverlay.style.height = newHeight + 'px';
-                        }
-                    }
-                }
-            });
-
-            // Handle mouse up to stop dragging/resizing
-            document.addEventListener('mouseup', function() {
-                isDragging = false;
-                isResizing = false;
-                currentHandle = null;
-            });
-
-            // Crop button handler
-            cropBtn.addEventListener('click', function() {
-                const cropPreview = document.getElementById('crop-preview');
-                const containerRect = cropContainer.getBoundingClientRect();
-                const overlayRect = cropOverlay.getBoundingClientRect();
-
-                // Calculate crop coordinates as ratios of the image size
-                const left = (overlayRect.left - containerRect.left) / containerRect.width;
-                const top = (overlayRect.top - containerRect.top) / containerRect.height;
-                const right = left + (overlayRect.width / containerRect.width);
-                const bottom = top + (overlayRect.height / containerRect.height);
-
-                cropImage(left, top, right, bottom);
-            });
-        }
-
-        // Initialize crop preview
-        function initCropPreview() {
-            const cropPreview = document.getElementById('crop-preview');
-            cropPreview.src = currentImage || originalImage;
-
-            // Reset crop overlay to center 50% of image
-            const cropOverlay = document.getElementById('crop-overlay');
-            cropOverlay.style.top = '25%';
-            cropOverlay.style.left = '25%';
-            cropOverlay.style.width = '50%';
-            cropOverlay.style.height = '50%';
-        }
-
-        // Initialize filter controls
-        function initializeFilterControls() {
-            const filterBtn = document.getElementById('filter-btn');
-
-            // Initialize the filter previews once the image is loaded
-            document.querySelectorAll('.filter-preview').forEach(preview => {
-                preview.addEventListener('click', function() {
-                    // Remove active class from all previews
-                    document.querySelectorAll('.filter-preview').forEach(p => {
-                        p.classList.remove('active');
-                    });
-
-                    // Add active class to selected preview
-                    this.classList.add('active');
-                });
-            });
-
-            // Apply filter button
-            filterBtn.addEventListener('click', function() {
-                const selectedFilter = document.querySelector('.filter-preview.active');
-                if (selectedFilter) {
-                    const filterType = selectedFilter.getAttribute('data-filter');
-                    if (filterType === 'none') {
-                        // Reset to original or current image
-                        imagePreview.src = currentImage || originalImage;
-                    } else {
-                        applyFilter(filterType);
-                    }
-                }
-            });
-        }
-
-        // Initialize the filter previews with the current image
-        function initializeFilterPreviews(imgSrc) {
-            // Set the original preview
-            const previews = document.querySelectorAll('.filter-preview');
-            previews.forEach(preview => {
-                preview.src = imgSrc;
-
-                const filterType = preview.getAttribute('data-filter');
-                if (filterType !== 'none') {
-                    // For actual implementation, we would generate filtered previews
-                    // This would require either client-side processing or
-                    // a server endpoint that can quickly generate thumbnails
-                    // For now, we'll just use the original image for all previews
-                }
-            });
-        }
-
-        // Initialize adjustment controls
-        function initializeAdjustControls() {
-            const brightnessSlider = document.getElementById('brightness-slider');
-            const contrastSlider = document.getElementById('contrast-slider');
-            const saturationSlider = document.getElementById('saturation-slider');
-            const sharpnessSlider = document.getElementById('sharpness-slider');
-
-            const brightnessValue = document.getElementById('brightness-value');
-            const contrastValue = document.getElementById('contrast-value');
-            const saturationValue = document.getElementById('saturation-value');
-            const sharpnessValue = document.getElementById('sharpness-value');
-
-            const adjustBtn = document.getElementById('adjust-btn');
-
-            // Update displayed values
-            brightnessSlider.addEventListener('input', function() {
-                brightnessValue.textContent = parseFloat(this.value).toFixed(2);
-            });
-
-            contrastSlider.addEventListener('input', function() {
-                contrastValue.textContent = parseFloat(this.value).toFixed(2);
-            });
-
-            saturationSlider.addEventListener('input', function() {
-                saturationValue.textContent = parseFloat(this.value).toFixed(2);
-            });
-
-            sharpnessSlider.addEventListener('input', function() {
-                sharpnessValue.textContent = parseFloat(this.value).toFixed(2);
-            });
-
-            // Apply adjustments button
-            adjustBtn.addEventListener('click', function() {
-                const brightness = parseFloat(brightnessSlider.value);
-                const contrast = parseFloat(contrastSlider.value);
-                const saturation = parseFloat(saturationSlider.value);
-                const sharpness = parseFloat(sharpnessSlider.value);
-
-                applyAdjustments(brightness, contrast, saturation, sharpness);
-            });
-        }
-
-        // Reset all tools to default state
-        function resetAllTools() {
-            // Reset scaling controls
-            document.getElementById('width-input').value = '';
-            document.getElementById('height-input').value = '';
-            document.getElementById('maintain-aspect').checked = true;
-
-            // Reset rotation controls
-            document.getElementById('angle-input').value = 0;
-            document.getElementById('angle-slider').value = 0;
-
-            // Reset crop overlay
-            const cropOverlay = document.getElementById('crop-overlay');
-            if (cropOverlay) {
-                cropOverlay.style.top = '25%';
-                cropOverlay.style.left = '25%';
-                cropOverlay.style.width = '50%';
-                cropOverlay.style.height = '50%';
-            }
-
-            // Reset filters
-            document.querySelectorAll('.filter-preview').forEach(preview => {
-                if (preview.getAttribute('data-filter') === 'none') {
-                    preview.classList.add('active');
-                } else {
-                    preview.classList.remove('active');
-                }
-            });
-
-            // Reset adjustments
-            document.getElementById('brightness-slider').value = 1;
-            document.getElementById('contrast-slider').value = 1;
-            document.getElementById('saturation-slider').value = 1;
-            document.getElementById('sharpness-slider').value = 1;
-            document.getElementById('brightness-value').textContent = '1.00';
-            document.getElementById('contrast-value').textContent = '1.00';
-            document.getElementById('saturation-value').textContent = '1.00';
-            document.getElementById('sharpness-value').textContent = '1.00';
-        }
-
-        // API Functions
-
-        function scaleImage(width, height) {
-            // Create form data for the request
-            const formData = new FormData();
-
-            // Convert current image to blob and append to form
-            fetch(currentImage || originalImage)
-                .then(res => res.blob())
-                .then(blob => {
-                    // Create a File object
-                    const imageFile = new File([blob], "image.jpg", { type: "image/jpeg" });
-
-                    formData.append('image', imageFile);
-                    formData.append('width', width);
-                    formData.append('height', height);
-                    formData.append('maintain_aspect', document.getElementById('maintain-aspect').checked);
-
-                    // Show loading state
-                    const scaleBtn = document.getElementById('scale-btn');
-                    scaleBtn.disabled = true;
-                    scaleBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
-
-                    // Send the request to the server
-                    fetch('/utils/scale-image', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update aspect ratio for the new dimensions
-                            aspectRatio = data.width / data.height;
-
-                            // Show the result
-                            showResult(data.image);
-                        } else {
-                            alert('Error: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while processing the image');
-                    })
-                    .finally(() => {
-                        // Reset button state
-                        scaleBtn.disabled = false;
-                        scaleBtn.innerHTML = '<i class="fas fa-compress-arrows-alt me-2"></i> Scale Image';
-                    });
-                });
-        }
-
-        function rotateImage(angle) {
-            // Create form data for the request
-            const formData = new FormData();
-
-            // Convert current image to blob and append to form
-            fetch(currentImage || originalImage)
-                .then(res => res.blob())
-                .then(blob => {
-                    // Create a File object
-                    const imageFile = new File([blob], "image.jpg", { type: "image/jpeg" });
-
-                    formData.append('image', imageFile);
-                    formData.append('angle', angle);
-
-                    // Show loading state
-                    const rotateBtn = document.getElementById('rotate-btn');
-                    rotateBtn.disabled = true;
-                    rotateBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
-
-                    // Send the request to the server
-                    fetch('/utils/rotate-image', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update aspect ratio for the new dimensions
-                            aspectRatio = data.width / data.height;
-
-                            // Show the result
-                            showResult(data.image);
-                        } else {
-                            alert('Error: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while processing the image');
-                    })
-                    .finally(() => {
-                        // Reset button state
-                        rotateBtn.disabled = false;
-                        rotateBtn.innerHTML = '<i class="fas fa-sync-alt me-2"></i> Apply Rotation';
-                    });
-                });
-        }
-
-        function cropImage(left, top, right, bottom) {
-            // Create form data for the request
-            const formData = new FormData();
-
-            // Convert current image to blob and append to form
-            fetch(currentImage || originalImage)
-                .then(res => res.blob())
-                .then(blob => {
-                    // Create a File object
-                    const imageFile = new File([blob], "image.jpg", { type: "image/jpeg" });
-
-                    formData.append('image', imageFile);
-                    formData.append('left', left);
-                    formData.append('top', top);
-                    formData.append('right', right);
-                    formData.append('bottom', bottom);
-
-                    // Show loading state
-                    const cropBtn = document.getElementById('crop-btn');
-                    cropBtn.disabled = true;
-                    cropBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
-
-                    // Send the request to the server
-                    fetch('/utils/crop-image', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Update aspect ratio for the new dimensions
-                            aspectRatio = data.width / data.height;
-
-                            // Show the result
-                            showResult(data.image);
-                        } else {
-                            alert('Error: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while processing the image');
-                    })
-                    .finally(() => {
-                        // Reset button state
-                        cropBtn.disabled = false;
-                        cropBtn.innerHTML = '<i class="fas fa-crop-alt me-2"></i> Apply Crop';
-                    });
-                });
-        }
-
-        function applyFilter(filterType) {
-            // Create form data for the request
-            const formData = new FormData();
-
-            // Convert current image to blob and append to form
-            fetch(currentImage || originalImage)
-                .then(res => res.blob())
-                .then(blob => {
-                    // Create a File object
-                    const imageFile = new File([blob], "image.jpg", { type: "image/jpeg" });
-
-                    formData.append('image', imageFile);
-                    formData.append('filter_type', filterType);
-
-                    // Show loading state
-                    const filterBtn = document.getElementById('filter-btn');
-                    filterBtn.disabled = true;
-                    filterBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
-
-                    // Send the request to the server
-                    fetch('/utils/apply-filter', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Show the result
-                            showResult(data.image);
-                        } else {
-                            alert('Error: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while processing the image');
-                    })
-                    .finally(() => {
-                        // Reset button state
-                        filterBtn.disabled = false;
-                        filterBtn.innerHTML = '<i class="fas fa-adjust me-2"></i> Apply Filter';
-                    });
-                });
-        }
-
-        function applyAdjustments(brightness, contrast, saturation, sharpness) {
-            // Create form data for the request
-            const formData = new FormData();
-
-            // Convert current image to blob and append to form
-            fetch(currentImage || originalImage)
-                .then(res => res.blob())
-                .then(blob => {
-                    // Create a File object
-                    const imageFile = new File([blob], "image.jpg", { type: "image/jpeg" });
-
-                    formData.append('image', imageFile);
-                    formData.append('brightness', brightness);
-                    formData.append('contrast', contrast);
-                    formData.append('saturation', saturation);
-                    formData.append('sharpness', sharpness);
-
-                    // Show loading state
-                    const adjustBtn = document.getElementById('adjust-btn');
-                    adjustBtn.disabled = true;
-                    adjustBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
-
-                    // Send the request to the server
-                    fetch('/utils/adjust-image', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Show the result
-                            showResult(data.image);
-                        } else {
-                            alert('Error: ' + data.error);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('An error occurred while processing the image');
-                    })
-                    .finally(() => {
-                        // Reset button state
-                        adjustBtn.disabled = false;
-                        adjustBtn.innerHTML = '<i class="fas fa-sliders-h me-2"></i> Apply Adjustments';
-                    });
-                });
-
-        }
-    });
-</script>
+<!-- Utility scripts -->
+<script src="{{ url_for('static', filename='js/photo_editing/utils.js') }}"></script>
+
+<!-- Tool scripts -->
+<script src="{{ url_for('static', filename='js/photo_editing/scale.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/rotate.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/crop.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/filter.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/adjust.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/grid.js') }}"></script>
+
+<!-- Main photo editing script -->
+<script src="{{ url_for('static', filename='js/photo_editing/main.js') }}"></script>
 {% endblock %}
