@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const adjustControls = document.getElementById('adjust-controls');
     const gridControls = document.getElementById('grid-controls');
     const watermarkControls = document.getElementById('watermark-controls'); // Added this line
+    const inpaintControls = document.getElementById('inpaint-controls'); // Add this line
 
     // Result Elements
     const imageResult = document.getElementById('image-result');
@@ -259,6 +260,9 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'watermark':
                 watermarkControls.classList.add('active');
                 break;
+            case 'inpaint':
+                inpaintControls.classList.add('active');
+                break;
         }
 
         const toolActivatedEvent = new CustomEvent('toolActivated', {
@@ -314,6 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.adjustTool) window.adjustTool.reset();
         if (window.gridTool) window.gridTool.reset();
         if (window.watermarkTool) window.watermarkTool.reset();
+        if (window.inpaintTool) window.inpaintTool.reset(); // Add this line
 
         // Reset filter previews
         document.querySelectorAll('.filter-preview').forEach(preview => {

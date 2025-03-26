@@ -10,6 +10,8 @@ from PIL import Image, ImageFilter, ImageEnhance, ImageOps, ImageDraw, ImageFont
 import io
 import base64
 import math
+import numpy as np
+import cv2
 
 utils_bp = Blueprint("utils", __name__, url_prefix="/utils")
 
@@ -642,6 +644,192 @@ def export_image():
         except Exception as e:
             import traceback
             traceback.print_exc()  # Print the error to the server console
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"error": "File type not allowed"}), 400
+
+
+@utils_bp.route("/inpaint-image", methods=["POST"])
+@login_required
+def inpaint_image():
+    """Advanced API endpoint for removing objects with seamless inpainting"""
+    if 'image' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if 'mask' not in request.form:
+        return jsonify({"error": "No mask provided"}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            # Read the image
+            img = Image.open(file)
+            img_format = file.filename.rsplit('.', 1)[1].upper()
+            if img_format == 'JPG':
+                img_format = 'JPEG'
+
+            # Convert PIL Image to OpenCV format
+            img_array = np.array(img)
+            if len(img_array.shape) == 3 and img_array.shape[2] == 4:  # Has alpha channel
+                img_array = cv2.cvtColor(img_array, cv2.COLOR_RGBA2BGRA)
+                has_alpha = True
+            elif len(img_array.shape) == 3 and img_array.shape[2] == 3:
+                img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
+                has_alpha = False
+            else:
+                return jsonify({"error": "Unsupported image format"}), 400
+
+            # Get mask data
+            mask_data = request.form.get('mask')
+            if ',' in mask_data:
+                mask_data = mask_data.split(',')[1]
+
+            mask_bytes = base64.b64decode(mask_data)
+            mask_array = np.frombuffer(mask_bytes, np.uint8)
+            mask = cv2.imdecode(mask_array, cv2.IMREAD_UNCHANGED)
+
+            # Convert mask to grayscale if needed
+            if len(mask.shape) > 2:
+                if mask.shape[2] == 4:  # If RGBA
+                    # Use alpha channel or convert to grayscale
+                    mask = cv2.cvtColor(mask, cv2.COLOR_BGRA2GRAY)
+                else:  # If RGB
+                    mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+            # Ensure mask is binary (255 for area to inpaint, 0 for area to keep)
+            _, mask = cv2.threshold(mask, 1, 255, cv2.THRESH_BINARY)
+
+            # Resize mask to match image dimensions
+            mask = cv2.resize(mask, (img_array.shape[1], img_array.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+            # Get inpainting parameters
+            inpaint_method = int(request.form.get('method', '1'))  # 0 for INPAINT_NS, 1 for INPAINT_TELEA
+            inpaint_radius = int(request.form.get('radius', '10'))
+
+            # Improve mask with morphological operations for better edge handling
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            mask_dilated = cv2.dilate(mask, kernel, iterations=2)
+            mask_edge = cv2.subtract(mask_dilated, mask)
+
+            # Create enhanced inpainting with multi-scale approach
+            # Step 1: Perform initial inpainting with standard algorithm
+            if inpaint_method == 0:
+                result = cv2.inpaint(img_array, mask, inpaint_radius, cv2.INPAINT_NS)
+            else:
+                result = cv2.inpaint(img_array, mask, inpaint_radius, cv2.INPAINT_TELEA)
+
+            # Step 2: Create a smaller version for large-scale structure inpainting
+            scale_factor = 0.5
+            small_img = cv2.resize(img_array, None, fx=scale_factor, fy=scale_factor,
+                                   interpolation=cv2.INTER_AREA)
+            small_mask = cv2.resize(mask, None, fx=scale_factor, fy=scale_factor,
+                                    interpolation=cv2.INTER_NEAREST)
+
+            # Apply inpainting to smaller image (captures larger structures)
+            if inpaint_method == 0:
+                small_result = cv2.inpaint(small_img, small_mask,
+                                           int(inpaint_radius * scale_factor * 1.5), cv2.INPAINT_NS)
+            else:
+                small_result = cv2.inpaint(small_img, small_mask,
+                                           int(inpaint_radius * scale_factor * 1.5), cv2.INPAINT_TELEA)
+
+            # Resize back to original size
+            large_structure = cv2.resize(small_result, (img_array.shape[1], img_array.shape[0]),
+                                         interpolation=cv2.INTER_CUBIC)
+
+            # Step 3: Create a smaller version for texture synthesis
+            if inpaint_method == 1:  # Only use texture synthesis with Telea method
+                # Create a texture mask from the dilated mask (excluding the edges)
+                texture_mask = cv2.subtract(mask_dilated, mask_edge)
+
+                # Gaussian blur to help with texture blending
+                texture_result = cv2.inpaint(result, texture_mask, inpaint_radius // 2, cv2.INPAINT_TELEA)
+
+                # Apply bilateral filter to preserve edges while smoothing textures
+                texture_result = cv2.bilateralFilter(texture_result, 9, 75, 75)
+
+                # Blend together based on mask_edge
+                alpha = mask_edge.astype(float) / 255.0
+                alpha = cv2.GaussianBlur(alpha, (21, 21), 0)
+                alpha = np.expand_dims(alpha, axis=2)
+                result = (1 - alpha) * result + alpha * texture_result
+
+            # Step 4: Blend the multi-scale results
+            # Use original result for details, large structure for overall consistency
+            mask_float = mask.astype(float) / 255.0
+            mask_float = cv2.GaussianBlur(mask_float, (31, 31), 0)
+            mask_float = np.expand_dims(mask_float, axis=2)
+
+            # Combine results with a weighted blending
+            beta = 0.7  # Weight for large structure contribution
+            final_result = (1 - mask_float) * img_array + mask_float * ((1 - beta) * result + beta * large_structure)
+            final_result = final_result.astype(np.uint8)
+
+            # Step 5: Apply seamless cloning to smooth boundaries
+            # Create a mask slightly smaller than the original for seamless cloning
+            kernel_small = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+            mask_small = cv2.erode(mask, kernel_small, iterations=2)
+
+            # Find center of the mask for seamless cloning
+            if np.sum(mask_small) > 0:  # Only if mask is not empty
+                moments = cv2.moments(mask_small)
+                if moments["m00"] != 0:
+                    center_x = int(moments["m10"] / moments["m00"])
+                    center_y = int(moments["m01"] / moments["m00"])
+                    center = (center_x, center_y)
+
+                    # Apply seamless cloning for smoother transitions
+                    try:
+                        normal_clone = cv2.seamlessClone(
+                            final_result, img_array, mask_small, center, cv2.NORMAL_CLONE
+                        )
+                        # Blend seamless clone with final result for a more natural look
+                        mask_edge_float = mask_edge.astype(float) / 255.0
+                        mask_edge_float = cv2.GaussianBlur(mask_edge_float, (15, 15), 0)
+                        mask_edge_float = np.expand_dims(mask_edge_float, axis=2)
+                        final_result = (1 - mask_edge_float) * final_result + mask_edge_float * normal_clone
+                        final_result = final_result.astype(np.uint8)
+                    except:
+                        # If seamless cloning fails, use the result without it
+                        pass
+
+            # Final noise reduction and detail preservation
+            final_result = cv2.fastNlMeansDenoisingColored(final_result, None, 3, 3, 7, 21)
+
+            # Convert back to PIL image
+            if has_alpha:
+                # Preserve original alpha channel
+                alpha_channel = cv2.split(cv2.cvtColor(img_array, cv2.COLOR_BGRA2RGBA))[3]
+                result_rgb = cv2.cvtColor(final_result, cv2.COLOR_BGR2RGB)
+                result_rgba = cv2.merge([result_rgb[:, :, 0], result_rgb[:, :, 1], result_rgb[:, :, 2], alpha_channel])
+                result_img = Image.fromarray(result_rgba)
+            else:
+                result_rgb = cv2.cvtColor(final_result, cv2.COLOR_BGR2RGB)
+                result_img = Image.fromarray(result_rgb)
+
+            # Save the inpainted image to a buffer
+            buffer = io.BytesIO()
+            result_img = prepare_image_for_saving(result_img, img_format)
+            result_img.save(buffer, format=img_format)
+            buffer.seek(0)
+
+            # Convert to base64 for sending back to the client
+            img_base64 = base64.b64encode(buffer.getvalue()).decode()
+            img_src = f"data:image/{img_format.lower()};base64,{img_base64}"
+
+            return jsonify({
+                "success": True,
+                "image": img_src,
+                "width": result_img.width,
+                "height": result_img.height
+            })
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            current_app.logger.error(f"Error in inpaint_image: {error_details}")
             return jsonify({"error": str(e)}), 500
 
     return jsonify({"error": "File type not allowed"}), 400

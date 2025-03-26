@@ -3,6 +3,54 @@
 
 {% block head %}
 <style>
+    /* Inpainting styles */
+   /* app/templates/utils/photo_editing.html - Add to the style block */
+/* Enhanced inpainting styles */
+.inpaint-canvas-container {
+    position: relative;
+    margin: 0 auto;
+    min-height: 200px;
+    background-color: #f8f9fa;
+    overflow: hidden;
+    border: 2px solid #ced4da !important;
+    transition: border-color 0.3s;
+}
+
+.inpaint-canvas-container:hover {
+    border-color: var(--primary) !important;
+}
+
+[data-bs-theme="dark"] .inpaint-canvas-container {
+    background-color: #343a40;
+    border-color: #495057 !important;
+}
+
+[data-bs-theme="dark"] .inpaint-canvas-container:hover {
+    border-color: var(--primary) !important;
+}
+
+#inpaint-canvas {
+    cursor: crosshair;
+    display: block;
+}
+
+.instruction-text {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background-color: rgba(var(--primary-rgb), 0.1);
+    border-radius: 5px;
+    font-weight: 500;
+}
+
+.brush-preview {
+    width: 30px;
+    height: 30px;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 10px;
+    border: 1px solid #ced4da;
+}
     .photo-tool-card {
         transition: all 0.3s;
         cursor: pointer;
@@ -344,6 +392,9 @@
                 </button>
                 <button type="button" class="btn btn-outline-primary tool-btn" data-tool="watermark">
                     <i class="fas fa-copyright"></i> Watermark
+                </button>
+                <button type="button" class="btn btn-outline-primary tool-btn" data-tool="inpaint">
+                    <i class="fas fa-magic"></i> Inpaint
                 </button>
             </div>
         </div>
@@ -700,6 +751,75 @@
     </div>
 </div>
 
+        <!-- app/templates/utils/photo_editing.html -->
+<!-- Replace the inpaint-controls div with this updated version -->
+<div class="tool-controls editor-tab" id="inpaint-controls">
+    <div class="section-title">
+        <i class="fas fa-magic"></i>
+        <h3 class="h5 mb-0">Content-Aware Remove</h3>
+    </div>
+
+    <div class="instruction-text">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>How to use:</strong> Paint over the objects you want to remove. The algorithm will seamlessly fill the area with surrounding content. For best results:
+        <ul class="mb-0 mt-2">
+            <li>Use a brush size slightly larger than the object</li>
+            <li>Paint the entire object you want to remove</li>
+            <li>Telea algorithm works better for most images</li>
+        </ul>
+    </div>
+
+    <div class="mb-3">
+        <label for="brush-size-slider" class="form-label">Brush Size</label>
+        <div class="d-flex align-items-center">
+            <input type="range" class="form-range" id="brush-size-slider" min="5" max="100" value="20" step="1">
+            <span class="ms-2" id="brush-size-value">20px</span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="inpaint-method" class="form-label">Algorithm</label>
+        <select class="form-select" id="inpaint-method">
+            <option value="1" selected>Telea (Best for photos)</option>
+            <option value="0">Navier-Stokes (Better for illustrations)</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="inpaint-radius-slider" class="form-label">Inpainting Radius</label>
+        <div class="d-flex align-items-center">
+            <input type="range" class="form-range" id="inpaint-radius-slider" min="3" max="30" value="10" step="1">
+            <span class="ms-2" id="inpaint-radius-value">10px</span>
+        </div>
+        <small class="form-text text-muted">Higher values look at pixels further from the selection</small>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Draw on Image</label>
+        <div id="inpaint-canvas-container" class="inpaint-canvas-container border rounded mb-3">
+            <canvas id="inpaint-canvas"></canvas>
+        </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <button class="btn btn-primary" id="inpaint-btn">
+            <i class="fas fa-magic me-2"></i> Apply Inpainting
+        </button>
+        <div class="row g-2">
+            <div class="col">
+                <button class="btn btn-outline-secondary w-100" id="undo-mask-btn">
+                    <i class="fas fa-undo me-2"></i> Undo (Ctrl+Z)
+                </button>
+            </div>
+            <div class="col">
+                <button class="btn btn-outline-secondary w-100" id="clear-mask-btn">
+                    <i class="fas fa-eraser me-2"></i> Clear All
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
         <!-- Result view -->
         <div class="image-result" id="image-result">
             <h3 class="h5 mb-3">Result</h3>
@@ -748,6 +868,8 @@
 <script src="{{ url_for('static', filename='js/photo_editing/adjust.js') }}"></script>
 <script src="{{ url_for('static', filename='js/photo_editing/grid.js') }}"></script>
 <script src="{{ url_for('static', filename='js/photo_editing/watermark.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/inpaint.js') }}"></script>
+
 
 
 <!-- Main photo editing script -->
