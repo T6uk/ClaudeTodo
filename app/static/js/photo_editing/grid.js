@@ -84,88 +84,102 @@ class GridTool {
 
     // Apply grid overlay to the image
     applyGridOverlay(type, columns, rows, color, opacity, thickness) {
-        // Remove any existing grid first
-        this.removeGridOverlay();
+    // Remove any existing grid first
+    this.removeGridOverlay();
 
-        // Create a canvas element
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
 
-        // Load the current image
-        const img = new Image();
-        img.onload = () => {
-            // Set canvas dimensions to match image
-            canvas.width = img.width;
-            canvas.height = img.height;
+    // Load the current image
+    const img = new Image();
+    img.onload = () => {
+        // Set canvas dimensions to match image
+        canvas.width = img.width;
+        canvas.height = img.height;
 
-            // Draw the original image to the canvas
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // Draw the original image to the canvas
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Set up grid line style
-            ctx.strokeStyle = PhotoUtils.hexToRgba(color, opacity);
-            ctx.lineWidth = thickness;
+        // Set up grid line style
+        ctx.strokeStyle = PhotoUtils.hexToRgba(color, opacity);
+        ctx.lineWidth = thickness;
 
-            // Define grid lines based on grid type
-            let horizontalLines = [];
-            let verticalLines = [];
+        // Define grid lines based on grid type
+        let horizontalLines = [];
+        let verticalLines = [];
 
-            if (type === 'rule-of-thirds') {
-                // Rule of thirds - 2 horizontal and 2 vertical lines
-                horizontalLines = [1/3, 2/3];
-                verticalLines = [1/3, 2/3];
-            } else if (type === 'golden-ratio') {
-                // Golden ratio grid - phi ≈ 0.618
-                const phi = 0.618;
-                horizontalLines = [phi, 1 - phi];
-                verticalLines = [phi, 1 - phi];
-            } else if (type === 'custom') {
-                // Custom grid with user-defined rows and columns
-                for (let i = 1; i < rows; i++) {
-                    horizontalLines.push(i / rows);
-                }
+        if (type === 'rule-of-thirds') {
+            // Rule of thirds - 2 horizontal and 2 vertical lines
+            horizontalLines = [1/3, 2/3];
+            verticalLines = [1/3, 2/3];
+        } else if (type === 'golden-ratio') {
+            // Golden ratio grid - phi ≈ 0.618
+            const phi = 0.618;
+            horizontalLines = [phi, 1 - phi];
+            verticalLines = [phi, 1 - phi];
 
-                for (let i = 1; i < columns; i++) {
-                    verticalLines.push(i / columns);
-                }
+            // Add diagonal lines for golden spiral reference
+            ctx.save();
+            ctx.strokeStyle = PhotoUtils.hexToRgba(color, opacity * 0.7);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(canvas.width, 0);
+            ctx.lineTo(0, canvas.height);
+            ctx.stroke();
+            ctx.restore();
+        } else if (type === 'custom') {
+            // Custom grid with user-defined rows and columns
+            for (let i = 1; i < rows; i++) {
+                horizontalLines.push(i / rows);
             }
 
-            // Draw horizontal grid lines
-            horizontalLines.forEach(ratio => {
-                const y = Math.round(ratio * canvas.height);
-                ctx.beginPath();
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-                ctx.stroke();
-            });
+            for (let i = 1; i < columns; i++) {
+                verticalLines.push(i / columns);
+            }
+        }
 
-            // Draw vertical grid lines
-            verticalLines.forEach(ratio => {
-                const x = Math.round(ratio * canvas.width);
-                ctx.beginPath();
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height);
-                ctx.stroke();
-            });
+        // Draw horizontal grid lines
+        horizontalLines.forEach(ratio => {
+            const y = Math.round(ratio * canvas.height);
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
+        });
 
-            // Convert canvas to data URL and display
-            const gridImageData = canvas.toDataURL('image/png');
+        // Draw vertical grid lines
+        verticalLines.forEach(ratio => {
+            const x = Math.round(ratio * canvas.width);
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        });
 
-            // Update the preview image with the grid applied
-            this.imagePreview.src = gridImageData;
+        // Convert canvas to data URL and display
+        const gridImageData = canvas.toDataURL('image/png');
 
-            // Update current image with the grid applied
-            window.currentImage = gridImageData;
+        // Update the preview image with the grid applied
+        this.imagePreview.src = gridImageData;
 
-            // Emit an event to notify other components
-            const event = new CustomEvent('gridApplied', {
-                detail: { image: gridImageData }
-            });
-            document.dispatchEvent(event);
-        };
+        // Update current image with the grid applied
+        window.currentImage = gridImageData;
 
-        // Set the image source to trigger loading
-        img.src = window.currentImage || window.originalImage;
-    }
+        // Emit an event to notify other components
+        const event = new CustomEvent('gridApplied', {
+            detail: { image: gridImageData }
+        });
+        document.dispatchEvent(event);
+    };
+
+    // Set the image source to trigger loading
+    img.src = window.currentImage || window.originalImage;
+}
 
     // Remove grid overlay
     removeGridOverlay() {

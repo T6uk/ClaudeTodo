@@ -36,16 +36,12 @@ class RotateTool {
 
         // Flip horizontal button
         this.flipHorizontal.addEventListener('click', () => {
-            // Send to server for flipping horizontally
-            // This is a placeholder for future implementation
-            alert('Horizontal flip will be implemented soon');
+            this.flipImage('horizontal');
         });
 
         // Flip vertical button
         this.flipVertical.addEventListener('click', () => {
-            // Send to server for flipping vertically
-            // This is a placeholder for future implementation
-            alert('Vertical flip will be implemented soon');
+            this.flipImage('vertical');
         });
 
         // Angle input change
@@ -116,6 +112,58 @@ class RotateTool {
                 });
             });
     }
+
+    // Flip the image horizontally or vertically
+    flipImage(direction) {
+    // Create form data for the request
+    const formData = new FormData();
+
+    // Convert current image to blob and append to form
+    PhotoUtils.urlToFile(window.currentImage || window.originalImage, "image.jpg", "image/jpeg")
+        .then(imageFile => {
+            formData.append('image', imageFile);
+            formData.append('flip_direction', direction);
+
+            // Show loading state on the flip button that was clicked
+            const flipBtn = direction === 'horizontal' ? this.flipHorizontal : this.flipVertical;
+            const originalHTML = flipBtn.innerHTML;
+            flipBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            flipBtn.disabled = true;
+
+            // Send the request to the server
+            fetch('/utils/flip-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show the result
+                    window.showResult(data.image);
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error flipping the image'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while flipping the image: ' + error.message);
+            })
+            .finally(() => {
+                // Reset button state
+                flipBtn.innerHTML = originalHTML;
+                flipBtn.disabled = false;
+            });
+        })
+        .catch(error => {
+            console.error('Error preparing image:', error);
+            alert('An error occurred while preparing the image');
+        });
+}
 
     // Reset rotation controls
     reset() {

@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterControls = document.getElementById('filter-controls');
     const adjustControls = document.getElementById('adjust-controls');
     const gridControls = document.getElementById('grid-controls');
+    const watermarkControls = document.getElementById('watermark-controls'); // Added this line
 
     // Result Elements
     const imageResult = document.getElementById('image-result');
@@ -107,10 +108,30 @@ document.addEventListener('DOMContentLoaded', function() {
             showToolControls();
         });
 
-        // Download button
-        downloadBtn.addEventListener('click', function() {
-            this.href = window.currentImage;
-        });
+        // Export options
+        if (document.getElementById('export-png')) {
+            document.getElementById('export-png').addEventListener('click', function() {
+                exportImage('png');
+            });
+        }
+
+        if (document.getElementById('export-jpg')) {
+            document.getElementById('export-jpg').addEventListener('click', function() {
+                exportImage('jpg');
+            });
+        }
+
+        if (document.getElementById('export-webp')) {
+            document.getElementById('export-webp').addEventListener('click', function() {
+                exportImage('webp');
+            });
+        }
+
+        if (document.getElementById('export-original')) {
+            document.getElementById('export-original').addEventListener('click', function() {
+                exportImage('original');
+            });
+        }
 
         // Export global functions used by other modules
         window.showResult = showResult;
@@ -165,6 +186,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (window.gridTool) window.gridTool.setImages(window.originalImage, window.currentImage);
                 };
                 img.src = e.target.result;
+
+                // Emit an event to notify that the image has been loaded
+                const imageLoadedEvent = new CustomEvent('imageLoaded', {
+                    detail: { image: e.target.result }
+                });
+                document.dispatchEvent(imageLoadedEvent);
             };
 
             reader.readAsDataURL(file);
@@ -229,6 +256,9 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'grid':
                 gridControls.classList.add('active');
                 break;
+            case 'watermark':
+                watermarkControls.classList.add('active');
+                break;
         }
     }
 
@@ -248,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update result preview
         resultPreview.src = imageData;
-        downloadBtn.href = imageData;
+        if (downloadBtn) downloadBtn.href = imageData;
 
         // Update current image
         window.currentImage = imageData;
@@ -278,6 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (window.filterTool) window.filterTool.reset();
         if (window.adjustTool) window.adjustTool.reset();
         if (window.gridTool) window.gridTool.reset();
+        if (window.watermarkTool) window.watermarkTool.reset();
 
         // Reset filter previews
         document.querySelectorAll('.filter-preview').forEach(preview => {
@@ -286,6 +317,59 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 preview.classList.remove('active');
             }
+        });
+    }
+
+    // Export image function
+    function exportImage(format) {
+        const formData = new FormData();
+
+        // Convert current image to blob and append to form
+        PhotoUtils.urlToFile(window.currentImage || window.originalImage, "image.jpg", "image/jpeg")
+        .then(imageFile => {
+            formData.append('image', imageFile);
+            formData.append('format', format);
+
+            // Show loading state
+            const exportBtn = document.getElementById('exportDropdown');
+            if (!exportBtn) {
+                console.error('Export dropdown button not found!');
+                alert('An error occurred with the export feature. Please try again later.');
+                return;
+            }
+
+            const originalHTML = exportBtn.innerHTML;
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Exporting...';
+            exportBtn.disabled = true;
+
+            // Send the request to the server
+            fetch('/utils/export-image', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Create a temporary link for downloading
+                    const link = document.createElement('a');
+                    link.href = data.image;
+                    link.download = data.filename;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while exporting the image');
+            })
+            .finally(() => {
+                // Reset button state
+                exportBtn.innerHTML = originalHTML;
+                exportBtn.disabled = false;
+            });
         });
     }
 });

@@ -327,6 +327,9 @@
                 <button type="button" class="btn btn-outline-primary tool-btn" data-tool="grid">
                     <i class="fas fa-th"></i> Grid
                 </button>
+                <button type="button" class="btn btn-outline-primary tool-btn" data-tool="watermark">
+                    <i class="fas fa-copyright"></i> Watermark
+                </button>
             </div>
         </div>
 
@@ -599,6 +602,61 @@
             </div>
         </div>
 
+        <div class="tool-controls editor-tab" id="watermark-controls">
+    <div class="section-title">
+        <i class="fas fa-copyright"></i>
+        <h3 class="h5 mb-0">Add Watermark</h3>
+    </div>
+
+    <div class="mb-3">
+        <label for="watermark-text" class="form-label">Watermark Text</label>
+        <input type="text" class="form-control" id="watermark-text" placeholder="Enter watermark text">
+    </div>
+
+    <div class="mb-3">
+        <label for="watermark-size" class="form-label">Text Size</label>
+        <input type="range" class="form-range" id="watermark-size" min="12" max="72" value="24" step="1">
+        <div class="d-flex justify-content-between">
+            <small>Small</small>
+            <small id="watermark-size-value">24px</small>
+            <small>Large</small>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="watermark-opacity" class="form-label">Opacity</label>
+        <input type="range" class="form-range" id="watermark-opacity" min="0.1" max="1" value="0.5" step="0.1">
+        <div class="d-flex justify-content-between">
+            <small>Transparent</small>
+            <small id="watermark-opacity-value">50%</small>
+            <small>Opaque</small>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="watermark-position" class="form-label">Position</label>
+        <select class="form-select" id="watermark-position">
+            <option value="bottom-right">Bottom Right</option>
+            <option value="bottom-left">Bottom Left</option>
+            <option value="top-right">Top Right</option>
+            <option value="top-left">Top Left</option>
+            <option value="center">Center</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="watermark-color" class="form-label">Text Color</label>
+        <input type="color" class="form-control form-control-color" id="watermark-color" value="#ffffff">
+    </div>
+
+    <div class="d-grid">
+        <button class="btn btn-primary" id="apply-watermark-btn">
+            <i class="fas fa-copyright me-2"></i>
+            Apply Watermark
+        </button>
+    </div>
+</div>
+
         <!-- Result view -->
         <div class="image-result" id="image-result">
             <h3 class="h5 mb-3">Result</h3>
@@ -616,10 +674,19 @@
                     <i class="fas fa-plus-circle me-2"></i>
                     Apply More Edits
                 </button>
-                <a class="btn btn-primary" id="download-btn" download="edited-image" href="#">
-                    <i class="fas fa-download me-2"></i>
-                    Download Image
-                </a>
+                <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-download me-2"></i>
+                            Export
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                            <li><a class="dropdown-item" id="export-png" href="#">PNG Format</a></li>
+                            <li><a class="dropdown-item" id="export-jpg" href="#">JPG Format</a></li>
+                            <li><a class="dropdown-item" id="export-webp" href="#">WebP Format</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" id="export-original" href="#">Original Format</a></li>
+                        </ul>
+                    </div>
             </div>
         </div>
     </div>
@@ -637,6 +704,8 @@
 <script src="{{ url_for('static', filename='js/photo_editing/filter.js') }}"></script>
 <script src="{{ url_for('static', filename='js/photo_editing/adjust.js') }}"></script>
 <script src="{{ url_for('static', filename='js/photo_editing/grid.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/watermark.js') }}"></script>
+
 
 <!-- Main photo editing script -->
 <script src="{{ url_for('static', filename='js/photo_editing/main.js') }}"></script>
