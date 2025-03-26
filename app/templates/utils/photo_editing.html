@@ -3,54 +3,81 @@
 
 {% block head %}
 <style>
+    .preset-item {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .preset-item:hover {
+        transform: translateY(-3px);
+    }
+
+    .preset-item.active {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary);
+    }
+
+    .preset-item img {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+    }
+
+    .preset-item p {
+        font-size: 0.9rem;
+        margin-bottom: 0;
+    }
+
     /* Inpainting styles */
-   /* app/templates/utils/photo_editing.html - Add to the style block */
-/* Enhanced inpainting styles */
-.inpaint-canvas-container {
-    position: relative;
-    margin: 0 auto;
-    min-height: 200px;
-    background-color: #f8f9fa;
-    overflow: hidden;
-    border: 2px solid #ced4da !important;
-    transition: border-color 0.3s;
-}
+    .inpaint-canvas-container {
+        position: relative;
+        margin: 0 auto;
+        min-height: 200px;
+        background-color: #f8f9fa;
+        overflow: hidden;
+        border: 2px solid #ced4da !important;
+        transition: border-color 0.3s;
+    }
 
-.inpaint-canvas-container:hover {
-    border-color: var(--primary) !important;
-}
+    .inpaint-canvas-container:hover {
+        border-color: var(--primary) !important;
+    }
 
-[data-bs-theme="dark"] .inpaint-canvas-container {
-    background-color: #343a40;
-    border-color: #495057 !important;
-}
+    [data-bs-theme="dark"] .inpaint-canvas-container {
+        background-color: #343a40;
+        border-color: #495057 !important;
+    }
 
-[data-bs-theme="dark"] .inpaint-canvas-container:hover {
-    border-color: var(--primary) !important;
-}
+    [data-bs-theme="dark"] .inpaint-canvas-container:hover {
+        border-color: var(--primary) !important;
+    }
 
-#inpaint-canvas {
-    cursor: crosshair;
-    display: block;
-}
+    #inpaint-canvas {
+        cursor: crosshair;
+        display: block;
+    }
 
-.instruction-text {
-    margin-bottom: 1rem;
-    padding: 0.75rem;
-    background-color: rgba(var(--primary-rgb), 0.1);
-    border-radius: 5px;
-    font-weight: 500;
-}
+    .instruction-text {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background-color: rgba(var(--primary-rgb), 0.1);
+        border-radius: 5px;
+        font-weight: 500;
+    }
 
-.brush-preview {
-    width: 30px;
-    height: 30px;
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 50%;
-    display: inline-block;
-    margin-left: 10px;
-    border: 1px solid #ced4da;
-}
+    .brush-preview {
+        width: 30px;
+        height: 30px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 50%;
+        display: inline-block;
+        margin-left: 10px;
+        border: 1px solid #ced4da;
+    }
+
     .photo-tool-card {
         transition: all 0.3s;
         cursor: pointer;
@@ -146,7 +173,7 @@
         margin-top: 1rem;
     }
 
-     /* Enhanced filter previews */
+    /* Enhanced filter previews */
     .filter-preview-container {
         position: relative;
         overflow: hidden;
@@ -158,7 +185,7 @@
 
     .filter-preview-container:hover {
         transform: scale(1.05);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
 
     .filter-preview {
@@ -371,7 +398,7 @@
 
         <!-- Tool Selector Tabs -->
         <div class="tool-selector d-none" id="tool-selector">
-            <div class="btn-group" role="group">
+            <div class="btn-group flex-wrap" role="group">
                 <button type="button" class="btn btn-outline-primary tool-btn" data-tool="scaling">
                     <i class="fas fa-compress-arrows-alt"></i> Resize
                 </button>
@@ -387,6 +414,18 @@
                 <button type="button" class="btn btn-outline-primary tool-btn" data-tool="adjust">
                     <i class="fas fa-sliders-h"></i> Adjust
                 </button>
+                <button type="button" class="btn btn-outline-primary tool-btn" data-tool="presets">
+                    <i class="fas fa-magic"></i> Presets
+                </button>
+                <button type="button" class="btn btn-outline-primary tool-btn" data-tool="compress">
+                    <i class="fas fa-compress"></i> Compress
+                </button>
+                <button type="button" class="btn btn-outline-primary tool-btn" data-tool="draw">
+                    <i class="fas fa-paint-brush"></i> Draw
+                </button>
+                <button type="button" class="btn btn-outline-primary tool-btn" data-tool="text">
+                    <i class="fas fa-font"></i> Text
+                </button>
                 <button type="button" class="btn btn-outline-primary tool-btn" data-tool="grid">
                     <i class="fas fa-th"></i> Grid
                 </button>
@@ -397,6 +436,16 @@
                     <i class="fas fa-magic"></i> Inpaint
                 </button>
             </div>
+        </div>
+
+        <!-- History Controls -->
+        <div class="d-flex justify-content-center mb-3 d-none" id="history-controls">
+            <button class="btn btn-outline-secondary me-2" id="history-undo-btn" disabled>
+                <i class="fas fa-undo"></i> Undo
+            </button>
+            <button class="btn btn-outline-secondary" id="history-redo-btn" disabled>
+                <i class="fas fa-redo"></i> Redo
+            </button>
         </div>
 
         <!-- Resize Controls -->
@@ -461,8 +510,10 @@
             <div class="mb-3">
                 <label for="angle-input" class="form-label">Custom Angle (degrees)</label>
                 <div class="d-flex align-items-center">
-                    <input type="number" class="form-control angle-input me-3" id="angle-input" value="0" min="-180" max="180" step="1">
-                    <input type="range" class="form-range flex-grow-1" id="angle-slider" min="-180" max="180" value="0" step="1">
+                    <input type="number" class="form-control angle-input me-3" id="angle-input" value="0" min="-180"
+                           max="180" step="1">
+                    <input type="range" class="form-range flex-grow-1" id="angle-slider" min="-180" max="180" value="0"
+                           step="1">
                 </div>
             </div>
 
@@ -592,7 +643,8 @@
             <div class="mb-3">
                 <label for="brightness-slider" class="form-label">Brightness</label>
                 <div class="d-flex align-items-center">
-                    <input type="range" class="form-range adjustment-slider" id="brightness-slider" min="0" max="2" value="1" step="0.05">
+                    <input type="range" class="form-range adjustment-slider" id="brightness-slider" min="0" max="2"
+                           value="1" step="0.05">
                     <span class="ms-2" id="brightness-value">1.0</span>
                 </div>
             </div>
@@ -600,7 +652,8 @@
             <div class="mb-3">
                 <label for="contrast-slider" class="form-label">Contrast</label>
                 <div class="d-flex align-items-center">
-                    <input type="range" class="form-range adjustment-slider" id="contrast-slider" min="0" max="2" value="1" step="0.05">
+                    <input type="range" class="form-range adjustment-slider" id="contrast-slider" min="0" max="2"
+                           value="1" step="0.05">
                     <span class="ms-2" id="contrast-value">1.0</span>
                 </div>
             </div>
@@ -608,7 +661,8 @@
             <div class="mb-3">
                 <label for="saturation-slider" class="form-label">Saturation</label>
                 <div class="d-flex align-items-center">
-                    <input type="range" class="form-range adjustment-slider" id="saturation-slider" min="0" max="2" value="1" step="0.05">
+                    <input type="range" class="form-range adjustment-slider" id="saturation-slider" min="0" max="2"
+                           value="1" step="0.05">
                     <span class="ms-2" id="saturation-value">1.0</span>
                 </div>
             </div>
@@ -616,12 +670,13 @@
             <div class="mb-3">
                 <label for="sharpness-slider" class="form-label">Sharpness</label>
                 <div class="d-flex align-items-center">
-                    <input type="range" class="form-range adjustment-slider" id="sharpness-slider" min="0" max="2" value="1" step="0.05">
+                    <input type="range" class="form-range adjustment-slider" id="sharpness-slider" min="0" max="2"
+                           value="1" step="0.05">
                     <span class="ms-2" id="sharpness-value">1.0</span>
                 </div>
             </div>
 
-             <div class="d-grid gap-2">
+            <div class="d-grid gap-2">
                 <button class="btn btn-primary" id="adjust-btn">
                     <i class="fas fa-sliders-h me-2"></i> Apply Adjustments
                 </button>
@@ -697,128 +752,403 @@
         </div>
 
         <div class="tool-controls editor-tab" id="watermark-controls">
-    <div class="section-title">
-        <i class="fas fa-copyright"></i>
-        <h3 class="h5 mb-0">Add Watermark</h3>
-    </div>
+            <div class="section-title">
+                <i class="fas fa-copyright"></i>
+                <h3 class="h5 mb-0">Add Watermark</h3>
+            </div>
 
-    <div class="mb-3">
-        <label for="watermark-text" class="form-label">Watermark Text</label>
-        <input type="text" class="form-control" id="watermark-text" placeholder="Enter watermark text">
-    </div>
+            <div class="mb-3">
+                <label for="watermark-text" class="form-label">Watermark Text</label>
+                <input type="text" class="form-control" id="watermark-text" placeholder="Enter watermark text">
+            </div>
 
-    <div class="mb-3">
-        <label for="watermark-size" class="form-label">Text Size</label>
-        <input type="range" class="form-range" id="watermark-size" min="12" max="72" value="24" step="1">
-        <div class="d-flex justify-content-between">
-            <small>Small</small>
-            <small id="watermark-size-value">24px</small>
-            <small>Large</small>
+            <div class="mb-3">
+                <label for="watermark-size" class="form-label">Text Size</label>
+                <input type="range" class="form-range" id="watermark-size" min="12" max="72" value="24" step="1">
+                <div class="d-flex justify-content-between">
+                    <small>Small</small>
+                    <small id="watermark-size-value">24px</small>
+                    <small>Large</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="watermark-opacity" class="form-label">Opacity</label>
+                <input type="range" class="form-range" id="watermark-opacity" min="0.1" max="1" value="0.5" step="0.1">
+                <div class="d-flex justify-content-between">
+                    <small>Transparent</small>
+                    <small id="watermark-opacity-value">50%</small>
+                    <small>Opaque</small>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="watermark-position" class="form-label">Position</label>
+                <select class="form-select" id="watermark-position">
+                    <option value="bottom-right">Bottom Right</option>
+                    <option value="bottom-left">Bottom Left</option>
+                    <option value="top-right">Top Right</option>
+                    <option value="top-left">Top Left</option>
+                    <option value="center">Center</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="watermark-color" class="form-label">Text Color</label>
+                <input type="color" class="form-control form-control-color" id="watermark-color" value="#ffffff">
+            </div>
+
+            <div class="d-grid">
+                <button class="btn btn-primary" id="apply-watermark-btn">
+                    <i class="fas fa-copyright me-2"></i>
+                    Apply Watermark
+                </button>
+            </div>
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label for="watermark-opacity" class="form-label">Opacity</label>
-        <input type="range" class="form-range" id="watermark-opacity" min="0.1" max="1" value="0.5" step="0.1">
-        <div class="d-flex justify-content-between">
-            <small>Transparent</small>
-            <small id="watermark-opacity-value">50%</small>
-            <small>Opaque</small>
+        <!-- Compression Controls -->
+        <div class="tool-controls editor-tab" id="compress-controls">
+            <div class="section-title">
+                <i class="fas fa-compress"></i>
+                <h3 class="h5 mb-0">Compress Image</h3>
+            </div>
+
+            <div class="mb-3">
+                <p>Reduce file size while maintaining acceptable quality</p>
+            </div>
+
+            <div class="mb-3">
+                <label for="quality-slider" class="form-label">Quality</label>
+                <div class="d-flex align-items-center">
+                    <input type="range" class="form-range" id="quality-slider" min="10" max="100" value="80" step="1">
+                    <span class="ms-2" id="quality-value">80%</span>
+                </div>
+                <div class="text-muted small">
+                    <span>Lower quality = smaller file size</span>
+                    <div class="mt-2">Estimated size: <span id="size-estimate"></span></div>
+                </div>
+            </div>
+
+            <div class="d-grid">
+                <button class="btn btn-primary" id="compress-btn">
+                    <i class="fas fa-compress me-2"></i>
+                    Compress Image
+                </button>
+            </div>
         </div>
-    </div>
 
-    <div class="mb-3">
-        <label for="watermark-position" class="form-label">Position</label>
-        <select class="form-select" id="watermark-position">
-            <option value="bottom-right">Bottom Right</option>
-            <option value="bottom-left">Bottom Left</option>
-            <option value="top-right">Top Right</option>
-            <option value="top-left">Top Left</option>
-            <option value="center">Center</option>
-        </select>
-    </div>
+        <!-- Drawing Controls -->
+        <div class="tool-controls editor-tab" id="draw-controls">
+            <div class="section-title">
+                <i class="fas fa-paint-brush"></i>
+                <h3 class="h5 mb-0">Draw Shapes</h3>
+            </div>
 
-    <div class="mb-3">
-        <label for="watermark-color" class="form-label">Text Color</label>
-        <input type="color" class="form-control form-control-color" id="watermark-color" value="#ffffff">
-    </div>
+            <div class="mb-3">
+                <label for="shape-type" class="form-label">Shape</label>
+                <select class="form-select" id="shape-type">
+                    <option value="rectangle">Rectangle</option>
+                    <option value="circle">Circle</option>
+                    <option value="line">Line</option>
+                    <option value="arrow">Arrow</option>
+                </select>
+            </div>
 
-    <div class="d-grid">
-        <button class="btn btn-primary" id="apply-watermark-btn">
-            <i class="fas fa-copyright me-2"></i>
-            Apply Watermark
-        </button>
-    </div>
-</div>
+            <div class="mb-3">
+                <label for="stroke-width" class="form-label">Stroke Width</label>
+                <input type="range" class="form-range" id="stroke-width" min="1" max="20" value="3">
+            </div>
+
+            <div class="mb-3">
+                <label for="stroke-color" class="form-label">Stroke Color</label>
+                <input type="color" class="form-control form-control-color" id="stroke-color" value="#ff0000">
+            </div>
+
+            <div class="mb-3">
+                <label for="fill-color" class="form-label">Fill Color</label>
+                <input type="color" class="form-control form-control-color" id="fill-color" value="#ffffff">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="transparent-fill" checked>
+                    <label class="form-check-label" for="transparent-fill">
+                        Transparent fill
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Draw on Image</label>
+                <div id="draw-canvas-container" class="border rounded mb-3">
+                    <canvas id="draw-canvas"></canvas>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="apply-drawing-btn">
+                    <i class="fas fa-check me-2"></i> Apply Drawing
+                </button>
+                <div class="row g-2">
+                    <div class="col">
+                        <button class="btn btn-outline-secondary w-100" id="undo-drawing-btn" disabled>
+                            <i class="fas fa-undo me-2"></i> Undo
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-secondary w-100" id="clear-drawing-btn">
+                            <i class="fas fa-eraser me-2"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Presets Controls -->
+        <div class="tool-controls editor-tab" id="presets-controls">
+            <div class="section-title">
+                <i class="fas fa-magic"></i>
+                <h3 class="h5 mb-0">Photo Presets</h3>
+            </div>
+
+            <div class="mb-3">
+                <p>Apply professional photo presets with a single click</p>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="vintage">
+                        <img src="{{ url_for('static', filename='images/presets/vintage.jpg') }}"
+                             class="img-fluid rounded" alt="Vintage">
+                        <p class="text-center mt-2">Vintage</p>
+                    </div>
+                </div>
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="blackwhite">
+                        <img src="{{ url_for('static', filename='images/presets/blackwhite.jpg') }}"
+                             class="img-fluid rounded" alt="B&W">
+                        <p class="text-center mt-2">B&W</p>
+                    </div>
+                </div>
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="warm">
+                        <img src="{{ url_for('static', filename='images/presets/warm.jpg') }}" class="img-fluid rounded"
+                             alt="Warm">
+                        <p class="text-center mt-2">Warm</p>
+                    </div>
+                </div>
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="cool">
+                        <img src="{{ url_for('static', filename='images/presets/cool.jpg') }}" class="img-fluid rounded"
+                             alt="Cool">
+                        <p class="text-center mt-2">Cool</p>
+                    </div>
+                </div>
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="sharp">
+                        <img src="{{ url_for('static', filename='images/presets/sharp.jpg') }}"
+                             class="img-fluid rounded" alt="Sharp">
+                        <p class="text-center mt-2">Sharp</p>
+                    </div>
+                </div>
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="hdr">
+                        <img src="{{ url_for('static', filename='images/presets/hdr.jpg') }}" class="img-fluid rounded"
+                             alt="HDR">
+                        <p class="text-center mt-2">HDR</p>
+                    </div>
+                </div>
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="matte">
+                        <img src="{{ url_for('static', filename='images/presets/matte.jpg') }}"
+                             class="img-fluid rounded" alt="Matte">
+                        <p class="text-center mt-2">Matte</p>
+                    </div>
+                </div>
+                <div class="col-4 col-md-3">
+                    <div class="preset-item" data-preset="summer">
+                        <img src="{{ url_for('static', filename='images/presets/summer.jpg') }}"
+                             class="img-fluid rounded" alt="Summer">
+                        <p class="text-center mt-2">Summer</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid mt-4">
+                <button class="btn btn-primary" id="apply-preset-btn">
+                    <i class="fas fa-magic me-2"></i> Apply Preset
+                </button>
+            </div>
+        </div>
+
+        <!-- Text Controls -->
+        <div class="tool-controls editor-tab" id="text-controls">
+            <div class="section-title">
+                <i class="fas fa-font"></i>
+                <h3 class="h5 mb-0">Add Text</h3>
+            </div>
+
+            <div class="mb-3">
+                <label for="text-input" class="form-label">Text Content</label>
+                <input type="text" class="form-control" id="text-input" placeholder="Enter your text">
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-7">
+                    <label for="text-font" class="form-label">Font</label>
+                    <select class="form-select" id="text-font">
+                        <option value="Arial">Arial</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Courier New">Courier New</option>
+                        <option value="Impact">Impact</option>
+                    </select>
+                </div>
+                <div class="col-5">
+                    <label for="text-size" class="form-label">Size</label>
+                    <select class="form-select" id="text-size">
+                        <option value="12">12px</option>
+                        <option value="16">16px</option>
+                        <option value="20">20px</option>
+                        <option value="24" selected>24px</option>
+                        <option value="32">32px</option>
+                        <option value="40">40px</option>
+                        <option value="48">48px</option>
+                        <option value="64">64px</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-6">
+                    <label for="text-color" class="form-label">Text Color</label>
+                    <input type="color" class="form-control form-control-color w-100" id="text-color" value="#ffffff">
+                </div>
+                <div class="col-6">
+                    <label for="text-align" class="form-label">Alignment</label>
+                    <select class="form-select" id="text-align">
+                        <option value="left">Left</option>
+                        <option value="center">Center</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="text-bold">
+                    <label class="form-check-label" for="text-bold"><i class="fas fa-bold"></i> Bold</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="text-italic">
+                    <label class="form-check-label" for="text-italic"><i class="fas fa-italic"></i> Italic</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" id="text-shadow">
+                    <label class="form-check-label" for="text-shadow"><i class="fas fa-clone"></i> Shadow</label>
+                </div>
+            </div>
+
+            <div class="mb-3" id="shadow-color-container">
+                <label for="text-shadow-color" class="form-label">Shadow Color</label>
+                <input type="color" class="form-control form-control-color" id="text-shadow-color" value="#000000">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Text Preview</label>
+                <div id="text-canvas-container" class="border rounded mb-3" style="min-height: 200px;">
+                    <canvas id="text-canvas"></canvas>
+                </div>
+                <small class="text-muted">Click and drag text to reposition</small>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="add-text-btn">
+                    <i class="fas fa-plus-circle me-2"></i> Add Text
+                </button>
+                <div class="row g-2">
+                    <div class="col">
+                        <button class="btn btn-outline-secondary w-100" id="clear-text-btn">
+                            <i class="fas fa-trash me-2"></i> Remove Text
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-success w-100" id="apply-text-btn">
+                            <i class="fas fa-check me-2"></i> Apply Text
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- app/templates/utils/photo_editing.html -->
-<!-- Replace the inpaint-controls div with this updated version -->
-<div class="tool-controls editor-tab" id="inpaint-controls">
-    <div class="section-title">
-        <i class="fas fa-magic"></i>
-        <h3 class="h5 mb-0">Content-Aware Remove</h3>
-    </div>
-
-    <div class="instruction-text">
-        <i class="fas fa-info-circle me-2"></i>
-        <strong>How to use:</strong> Paint over the objects you want to remove. The algorithm will seamlessly fill the area with surrounding content. For best results:
-        <ul class="mb-0 mt-2">
-            <li>Use a brush size slightly larger than the object</li>
-            <li>Paint the entire object you want to remove</li>
-            <li>Telea algorithm works better for most images</li>
-        </ul>
-    </div>
-
-    <div class="mb-3">
-        <label for="brush-size-slider" class="form-label">Brush Size</label>
-        <div class="d-flex align-items-center">
-            <input type="range" class="form-range" id="brush-size-slider" min="5" max="100" value="20" step="1">
-            <span class="ms-2" id="brush-size-value">20px</span>
-        </div>
-    </div>
-
-    <div class="mb-3">
-        <label for="inpaint-method" class="form-label">Algorithm</label>
-        <select class="form-select" id="inpaint-method">
-            <option value="1" selected>Telea (Best for photos)</option>
-            <option value="0">Navier-Stokes (Better for illustrations)</option>
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label for="inpaint-radius-slider" class="form-label">Inpainting Radius</label>
-        <div class="d-flex align-items-center">
-            <input type="range" class="form-range" id="inpaint-radius-slider" min="3" max="30" value="10" step="1">
-            <span class="ms-2" id="inpaint-radius-value">10px</span>
-        </div>
-        <small class="form-text text-muted">Higher values look at pixels further from the selection</small>
-    </div>
-
-    <div class="mb-3">
-        <label class="form-label">Draw on Image</label>
-        <div id="inpaint-canvas-container" class="inpaint-canvas-container border rounded mb-3">
-            <canvas id="inpaint-canvas"></canvas>
-        </div>
-    </div>
-
-    <div class="d-grid gap-2">
-        <button class="btn btn-primary" id="inpaint-btn">
-            <i class="fas fa-magic me-2"></i> Apply Inpainting
-        </button>
-        <div class="row g-2">
-            <div class="col">
-                <button class="btn btn-outline-secondary w-100" id="undo-mask-btn">
-                    <i class="fas fa-undo me-2"></i> Undo (Ctrl+Z)
-                </button>
+        <!-- Replace the inpaint-controls div with this updated version -->
+        <div class="tool-controls editor-tab" id="inpaint-controls">
+            <div class="section-title">
+                <i class="fas fa-magic"></i>
+                <h3 class="h5 mb-0">Content-Aware Remove</h3>
             </div>
-            <div class="col">
-                <button class="btn btn-outline-secondary w-100" id="clear-mask-btn">
-                    <i class="fas fa-eraser me-2"></i> Clear All
+
+            <div class="instruction-text">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>How to use:</strong> Paint over the objects you want to remove. The algorithm will seamlessly
+                fill the area with surrounding content. For best results:
+                <ul class="mb-0 mt-2">
+                    <li>Use a brush size slightly larger than the object</li>
+                    <li>Paint the entire object you want to remove</li>
+                    <li>Telea algorithm works better for most images</li>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                <label for="brush-size-slider" class="form-label">Brush Size</label>
+                <div class="d-flex align-items-center">
+                    <input type="range" class="form-range" id="brush-size-slider" min="5" max="100" value="20" step="1">
+                    <span class="ms-2" id="brush-size-value">20px</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="inpaint-method" class="form-label">Algorithm</label>
+                <select class="form-select" id="inpaint-method">
+                    <option value="1" selected>Telea (Best for photos)</option>
+                    <option value="0">Navier-Stokes (Better for illustrations)</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="inpaint-radius-slider" class="form-label">Inpainting Radius</label>
+                <div class="d-flex align-items-center">
+                    <input type="range" class="form-range" id="inpaint-radius-slider" min="3" max="30" value="10"
+                           step="1">
+                    <span class="ms-2" id="inpaint-radius-value">10px</span>
+                </div>
+                <small class="form-text text-muted">Higher values look at pixels further from the selection</small>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Draw on Image</label>
+                <div id="inpaint-canvas-container" class="inpaint-canvas-container border rounded mb-3">
+                    <canvas id="inpaint-canvas"></canvas>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2">
+                <button class="btn btn-primary" id="inpaint-btn">
+                    <i class="fas fa-magic me-2"></i> Apply Inpainting
                 </button>
+                <div class="row g-2">
+                    <div class="col">
+                        <button class="btn btn-outline-secondary w-100" id="undo-mask-btn">
+                            <i class="fas fa-undo me-2"></i> Undo (Ctrl+Z)
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn btn-outline-secondary w-100" id="clear-mask-btn">
+                            <i class="fas fa-eraser me-2"></i> Clear All
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
         <!-- Result view -->
         <div class="image-result" id="image-result">
@@ -838,18 +1168,21 @@
                     Apply More Edits
                 </button>
                 <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-download me-2"></i>
-                            Export
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="exportDropdown">
-                            <li><a class="dropdown-item" id="export-png" href="#">PNG Format</a></li>
-                            <li><a class="dropdown-item" id="export-jpg" href="#">JPG Format</a></li>
-                            <li><a class="dropdown-item" id="export-webp" href="#">WebP Format</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" id="export-original" href="#">Original Format</a></li>
-                        </ul>
-                    </div>
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="exportDropdown"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-download me-2"></i>
+                        Export
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="exportDropdown">
+                        <li><a class="dropdown-item" id="export-png" href="#">PNG Format</a></li>
+                        <li><a class="dropdown-item" id="export-jpg" href="#">JPG Format</a></li>
+                        <li><a class="dropdown-item" id="export-webp" href="#">WebP Format</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item" id="export-original" href="#">Original Format</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -869,7 +1202,11 @@
 <script src="{{ url_for('static', filename='js/photo_editing/grid.js') }}"></script>
 <script src="{{ url_for('static', filename='js/photo_editing/watermark.js') }}"></script>
 <script src="{{ url_for('static', filename='js/photo_editing/inpaint.js') }}"></script>
-
+<script src="{{ url_for('static', filename='js/photo_editing/history.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/compress.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/draw.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/presets.js') }}"></script>
+<script src="{{ url_for('static', filename='js/photo_editing/text.js') }}"></script>
 
 
 <!-- Main photo editing script -->

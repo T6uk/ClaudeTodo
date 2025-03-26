@@ -3,7 +3,7 @@
 /**
  * Main functionality for photo editing
  */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // DOM Elements - Upload & Preview
     const dropZone = document.getElementById('drop-zone');
     const imageUpload = document.getElementById('image-upload');
@@ -42,26 +42,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function init() {
         // File Upload via Browse Button
-        browseBtn.addEventListener('click', function() {
+        browseBtn.addEventListener('click', function () {
             imageUpload.click();
         });
 
         // Handle file selection
-        imageUpload.addEventListener('change', function(e) {
+        imageUpload.addEventListener('change', function (e) {
             handleFiles(e.target.files);
         });
 
         // Drag and Drop handlers
-        dropZone.addEventListener('dragover', function(e) {
+        dropZone.addEventListener('dragover', function (e) {
             e.preventDefault();
             dropZone.classList.add('active');
         });
 
-        dropZone.addEventListener('dragleave', function() {
+        dropZone.addEventListener('dragleave', function () {
             dropZone.classList.remove('active');
         });
 
-        dropZone.addEventListener('drop', function(e) {
+        dropZone.addEventListener('drop', function (e) {
             e.preventDefault();
             dropZone.classList.remove('active');
 
@@ -71,31 +71,31 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Change image button
-        changeImageBtn.addEventListener('click', function() {
+        changeImageBtn.addEventListener('click', function () {
             imageUpload.click();
         });
 
         // Remove image button
-        removeImageBtn.addEventListener('click', function() {
+        removeImageBtn.addEventListener('click', function () {
             resetImageEditor();
         });
 
         // Tool selector buttons
         document.querySelectorAll('.tool-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const tool = this.getAttribute('data-tool');
                 setActiveTool(tool);
             });
         });
 
         // Edit again button
-        editAgainBtn.addEventListener('click', function() {
+        editAgainBtn.addEventListener('click', function () {
             imageResult.style.display = 'none';
             showToolControls();
         });
 
         // Apply more edits button
-        applyMoreBtn.addEventListener('click', function() {
+        applyMoreBtn.addEventListener('click', function () {
             // Update current image state
             window.currentImage = resultPreview.src;
 
@@ -111,25 +111,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Export options
         if (document.getElementById('export-png')) {
-            document.getElementById('export-png').addEventListener('click', function() {
+            document.getElementById('export-png').addEventListener('click', function () {
                 exportImage('png');
             });
         }
 
         if (document.getElementById('export-jpg')) {
-            document.getElementById('export-jpg').addEventListener('click', function() {
+            document.getElementById('export-jpg').addEventListener('click', function () {
                 exportImage('jpg');
             });
         }
 
         if (document.getElementById('export-webp')) {
-            document.getElementById('export-webp').addEventListener('click', function() {
+            document.getElementById('export-webp').addEventListener('click', function () {
                 exportImage('webp');
             });
         }
 
         if (document.getElementById('export-original')) {
-            document.getElementById('export-original').addEventListener('click', function() {
+            document.getElementById('export-original').addEventListener('click', function () {
                 exportImage('original');
             });
         }
@@ -138,6 +138,35 @@ document.addEventListener('DOMContentLoaded', function() {
         window.showResult = showResult;
         window.resetAllTools = resetAllTools;
         window.initializeFilterPreviews = initializeFilterPreviews;
+
+        const historyUndoBtn = document.getElementById('history-undo-btn');
+        const historyRedoBtn = document.getElementById('history-redo-btn');
+        const historyControls = document.getElementById('history-controls');
+
+        if (historyUndoBtn) {
+            historyUndoBtn.addEventListener('click', function () {
+                if (window.historyManager) {
+                    const prevState = window.historyManager.undo();
+                    if (prevState) {
+                        window.currentImage = prevState;
+                        imagePreview.src = prevState;
+                    }
+                }
+            });
+        }
+
+        if (historyRedoBtn) {
+            historyRedoBtn.addEventListener('click', function () {
+                if (window.historyManager) {
+                    const nextState = window.historyManager.redo();
+                    if (nextState) {
+                        window.currentImage = nextState;
+                        imagePreview.src = nextState;
+                    }
+                }
+            });
+        }
+
     }
 
     // Functions to handle image upload and display
@@ -153,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const reader = new FileReader();
 
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 // Store original image
                 window.originalImage = e.target.result;
                 window.currentImage = window.originalImage;
@@ -168,9 +197,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show scaling controls by default
                 setActiveTool('scaling');
 
+                if (historyControls) {
+                    historyControls.classList.remove('d-none');
+                }
+
                 // Create a new image to get dimensions
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     window.aspectRatio = img.width / img.height;
 
                     // Set initial values for width and height inputs
@@ -190,7 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Emit an event to notify that the image has been loaded
                 const imageLoadedEvent = new CustomEvent('imageLoaded', {
-                    detail: { image: e.target.result }
+                    detail: {image: e.target.result}
                 });
                 document.dispatchEvent(imageLoadedEvent);
             };
@@ -237,7 +270,7 @@ document.addEventListener('DOMContentLoaded', function() {
         hideAllToolControls();
 
         // Show the selected tool controls
-        switch(tool) {
+        switch (tool) {
             case 'scaling':
                 scalingControls.classList.add('active');
                 break;
@@ -263,10 +296,22 @@ document.addEventListener('DOMContentLoaded', function() {
             case 'inpaint':
                 inpaintControls.classList.add('active');
                 break;
+            case 'compress':
+                compressControls.classList.add('active');
+                break;
+            case 'draw':
+                drawControls.classList.add('active');
+                break;
+            case 'presets':
+                presetsControls.classList.add('active');
+                break;
+            case 'text':
+                textControls.classList.add('active');
+                break;
         }
 
         const toolActivatedEvent = new CustomEvent('toolActivated', {
-            detail: { tool: tool }
+            detail: {tool: tool}
         });
         document.dispatchEvent(toolActivatedEvent);
     }
@@ -291,6 +336,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update current image
         window.currentImage = imageData;
+
+        // Add to history
+        if (window.historyManager) {
+            window.historyManager.addState(imageData);
+        }
 
         // Hide tool controls
         hideAllToolControls();
@@ -336,50 +386,50 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Convert current image to blob and append to form
         PhotoUtils.urlToFile(window.currentImage || window.originalImage, "image.jpg", "image/jpeg")
-        .then(imageFile => {
-            formData.append('image', imageFile);
-            formData.append('format', format);
+            .then(imageFile => {
+                formData.append('image', imageFile);
+                formData.append('format', format);
 
-            // Show loading state
-            const exportBtn = document.getElementById('exportDropdown');
-            if (!exportBtn) {
-                console.error('Export dropdown button not found!');
-                alert('An error occurred with the export feature. Please try again later.');
-                return;
-            }
-
-            const originalHTML = exportBtn.innerHTML;
-            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Exporting...';
-            exportBtn.disabled = true;
-
-            // Send the request to the server
-            fetch('/utils/export-image', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // Create a temporary link for downloading
-                    const link = document.createElement('a');
-                    link.href = data.image;
-                    link.download = data.filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                } else {
-                    alert('Error: ' + data.error);
+                // Show loading state
+                const exportBtn = document.getElementById('exportDropdown');
+                if (!exportBtn) {
+                    console.error('Export dropdown button not found!');
+                    alert('An error occurred with the export feature. Please try again later.');
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while exporting the image');
-            })
-            .finally(() => {
-                // Reset button state
-                exportBtn.innerHTML = originalHTML;
-                exportBtn.disabled = false;
+
+                const originalHTML = exportBtn.innerHTML;
+                exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Exporting...';
+                exportBtn.disabled = true;
+
+                // Send the request to the server
+                fetch('/utils/export-image', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Create a temporary link for downloading
+                            const link = document.createElement('a');
+                            link.href = data.image;
+                            link.download = data.filename;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while exporting the image');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        exportBtn.innerHTML = originalHTML;
+                        exportBtn.disabled = false;
+                    });
             });
-        });
     }
 });

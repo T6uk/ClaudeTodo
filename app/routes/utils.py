@@ -833,3 +833,269 @@ def inpaint_image():
             return jsonify({"error": str(e)}), 500
 
     return jsonify({"error": "File type not allowed"}), 400
+
+
+@utils_bp.route("/compress-image", methods=["POST"])
+@login_required
+def compress_image():
+    """API endpoint for compressing an image"""
+    if 'image' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['image']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if file and allowed_file(file.filename):
+        try:
+            # Get original file size
+            file.seek(0, os.SEEK_END)
+            original_size = file.tell()
+            file.seek(0)  # Reset file pointer
+
+            # Read the image
+            img = Image.open(file)
+
+            # Get quality parameter
+            quality = int(request.form.get('quality', 80))
+
+            # Create buffer for compression
+            buffer = io.BytesIO()
+
+            # Save with specified quality (for JPEG/WebP)
+            if img.format == 'JPEG' or img.format == 'WEBP':
+                img = prepare_image_for_saving(img, 'JPEG')
+                img.save(buffer, format='JPEG', quality=quality, optimize=True)
+            elif img.format == 'PNG':
+                img = prepare_image_for_saving(img, 'PNG')
+                # For PNG, use optimized compression
+                img.save(buffer, format='PNG', optimize=True,
+                         compress_level=9)  # Max compression
+            else:
+                # For other formats, convert to JPEG
+                img = prepare_image_for_saving(img, 'JPEG')
+                img.save(buffer, format='JPEG', quality=quality, optimize=True)
+
+            buffer.seek(0)
+
+            # Get compressed size
+            compressed_size = len(buffer.getvalue())
+
+            # Convert to base64 for sending back to the client
+            img_base64 = base64.b64encode(buffer.getvalue()).decode()
+            img_src = f"data:image/jpeg;base64,{img_base64}"
+
+            return jsonify({
+                "success": True,
+                "image": img_src,
+                "original_size": original_size,
+                "compressed_size": compressed_size
+            })
+        except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            current_app.logger.error(f"Error in compress_image: {error_details}")
+            return jsonify({"error": str(e)}), 500
+
+    return jsonify({"error": "File type not allowed"}), 400
+
+
+@utils_bp.route("/apply-preset", methods=["POST"])
+@login_required
+def apply_preset():
+    """API endpoint for applying image presets"""
+    if 'image' not in request.files:
+        return jsonify({"error": "No image provided"}), 400
+
+    file = request.files['image']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if not allowed_file(file.filename):
+        return jsonify({"error": "File type not allowed"}), 400
+
+    try:
+        # Read the image
+        img = Image.open(file)
+
+        # Get preset name
+        preset = request.form.get('preset', 'none')
+
+        # Apply the selected preset
+        if preset == 'vintage':
+            # Vintage: Sepia effect with reduced saturation
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(0.65)  # Reduce saturation
+
+            # Apply sepia tone
+            sepia_data = np.array(img)
+            r, g, b = sepia_data[:, :, 0], sepia_data[:, :, 1], sepia_data[:, :, 2]
+            sepia_data[:, :, 0] = np.minimum(255, r * 0.393 + g * 0.769 + b * 0.189)
+            sepia_data[:, :, 1] = np.minimum(255, r * 0.349 + g * 0.686 + b * 0.168)
+            sepia_data[:, :, 2] = np.minimum(255, r * 0.272 + g * 0.534 + b * 0.131)
+            img = Image.fromarray(sepia_data.astype('uint8'), 'RGB')
+
+            # Increase contrast
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.1)
+
+            # Slight brightness boost
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.05)
+
+        elif preset == 'blackwhite':
+            # Black and white with increased contrast
+            img = ImageOps.grayscale(img)
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+
+            # Increase contrast
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.2)
+
+            # Slight brightness boost
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.05)
+
+        elif preset == 'warm':
+            # Warm: Orange-yellow tint with increased saturation
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.3)  # Increase saturation
+
+            # Add warm tint
+            data = np.array(img)
+            data[:, :, 0] = np.clip(data[:, :, 0] * 1.1, 0, 255)  # Boost red
+            data[:, :, 2] = np.clip(data[:, :, 2] * 0.9, 0, 255)  # Reduce blue
+            img = Image.fromarray(data.astype('uint8'), 'RGB')
+
+            # Increase contrast
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.1)
+
+            # Slight brightness boost
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.1)
+
+        elif preset == 'cool':
+            # Cool: Blue-cyan tint with reduced saturation
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(0.8)  # Reduce saturation
+
+            # Add cool tint
+            data = np.array(img)
+            data[:, :, 0] = np.clip(data[:, :, 0] * 0.9, 0, 255)  # Reduce red
+            data[:, :, 2] = np.clip(data[:, :, 2] * 1.1, 0, 255)  # Boost blue
+            img = Image.fromarray(data.astype('uint8'), 'RGB')
+
+            # Increase contrast
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.1)
+
+            # Slight brightness boost
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.1)
+
+        elif preset == 'sharp':
+            # Sharp: High contrast with slightly reduced brightness
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.5)
+
+            # Reduce brightness slightly
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(0.9)
+
+            # Increase saturation
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.2)
+
+            # Apply sharpen filter
+            img = img.filter(ImageFilter.SHARPEN)
+
+        elif preset == 'hdr':
+            # HDR effect: High contrast and saturation
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.4)
+
+            # Increase brightness
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.1)
+
+            # Increase saturation significantly
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.8)
+
+        elif preset == 'matte':
+            # Matte: Reduced contrast with increased brightness
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(0.9)
+
+            # Increase brightness
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.1)
+
+            # Reduce saturation
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(0.8)
+
+        elif preset == 'summer':
+            # Summer: Bright, high saturation, low contrast
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(1.2)
+
+            # Reduce contrast
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(0.85)
+
+            # Increase saturation
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(1.4)
+
+            # Warm tint
+            data = np.array(img)
+            data[:, :, 0] = np.clip(data[:, :, 0] * 1.05, 0, 255)  # Slight red boost
+            img = Image.fromarray(data.astype('uint8'), 'RGB')
+
+        elif preset == 'winter':
+            # Winter: Cool, low saturation, high contrast
+            enhancer = ImageEnhance.Brightness(img)
+            img = enhancer.enhance(0.9)
+
+            # Increase contrast
+            enhancer = ImageEnhance.Contrast(img)
+            img = enhancer.enhance(1.1)
+
+            # Reduce saturation
+            enhancer = ImageEnhance.Color(img)
+            img = enhancer.enhance(0.8)
+
+            # Cool tint
+            data = np.array(img)
+            data[:, :, 2] = np.clip(data[:, :, 2] * 1.1, 0, 255)  # Blue boost
+            img = Image.fromarray(data.astype('uint8'), 'RGB')
+
+        # Save the adjusted image to a buffer
+        buffer = io.BytesIO()
+        img_format = file.filename.rsplit('.', 1)[1].upper()
+        if img_format == 'JPG':
+            img_format = 'JPEG'
+
+        img = prepare_image_for_saving(img, img_format)
+        img.save(buffer, format=img_format, quality=95, optimize=True)
+        buffer.seek(0)
+
+        # Convert to base64 for sending back to the client
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        img_src = f"data:image/{img_format.lower()};base64,{img_base64}"
+
+        return jsonify({
+            "success": True,
+            "image": img_src
+        })
+
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        current_app.logger.error(f"Error in apply_preset: {error_details}")
+        return jsonify({"error": str(e)}), 500
