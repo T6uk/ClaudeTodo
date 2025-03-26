@@ -115,7 +115,7 @@ def scale_image():
 @utils_bp.route("/apply-filter", methods=["POST"])
 @login_required
 def apply_filter():
-    """API endpoint for applying filters to an image"""
+    """Enhanced API endpoint for applying filters to an image"""
     if 'image' not in request.files:
         return jsonify({"error": "No file part"}), 400
 
@@ -128,6 +128,7 @@ def apply_filter():
         try:
             # Read the image
             img = Image.open(file)
+            original_mode = img.mode
 
             # Get filter type
             filter_type = request.form.get('filter_type', '')
@@ -138,35 +139,46 @@ def apply_filter():
                 if img.mode != 'RGB':
                     img = img.convert('RGB')
             elif filter_type == 'sepia':
-                # Create sepia effect
+                # Create sepia effect with enhanced algorithm
                 img = img.convert('RGB')
                 w, h = img.size
                 pixels = img.load()
                 for i in range(w):
                     for j in range(h):
                         r, g, b = pixels[i, j]
-                        # Simple sepia conversion
-                        tr = int(0.393 * r + 0.769 * g + 0.189 * b)
-                        tg = int(0.349 * r + 0.686 * g + 0.168 * b)
-                        tb = int(0.272 * r + 0.534 * g + 0.131 * b)
-                        if tr > 255: tr = 255
-                        if tg > 255: tg = 255
-                        if tb > 255: tb = 255
+                        # Enhanced sepia conversion with better color tones
+                        tr = min(255, int(0.393 * r + 0.769 * g + 0.189 * b))
+                        tg = min(255, int(0.349 * r + 0.686 * g + 0.168 * b))
+                        tb = min(255, int(0.272 * r + 0.534 * g + 0.131 * b))
                         pixels[i, j] = (tr, tg, tb)
             elif filter_type == 'blur':
-                img = img.filter(ImageFilter.BLUR)
+                # Use a more pleasing Gaussian blur
+                img = img.filter(ImageFilter.GaussianBlur(radius=2))
             elif filter_type == 'contour':
+                # Create a more defined contour with a subsequent brightness adjustment
                 img = img.filter(ImageFilter.CONTOUR)
-            elif filter_type == 'detail':
-                img = img.filter(ImageFilter.DETAIL)
+                enhancer = ImageEnhance.Brightness(img)
+                img = enhancer.enhance(1.2)
             elif filter_type == 'emboss':
+                # Enhanced emboss effect with contrast adjustment
                 img = img.filter(ImageFilter.EMBOSS)
+                enhancer = ImageEnhance.Contrast(img)
+                img = enhancer.enhance(1.5)
             elif filter_type == 'sharpen':
-                img = img.filter(ImageFilter.SHARPEN)
+                # Enhanced sharpen with custom kernel
+                sharpen_kernel = (
+                    -1, -1, -1,
+                    -1, 9, -1,
+                    -1, -1, -1
+                )
+                img = img.filter(ImageFilter.Kernel((3, 3), sharpen_kernel, scale=1, offset=0))
             elif filter_type == 'smooth':
-                img = img.filter(ImageFilter.SMOOTH)
+                img = img.filter(ImageFilter.SMOOTH_MORE)
             elif filter_type == 'edge_enhance':
-                img = img.filter(ImageFilter.EDGE_ENHANCE)
+                # Improved edge enhancement
+                img = img.filter(ImageFilter.EDGE_ENHANCE_MORE)
+                enhancer = ImageEnhance.Contrast(img)
+                img = enhancer.enhance(1.2)
             elif filter_type == 'invert':
                 img = ImageOps.invert(img.convert('RGB'))
 
@@ -175,8 +187,18 @@ def apply_filter():
             img_format = file.filename.rsplit('.', 1)[1].upper()
             if img_format == 'JPG':
                 img_format = 'JPEG'
+
+            # Handle proper image formatting for saving
             img = prepare_image_for_saving(img, img_format)
-            img.save(buffer, format=img_format)
+
+            # Save with optimized settings
+            if img_format == 'JPEG':
+                img.save(buffer, format=img_format, quality=95, optimize=True)
+            elif img_format == 'PNG':
+                img.save(buffer, format=img_format, optimize=True)
+            else:
+                img.save(buffer, format=img_format)
+
             buffer.seek(0)
 
             # Convert to base64 for sending back to the client
@@ -188,6 +210,9 @@ def apply_filter():
                 "image": img_src
             })
         except Exception as e:
+            import traceback
+            error_details = traceback.format_exc()
+            current_app.logger.error(f"Error in apply_filter: {error_details}")
             return jsonify({"error": str(e)}), 500
 
     return jsonify({"error": "File type not allowed"}), 400
@@ -302,68 +327,91 @@ def rotate_image():
 @utils_bp.route("/adjust-image", methods=["POST"])
 @login_required
 def adjust_image():
-    """API endpoint for applying basic adjustments to an image"""
+    """Enhanced API endpoint for applying image adjustments with better error handling and performance"""
     if 'image' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+        return jsonify({"error": "No image provided"}), 400
 
     file = request.files['image']
 
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
 
-    if file and allowed_file(file.filename):
+    if not allowed_file(file.filename):
+        return jsonify({"error": "File type not allowed"}), 400
+
+    try:
+        # Read the image with proper error handling
         try:
-            # Read the image
             img = Image.open(file)
-
-            # Ensure image is in RGB mode for adjustments
-            if img.mode != 'RGB':
-                img = img.convert('RGB')
-
-            # Get adjustment parameters
-            brightness = request.form.get('brightness', type=float, default=1.0)
-            contrast = request.form.get('contrast', type=float, default=1.0)
-            saturation = request.form.get('saturation', type=float, default=1.0)
-            sharpness = request.form.get('sharpness', type=float, default=1.0)
-
-            # Apply adjustments
-            if brightness != 1.0:
-                enhancer = ImageEnhance.Brightness(img)
-                img = enhancer.enhance(brightness)
-
-            if contrast != 1.0:
-                enhancer = ImageEnhance.Contrast(img)
-                img = enhancer.enhance(contrast)
-
-            if saturation != 1.0:
-                enhancer = ImageEnhance.Color(img)
-                img = enhancer.enhance(saturation)
-
-            if sharpness != 1.0:
-                enhancer = ImageEnhance.Sharpness(img)
-                img = enhancer.enhance(sharpness)
-
-            # Save the adjusted image to a buffer
-            buffer = io.BytesIO()
-            img_format = file.filename.rsplit('.', 1)[1].upper()
-            if img_format == 'JPG':
-                img_format = 'JPEG'
-            img = prepare_image_for_saving(img, img_format)
-            img.save(buffer, format=img_format)
-            buffer.seek(0)
-
-            # Convert to base64 for sending back to the client
-            img_base64 = base64.b64encode(buffer.getvalue()).decode()
-            img_src = f"data:image/{img_format.lower()};base64,{img_base64}"
-
-            return jsonify({
-                "success": True,
-                "image": img_src
-            })
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": f"Failed to open image: {str(e)}"}), 400
 
-    return jsonify({"error": "File type not allowed"}), 400
+        # Ensure image is in RGB mode for adjustments
+        original_mode = img.mode
+        if original_mode != 'RGB' and original_mode != 'RGBA':
+            img = img.convert('RGB')
+
+        # Get adjustment parameters with proper validation
+        try:
+            brightness = max(0, min(2, float(request.form.get('brightness', 1.0))))
+            contrast = max(0, min(2, float(request.form.get('contrast', 1.0))))
+            saturation = max(0, min(2, float(request.form.get('saturation', 1.0))))
+            sharpness = max(0, min(2, float(request.form.get('sharpness', 1.0))))
+        except ValueError:
+            return jsonify({"error": "Invalid adjustment values"}), 400
+
+        # Log adjustment values for debugging
+        current_app.logger.debug(f"Adjusting image with: brightness={brightness}, contrast={contrast}, "
+                                f"saturation={saturation}, sharpness={sharpness}")
+
+        # Apply adjustments in an optimal order
+        enhancers = [
+            (ImageEnhance.Brightness(img), brightness),
+            (ImageEnhance.Contrast(img), contrast),
+            (ImageEnhance.Color(img), saturation),
+            (ImageEnhance.Sharpness(img), sharpness)
+        ]
+
+        # Apply each enhancement
+        for enhancer, value in enhancers:
+            if abs(value - 1.0) > 0.01:  # Only apply if there's a significant change
+                img = enhancer.enhance(value)
+
+        # Save the adjusted image to a buffer
+        buffer = io.BytesIO()
+        img_format = file.filename.rsplit('.', 1)[1].upper()
+        if img_format == 'JPG':
+            img_format = 'JPEG'
+
+        # Handle output image mode based on format
+        img = prepare_image_for_saving(img, img_format)
+
+        # Save with optimized quality settings
+        if img_format == 'JPEG':
+            img.save(buffer, format=img_format, quality=95, optimize=True)
+        elif img_format == 'PNG':
+            img.save(buffer, format=img_format, optimize=True)
+        else:
+            img.save(buffer, format=img_format)
+
+        buffer.seek(0)
+
+        # Convert to base64 for sending back to the client
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+        img_src = f"data:image/{img_format.lower()};base64,{img_base64}"
+
+        return jsonify({
+            "success": True,
+            "image": img_src,
+            "width": img.width,
+            "height": img.height
+        })
+
+    except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        current_app.logger.error(f"Error in adjust_image: {error_details}")
+        return jsonify({"error": f"An unexpected error occurred: {str(e)}"}), 500
 
 
 @utils_bp.route("/flip-image", methods=["POST"])

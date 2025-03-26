@@ -260,6 +260,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 watermarkControls.classList.add('active');
                 break;
         }
+
+        const toolActivatedEvent = new CustomEvent('toolActivated', {
+            detail: { tool: tool }
+        });
+        document.dispatchEvent(toolActivatedEvent);
     }
 
     function hideAllToolControls() {
