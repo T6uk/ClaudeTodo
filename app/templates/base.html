@@ -120,44 +120,44 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'todo.todos' %}active{% endif %}" href="{{ url_for('todo.todos') }}">
-                            <i class="fas fa-tasks me-1"></i> Todo
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'calendar.calendar' %}active{% endif %}" href="{{ url_for('calendar.calendar') }}">
-                            <i class="fas fa-calendar-alt me-1"></i> Calendar
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'challenge.challenges' %}active{% endif %}" href="{{ url_for('challenge.challenges') }}">
-                            <i class="fas fa-trophy me-1"></i> Challenges
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'health.health' %}active{% endif %}" href="{{ url_for('health.health') }}">
-                            <i class="fas fa-heartbeat me-1"></i> Health
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.endpoint == 'diary.diary' %}active{% endif %}" href="{{ url_for('diary.diary') }}">
-                            <i class="fas fa-book me-1"></i> Diary
-                        </a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {% if 'utils' in request.endpoint %}active{% endif %}" href="#" id="utilsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-tools me-1"></i> Utils
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="utilsDropdown">
-                            <li>
-                                <a class="dropdown-item {% if request.endpoint == 'utils.photo_editing' %}active{% endif %}" href="{{ url_for('utils.photo_editing') }}">
-                                    <i class="fas fa-image me-1"></i> Photo Editing
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint and request.endpoint == 'todo.todos' %}active{% endif %}" href="{{ url_for('todo.todos') }}">
+            <i class="fas fa-tasks me-1"></i> Todo
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint and request.endpoint == 'calendar.calendar' %}active{% endif %}" href="{{ url_for('calendar.calendar') }}">
+            <i class="fas fa-calendar-alt me-1"></i> Calendar
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint and request.endpoint == 'challenge.challenges' %}active{% endif %}" href="{{ url_for('challenge.challenges') }}">
+            <i class="fas fa-trophy me-1"></i> Challenges
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint and request.endpoint == 'health.health' %}active{% endif %}" href="{{ url_for('health.health') }}">
+            <i class="fas fa-heartbeat me-1"></i> Health
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if request.endpoint and 'diary' in request.endpoint %}active{% endif %}" href="{{ url_for('diary.diary') }}">
+            <i class="fas fa-book me-1"></i> Diary
+        </a>
+    </li>
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle {% if request.endpoint and 'utils' in request.endpoint %}active{% endif %}" href="#" id="utilsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-tools me-1"></i> Utils
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="utilsDropdown">
+            <li>
+                <a class="dropdown-item {% if request.endpoint and request.endpoint == 'utils.photo_editing' %}active{% endif %}" href="{{ url_for('utils.photo_editing') }}">
+                    <i class="fas fa-image me-1"></i> Photo Editing
+                </a>
+            </li>
+        </ul>
+    </li>
+</ul>
 
                 <ul class="navbar-nav align-items-center">
                     <!-- Theme toggle -->
