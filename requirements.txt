@@ -11,3 +11,7 @@ WTForms~=3.2.1
 SQLAlchemy~=2.0.38
 click~=8.1.8
 alembic~=1.15.1
+numpy~=2.2.3
+markdown==3.4.3
+bleach~=6.2.0
+Pillow==10.0.0

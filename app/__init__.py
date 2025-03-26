@@ -63,6 +63,7 @@ def create_app(config_name=None):
     from app.routes.dashboard import dashboard_bp
     from app.routes.diary import diary_bp  # Add this line
     from app.utils.markdown_filter import setup_markdown_filter
+    from app.routes.utils import utils_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp, url_prefix="/auth")
@@ -74,6 +75,7 @@ def create_app(config_name=None):
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(diary_bp)  # Add this line
     setup_markdown_filter(app)
+    app.register_blueprint(utils_bp)
 
     # Register error handlers
     register_error_handlers(app)

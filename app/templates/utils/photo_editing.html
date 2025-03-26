@@ -1,0 +1,433 @@
+<!-- app/templates/utils/photo_editing.html -->
+{% extends "base.html" %}
+
+{% block head %}
+<style>
+    .photo-tool-card {
+        transition: all 0.3s;
+        cursor: pointer;
+        height: 100%;
+    }
+
+    .photo-tool-card:hover {
+        transform: translateY(-5px);
+    }
+
+    .photo-editor {
+        background-color: var(--card-bg);
+        border-radius: 15px;
+        box-shadow: var(--card-shadow);
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .image-preview-container {
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        position: relative;
+    }
+
+    [data-bs-theme="dark"] .image-preview-container {
+        border-color: #555;
+    }
+
+    .image-preview {
+        max-width: 100%;
+        max-height: 400px;
+    }
+
+    .drop-zone {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(0, 0, 0, 0.05);
+        z-index: 5;
+        border-radius: 10px;
+    }
+
+    [data-bs-theme="dark"] .drop-zone {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .drop-zone.active {
+        background-color: rgba(var(--primary-rgb), 0.1);
+        border: 2px dashed var(--primary);
+    }
+
+    .preview-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .scaling-controls {
+        margin-top: 1rem;
+    }
+
+    .dimension-inputs {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .dimension-group {
+        flex: 1;
+    }
+
+    .image-result {
+        margin-top: 2rem;
+        display: none;
+    }
+
+    .result-actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1>
+                <i class="fas fa-image me-2"></i>
+                Photo Editing
+            </h1>
+            <p class="lead">Edit and transform your photos with our easy-to-use tools</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4 mb-4">
+            <div class="card photo-tool-card active" data-tool="scaling">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-compress-arrows-alt fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h5">Image Scaling</h3>
+                    <p class="card-text">Resize your images to specific dimensions while maintaining aspect ratio if needed.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card photo-tool-card disabled" data-tool="filters">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-adjust fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h5">Filters</h3>
+                    <p class="card-text">Apply image filters to enhance your photos (coming soon).</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card photo-tool-card disabled" data-tool="cropping">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-crop fa-3x"></i>
+                    </div>
+                    <h3 class="card-title h5">Cropping</h3>
+                    <p class="card-text">Crop your images to focus on what matters (coming soon).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Scaling Editor -->
+    <div class="photo-editor" id="scaling-editor">
+        <h2 class="mb-4">Image Scaling</h2>
+
+        <div class="image-preview-container">
+            <div class="drop-zone" id="drop-zone">
+                <div class="text-center">
+                    <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                    <p>Drag & drop your image here or click to browse</p>
+                    <input type="file" id="image-upload" class="d-none" accept=".jpg,.jpeg,.png,.gif">
+                    <button class="btn btn-primary" id="browse-btn">
+                        <i class="fas fa-folder-open me-2"></i>
+                        Browse Files
+                    </button>
+                </div>
+            </div>
+            <img id="image-preview" class="image-preview d-none" alt="Preview">
+        </div>
+
+        <div class="preview-actions d-none" id="preview-actions">
+            <button class="btn btn-secondary" id="change-image-btn">
+                <i class="fas fa-exchange-alt me-2"></i>
+                Change Image
+            </button>
+            <button class="btn btn-danger" id="remove-image-btn">
+                <i class="fas fa-trash me-2"></i>
+                Remove Image
+            </button>
+        </div>
+
+        <div class="scaling-controls d-none" id="scaling-controls">
+            <h3 class="h5 mb-3">Resize Options</h3>
+
+            <div class="dimension-inputs">
+                <div class="dimension-group">
+                    <label for="width-input" class="form-label">Width (pixels)</label>
+                    <input type="number" class="form-control" id="width-input" min="1" placeholder="Width">
+                </div>
+                <div class="dimension-group">
+                    <label for="height-input" class="form-label">Height (pixels)</label>
+                    <input type="number" class="form-control" id="height-input" min="1" placeholder="Height">
+                </div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="maintain-aspect" checked>
+                <label class="form-check-label" for="maintain-aspect">
+                    Maintain aspect ratio
+                </label>
+            </div>
+
+            <div class="d-grid">
+                <button class="btn btn-primary" id="scale-btn">
+                    <i class="fas fa-compress-arrows-alt me-2"></i>
+                    Scale Image
+                </button>
+            </div>
+        </div>
+
+        <div class="image-result" id="image-result">
+            <h3 class="h5 mb-3">Result</h3>
+
+            <div class="image-preview-container">
+                <img id="result-preview" class="image-preview" alt="Scaled image">
+            </div>
+
+            <div class="result-actions">
+                <button class="btn btn-secondary" id="edit-again-btn">
+                    <i class="fas fa-undo me-2"></i>
+                    Edit Again
+                </button>
+                <a class="btn btn-primary" id="download-btn" download="scaled-image" href="#">
+                    <i class="fas fa-download me-2"></i>
+                    Download Image
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // DOM Elements
+        const dropZone = document.getElementById('drop-zone');
+        const imageUpload = document.getElementById('image-upload');
+        const browseBtn = document.getElementById('browse-btn');
+        const imagePreview = document.getElementById('image-preview');
+        const previewActions = document.getElementById('preview-actions');
+        const changeImageBtn = document.getElementById('change-image-btn');
+        const removeImageBtn = document.getElementById('remove-image-btn');
+        const scalingControls = document.getElementById('scaling-controls');
+        const widthInput = document.getElementById('width-input');
+        const heightInput = document.getElementById('height-input');
+        const maintainAspect = document.getElementById('maintain-aspect');
+        const scaleBtn = document.getElementById('scale-btn');
+        const imageResult = document.getElementById('image-result');
+        const resultPreview = document.getElementById('result-preview');
+        const editAgainBtn = document.getElementById('edit-again-btn');
+        const downloadBtn = document.getElementById('download-btn');
+
+        let originalImage = null;
+        let aspectRatio = 1;
+
+        // Event Listeners
+
+        // File Upload via Browse Button
+        browseBtn.addEventListener('click', function() {
+            imageUpload.click();
+        });
+
+        // Handle file selection
+        imageUpload.addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+        });
+
+        // Drag and Drop handlers
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        });
+
+        dropZone.addEventListener('dragleave', function() {
+            dropZone.classList.remove('active');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+
+            if (e.dataTransfer.files.length) {
+                handleFiles(e.dataTransfer.files);
+            }
+        });
+
+// Change image button
+changeImageBtn.addEventListener('click', function() {
+    imageUpload.click();
+});
+
+// Remove image button
+removeImageBtn.addEventListener('click', function() {
+    resetImageEditor();
+});
+
+// Maintain aspect ratio checkbox
+widthInput.addEventListener('input', function() {
+    if (maintainAspect.checked && originalImage) {
+        const newWidth = parseInt(widthInput.value) || 0;
+        const newHeight = Math.round(newWidth / aspectRatio);
+        heightInput.value = newHeight;
+    }
+});
+
+heightInput.addEventListener('input', function() {
+    if (maintainAspect.checked && originalImage) {
+        const newHeight = parseInt(heightInput.value) || 0;
+        const newWidth = Math.round(newHeight * aspectRatio);
+        widthInput.value = newWidth;
+    }
+});
+
+// Scale button
+scaleBtn.addEventListener('click', function() {
+    const width = parseInt(widthInput.value);
+    const height = parseInt(heightInput.value);
+
+    if (!width || !height) {
+        alert('Please enter both width and height values');
+        return;
+    }
+
+    scaleImage(width, height);
+});
+
+// Edit again button
+editAgainBtn.addEventListener('click', function() {
+    imageResult.style.display = 'none';
+    scalingControls.classList.remove('d-none');
+});
+
+// Functions
+function handleFiles(files) {
+    if (files && files[0]) {
+        const file = files[0];
+
+        // Check if file is an image
+        if (!file.type.match('image.*')) {
+            alert('Please select an image file');
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            // Display the image preview
+            imagePreview.src = e.target.result;
+            imagePreview.classList.remove('d-none');
+            dropZone.style.display = 'none';
+            previewActions.classList.remove('d-none');
+            scalingControls.classList.remove('d-none');
+
+            // Create a new image to get dimensions
+            originalImage = new Image();
+            originalImage.onload = function() {
+                aspectRatio = originalImage.width / originalImage.height;
+
+                // Set initial values for width and height inputs
+                widthInput.value = originalImage.width;
+                heightInput.value = originalImage.height;
+
+                // Store original image data
+                originalImage.src = e.target.result;
+            };
+            originalImage.src = e.target.result;
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+
+function resetImageEditor() {
+    imagePreview.classList.add('d-none');
+    imagePreview.src = '';
+    dropZone.style.display = 'flex';
+    previewActions.classList.add('d-none');
+    scalingControls.classList.add('d-none');
+    imageResult.style.display = 'none';
+
+    // Reset values
+    widthInput.value = '';
+    heightInput.value = '';
+    originalImage = null;
+    imageUpload.value = '';
+}
+
+function scaleImage(width, height) {
+    // Create form data
+    const formData = new FormData();
+    formData.append('width', width);
+    formData.append('height', height);
+    formData.append('maintain_aspect', maintainAspect.checked);
+
+    // Get the image file from the input
+    const file = imageUpload.files[0];
+    formData.append('image', file);
+
+    // Show loading state
+    scaleBtn.disabled = true;
+    scaleBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Processing...';
+
+    // Send request to server
+    fetch('/utils/scale-image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Display the result
+            resultPreview.src = data.image;
+            downloadBtn.href = data.image;
+
+            // Show the result section
+            imageResult.style.display = 'block';
+            scalingControls.classList.add('d-none');
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while processing the image');
+    })
+    .finally(() => {
+        // Reset button state
+        scaleBtn.disabled = false;
+        scaleBtn.innerHTML = '<i class="fas fa-compress-arrows-alt me-2"></i> Scale Image';
+    });
+}
+</script>
+{% endblock %}
