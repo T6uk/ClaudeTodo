@@ -149,29 +149,6 @@ class DrawTool {
         if (this.transparentFill && this.transparentFill.checked) {
             this.fillColor.disabled = true;
         }
-
-// Update startDrawing method
-        startDrawing(e)
-        {
-            const rect = this.canvas.getBoundingClientRect();
-            this.startX = e.clientX - rect.left;
-            this.startY = e.clientY - rect.top;
-            this.isDrawing = true;
-
-            // Create a new shape
-            this.currentShape = {
-                type: this.shapeType.value,
-                startX: this.startX,
-                startY: this.startY,
-                endX: this.startX,
-                endY: this.startY,
-                strokeWidth: parseInt(this.strokeWidth.value),
-                strokeColor: this.strokeColor.value,
-                fillColor: this.transparentFill.checked ? 'transparent' : this.fillColor.value
-            };
-
-            this.redrawCanvas();
-        }
     }
 
     setupCanvas() {
@@ -231,7 +208,7 @@ class DrawTool {
             endY: this.startY,
             strokeWidth: parseInt(this.strokeWidth.value),
             strokeColor: this.strokeColor.value,
-            fillColor: this.fillColor.value
+            fillColor: this.transparentFill && this.transparentFill.checked ? 'transparent' : this.fillColor.value
         };
 
         this.redrawCanvas();

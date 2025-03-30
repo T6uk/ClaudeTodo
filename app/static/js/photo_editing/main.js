@@ -23,6 +23,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const gridControls = document.getElementById('grid-controls');
     const watermarkControls = document.getElementById('watermark-controls'); // Added this line
     const inpaintControls = document.getElementById('inpaint-controls'); // Add this line
+    const presetsControls = document.getElementById('presets-controls');
+    const compressControls = document.getElementById('compress-controls');
+    const drawControls = document.getElementById('draw-canvas-container');
+    const textControls = document.getElementById('text-controls');
 
     // Result Elements
     const imageResult = document.getElementById('image-result');
@@ -272,44 +276,50 @@ document.addEventListener('DOMContentLoaded', function () {
         // Show the selected tool controls
         switch (tool) {
             case 'scaling':
-                scalingControls.classList.add('active');
+                if (scalingControls) scalingControls.classList.add('active');
                 break;
             case 'rotation':
-                rotationControls.classList.add('active');
+                if (rotationControls) rotationControls.classList.add('active');
                 break;
             case 'crop':
-                cropControls.classList.add('active');
-                if (window.cropTool) window.cropTool.initCropPreview();
+                if (cropControls) {
+                    cropControls.classList.add('active');
+                    if (window.cropTool) window.cropTool.initCropPreview();
+                }
                 break;
             case 'filter':
-                filterControls.classList.add('active');
+                if (filterControls) filterControls.classList.add('active');
                 break;
             case 'adjust':
-                adjustControls.classList.add('active');
+                if (adjustControls) adjustControls.classList.add('active');
                 break;
             case 'grid':
-                gridControls.classList.add('active');
+                if (gridControls) gridControls.classList.add('active');
                 break;
             case 'watermark':
-                watermarkControls.classList.add('active');
+                if (watermarkControls) watermarkControls.classList.add('active');
                 break;
             case 'inpaint':
-                inpaintControls.classList.add('active');
+                if (inpaintControls) inpaintControls.classList.add('active');
                 break;
             case 'compress':
-                compressControls.classList.add('active');
+                if (compressControls) compressControls.classList.add('active');
                 break;
             case 'draw':
-                drawControls.classList.add('active');
+                if (drawControls) drawControls.classList.add('active');
+                if (window.drawTool) setTimeout(() => window.drawTool.setupCanvas(), 100);
                 break;
             case 'presets':
-                presetsControls.classList.add('active');
+                if (presetsControls) presetsControls.classList.add('active');
+                if (window.presetsTool) window.presetsTool.initializePresets();
                 break;
             case 'text':
-                textControls.classList.add('active');
+                if (textControls) textControls.classList.add('active');
+                if (window.textTool) setTimeout(() => window.textTool.setupCanvas(), 100);
                 break;
         }
 
+        // Dispatch event to notify tools
         const toolActivatedEvent = new CustomEvent('toolActivated', {
             detail: {tool: tool}
         });
@@ -368,7 +378,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (window.adjustTool) window.adjustTool.reset();
         if (window.gridTool) window.gridTool.reset();
         if (window.watermarkTool) window.watermarkTool.reset();
-        if (window.inpaintTool) window.inpaintTool.reset(); // Add this line
+        if (window.inpaintTool) window.inpaintTool.reset();
+        if (window.compressTool) window.compressTool.reset();
+        if (window.drawTool) window.drawTool.reset();
+        if (window.presetsTool) window.presetsTool.reset();
+        if (window.textTool) window.textTool.reset();
 
         // Reset filter previews
         document.querySelectorAll('.filter-preview').forEach(preview => {
@@ -378,6 +392,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 preview.classList.remove('active');
             }
         });
+
+        // Reset any history
+        if (window.historyManager) window.historyManager.reset();
     }
 
     // Export image function

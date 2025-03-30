@@ -10,9 +10,9 @@ from app.models.user import User
 
 class LoginForm(FlaskForm):
     """User login form"""
-    email = StringField("Email", validators=[
+    username = StringField("Username", validators=[
         DataRequired(),
-        Email()
+        Length(min=3, max=80)
     ])
     password = PasswordField("Password", validators=[
         DataRequired()

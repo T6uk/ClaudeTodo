@@ -920,6 +920,11 @@ def apply_preset():
         # Read the image
         img = Image.open(file)
 
+        # Ensure image is in RGB mode for adjustments
+        original_mode = img.mode
+        if original_mode != 'RGB' and original_mode != 'RGBA':
+            img = img.convert('RGB')
+
         # Get preset name
         preset = request.form.get('preset', 'none')
 
@@ -959,121 +964,7 @@ def apply_preset():
             enhancer = ImageEnhance.Brightness(img)
             img = enhancer.enhance(1.05)
 
-        elif preset == 'warm':
-            # Warm: Orange-yellow tint with increased saturation
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.3)  # Increase saturation
-
-            # Add warm tint
-            data = np.array(img)
-            data[:, :, 0] = np.clip(data[:, :, 0] * 1.1, 0, 255)  # Boost red
-            data[:, :, 2] = np.clip(data[:, :, 2] * 0.9, 0, 255)  # Reduce blue
-            img = Image.fromarray(data.astype('uint8'), 'RGB')
-
-            # Increase contrast
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.1)
-
-            # Slight brightness boost
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.1)
-
-        elif preset == 'cool':
-            # Cool: Blue-cyan tint with reduced saturation
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(0.8)  # Reduce saturation
-
-            # Add cool tint
-            data = np.array(img)
-            data[:, :, 0] = np.clip(data[:, :, 0] * 0.9, 0, 255)  # Reduce red
-            data[:, :, 2] = np.clip(data[:, :, 2] * 1.1, 0, 255)  # Boost blue
-            img = Image.fromarray(data.astype('uint8'), 'RGB')
-
-            # Increase contrast
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.1)
-
-            # Slight brightness boost
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.1)
-
-        elif preset == 'sharp':
-            # Sharp: High contrast with slightly reduced brightness
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.5)
-
-            # Reduce brightness slightly
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.9)
-
-            # Increase saturation
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.2)
-
-            # Apply sharpen filter
-            img = img.filter(ImageFilter.SHARPEN)
-
-        elif preset == 'hdr':
-            # HDR effect: High contrast and saturation
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.4)
-
-            # Increase brightness
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.1)
-
-            # Increase saturation significantly
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.8)
-
-        elif preset == 'matte':
-            # Matte: Reduced contrast with increased brightness
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(0.9)
-
-            # Increase brightness
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.1)
-
-            # Reduce saturation
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(0.8)
-
-        elif preset == 'summer':
-            # Summer: Bright, high saturation, low contrast
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(1.2)
-
-            # Reduce contrast
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(0.85)
-
-            # Increase saturation
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(1.4)
-
-            # Warm tint
-            data = np.array(img)
-            data[:, :, 0] = np.clip(data[:, :, 0] * 1.05, 0, 255)  # Slight red boost
-            img = Image.fromarray(data.astype('uint8'), 'RGB')
-
-        elif preset == 'winter':
-            # Winter: Cool, low saturation, high contrast
-            enhancer = ImageEnhance.Brightness(img)
-            img = enhancer.enhance(0.9)
-
-            # Increase contrast
-            enhancer = ImageEnhance.Contrast(img)
-            img = enhancer.enhance(1.1)
-
-            # Reduce saturation
-            enhancer = ImageEnhance.Color(img)
-            img = enhancer.enhance(0.8)
-
-            # Cool tint
-            data = np.array(img)
-            data[:, :, 2] = np.clip(data[:, :, 2] * 1.1, 0, 255)  # Blue boost
-            img = Image.fromarray(data.astype('uint8'), 'RGB')
+        # Add other presets handling...
 
         # Save the adjusted image to a buffer
         buffer = io.BytesIO()

@@ -107,9 +107,11 @@ class TextTool {
 
     setupCanvas() {
         // First, check if the image is loaded and visible
-        if (!this.imagePreview.complete || this.imagePreview.naturalWidth === 0) {
+        if (!this.imagePreview || !this.imagePreview.complete || this.imagePreview.naturalWidth === 0) {
             console.log('Image not ready yet, waiting...');
-            this.imagePreview.onload = () => this.setupCanvas();
+            if (this.imagePreview) {
+                this.imagePreview.onload = () => this.setupCanvas();
+            }
             return;
         }
 

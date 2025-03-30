@@ -44,10 +44,15 @@ class CompressTool {
     calculateOriginalSize(imageData) {
         // Rough calculation based on base64 string
         if (typeof imageData === 'string' && imageData.startsWith('data:')) {
-            const base64Length = imageData.length - (imageData.indexOf(',') + 1);
-            const sizeInBytes = (base64Length * 3) / 4;
-            this.originalSize = sizeInBytes;
-            this.estimateFileSize();
+            try {
+                const base64Length = imageData.length - (imageData.indexOf(',') + 1);
+                const sizeInBytes = (base64Length * 3) / 4;
+                this.originalSize = sizeInBytes;
+                this.estimateFileSize();
+            } catch (e) {
+                console.error('Error calculating image size:', e);
+                this.originalSize = 0;
+            }
         }
     }
 
@@ -56,7 +61,7 @@ class CompressTool {
         if (this.originalSize > 0) {
             const quality = parseInt(this.qualitySlider.value) / 100;
             // Rough estimation; actual compression depends on image content
-            const estimatedSize = this.originalSize * quality * 0.7;
+            const estimatedSize = this.originalSize * Math.max(0.1, quality * 0.7);
 
             let displaySize;
             if (estimatedSize > 1024 * 1024) {
@@ -66,6 +71,8 @@ class CompressTool {
             }
 
             this.sizeEstimate.textContent = displaySize;
+        } else {
+            this.sizeEstimate.textContent = "Unknown";
         }
     }
 
@@ -95,35 +102,35 @@ class CompressTool {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Show the result
-                        window.showResult(data.image);
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show the result
+                            window.showResult(data.image);
 
-                        // Show size reduction
-                        if (data.original_size && data.compressed_size) {
-                            const reduction = (1 - (data.compressed_size / data.original_size)) * 100;
-                            const message = `Size reduced by ${reduction.toFixed(1)}% (from ${this.formatSize(data.original_size)} to ${this.formatSize(data.compressed_size)})`;
-                            alert(message);
+                            // Show size reduction
+                            if (data.original_size && data.compressed_size) {
+                                const reduction = (1 - (data.compressed_size / data.original_size)) * 100;
+                                const message = `Size reduced by ${reduction.toFixed(1)}% (from ${this.formatSize(data.original_size)} to ${this.formatSize(data.compressed_size)})`;
+                                alert(message);
+                            }
+                        } else {
+                            alert('Error: ' + data.error);
                         }
-                    } else {
-                        alert('Error: ' + data.error);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('An error occurred while processing the image');
-                })
-                .finally(() => {
-                    // Reset button state
-                    PhotoUtils.toggleButtonLoading(
-                        this.compressBtn,
-                        false,
-                        '<i class="fas fa-compress me-2"></i> Compress Image',
-                        ''
-                    );
-                });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred while processing the image');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        PhotoUtils.toggleButtonLoading(
+                            this.compressBtn,
+                            false,
+                            '<i class="fas fa-compress me-2"></i> Compress Image',
+                            ''
+                        );
+                    });
             });
     }
 

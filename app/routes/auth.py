@@ -21,7 +21,7 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data).first()
+        user = User.query.filter_by(username=form.username.data).first()
         if user and user.verify_password(form.password.data):
             # Log in user and update last login timestamp
             login_user(user, remember=form.remember_me.data)
@@ -32,7 +32,7 @@ def login():
             flash("Login successful!", "success")
             return redirect(next_page or url_for("main.home"))
         else:
-            flash("Login failed. Please check your email and password.", "danger")
+            flash("Login failed. Please check your username and password.", "danger")
 
     return render_template("auth/login.html", title="Login", form=form)
 
