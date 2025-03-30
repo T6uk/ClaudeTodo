@@ -38,9 +38,14 @@ def create_app(config_name=None):
 
     # Configure remember cookie
     app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=30)
-    app.config["REMEMBER_COOKIE_SECURE"] = False  # Set to True in production with HTTPS
+    app.config["REMEMBER_COOKIE_SECURE"] = app.config.get("ENV") == "production"  # Secure in production
     app.config["REMEMBER_COOKIE_HTTPONLY"] = True
     app.config["REMEMBER_COOKIE_REFRESH_EACH_REQUEST"] = True
+
+    # Additional security headers for production
+    if app.config.get("ENV") == "production":
+        app.config["SESSION_COOKIE_SECURE"] = True
+        app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=7)
 
     # Initialize extensions with the app
     db.init_app(app)
@@ -61,7 +66,8 @@ def create_app(config_name=None):
     from app.routes.health import health_bp
     from app.routes.games import games_bp
     from app.routes.dashboard import dashboard_bp
-    from app.routes.diary import diary_bp  # Add this line
+    from app.routes.diary import diary_bp
+    from app.routes.notes import notes_bp  # Add this line
     from app.utils.markdown_filter import setup_markdown_filter
     from app.routes.utils import utils_bp
 
@@ -73,7 +79,8 @@ def create_app(config_name=None):
     app.register_blueprint(health_bp)
     app.register_blueprint(games_bp)
     app.register_blueprint(dashboard_bp)
-    app.register_blueprint(diary_bp)  # Add this line
+    app.register_blueprint(diary_bp)
+    app.register_blueprint(notes_bp)  # Add this line
     setup_markdown_filter(app)
     app.register_blueprint(utils_bp)
 

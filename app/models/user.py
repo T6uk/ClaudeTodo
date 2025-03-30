@@ -74,5 +74,9 @@ class User(db.Model, UserMixin):
             return f"{self.first_name} {self.last_name}"
         return self.username
 
+    def get_id(self):
+        """Return the user ID as a string for Flask-Login"""
+        return str(self.id)
+
     def __repr__(self):
         return f"<User {self.username}>"

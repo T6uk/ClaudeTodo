@@ -21,14 +21,31 @@ def login():
 
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        # Check if input is an email
+        if '@' in form.username.data:
+            user = User.query.filter_by(email=form.username.data).first()
+        else:
+            user = User.query.filter_by(username=form.username.data).first()
+
+        # Define the list of allowed usernames
+        allowed_usernames = ["RometR", "Eliis"]
+
         if user and user.verify_password(form.password.data):
+            # Check if username is in the allowed list
+            if user.username not in allowed_usernames:
+                flash("Your account is not authorized to log in.", "warning")
+                return redirect(url_for("auth.login"))
+
             # Log in user and update last login timestamp
             login_user(user, remember=form.remember_me.data)
             user.update_last_login()
 
             # Redirect to requested page or default to home
             next_page = request.args.get("next")
+            if next_page and not next_page.startswith('/'):
+                # Security check to prevent open redirect vulnerability
+                next_page = None
+
             flash("Login successful!", "success")
             return redirect(next_page or url_for("main.home"))
         else:

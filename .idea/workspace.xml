@@ -4,23 +4,22 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="utils">
+    <list default="true" id="eb0d901b-8b79-45c5-87b0-5d5ff5d3bba7" name="Changes" comment="login">
+      <change afterPath="$PROJECT_DIR$/app/models/note.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/routes/notes.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/static/css/dashboard.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/static/js/notes.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/dashboard/widgets/_notes_widget.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/templates/notes/notes.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/__init__.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/forms/auth_forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/forms/auth_forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/user.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/user.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/routes/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/routes/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/routes/utils.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/auth.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/challenge.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/dashboard.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/diary.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/games.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/health.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/typography.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/css/utils.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/photo_editing/compress.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/photo_editing/compress.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/photo_editing/draw.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/photo_editing/draw.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/photo_editing/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/photo_editing/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/static/js/photo_editing/text.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/static/js/photo_editing/text.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/auth/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/site.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/site.db" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -109,15 +108,8 @@
       <workItem from="1742989506776" duration="2898000" />
       <workItem from="1743004527205" duration="19516000" />
       <workItem from="1743149447350" duration="75000" />
-      <workItem from="1743346966936" duration="1787000" />
-    </task>
-    <task id="LOCAL-00001" summary="Initial commit">
-      <option name="closed" value="true" />
-      <created>1741416546712</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1741416546712</updated>
+      <workItem from="1743346966936" duration="4414000" />
+      <workItem from="1743357246294" duration="578000" />
     </task>
     <task id="LOCAL-00002" summary="Initial commit">
       <option name="closed" value="true" />
@@ -503,7 +495,15 @@
       <option name="project" value="LOCAL" />
       <updated>1743025769597</updated>
     </task>
-    <option name="localTasksCounter" value="50" />
+    <task id="LOCAL-00050" summary="login">
+      <option name="closed" value="true" />
+      <created>1743349067020</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1743349067020</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -535,6 +535,7 @@
     <MESSAGE value="cat" />
     <MESSAGE value="diary" />
     <MESSAGE value="utils" />
-    <option name="LAST_COMMIT_MESSAGE" value="utils" />
+    <MESSAGE value="login" />
+    <option name="LAST_COMMIT_MESSAGE" value="login" />
   </component>
 </project>
