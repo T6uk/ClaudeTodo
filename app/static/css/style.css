@@ -618,10 +618,48 @@ select.priority-high {
     transform: translateX(100%);
 }
 
+/* Expandable content for mobile */
+.expandable {
+    cursor: pointer;
+    position: relative;
+}
+
+.expandable:after {
+    content: '⤵';
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    font-size: 0.75rem;
+    color: var(--primary-color);
+    opacity: 0.8;
+}
+
+.expanded {
+    max-height: none !important;
+    -webkit-line-clamp: initial !important;
+}
+
+.expanded:after {
+    content: '⤴';
+}
+
+/* Compact mobile button styles */
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-icon i {
+    font-style: normal;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .todo-list {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1rem;
     }
 
     .mobile-nav-toggle {
@@ -637,17 +675,68 @@ select.priority-high {
         gap: 0;
     }
 
-    .btn {
-        width: 100%;
-        margin: 0.35rem 0;
+    .todo-card {
+        padding: 1rem;
+    }
+
+    .todo-card h3 {
+        font-size: 1.1rem;
+        margin: 0.5rem 0 0.75rem;
+    }
+
+    .todo-card p {
+        font-size: 0.85rem;
+        margin: 0.25rem 0 0.75rem;
+        max-height: 4.2em;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+
+    .todo-meta {
+        padding-top: 0.75rem;
+        font-size: 0.75rem;
+        gap: 0.5rem;
     }
 
     .todo-card .actions {
-        flex-direction: column;
+        margin-top: 0.75rem;
+    }
+
+    /* Make buttons more compact */
+    .todo-card .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+    }
+
+    .btn span.btn-text {
+        display: none;
     }
 
     .todo-card .actions > div {
-        width: 100%;
+        gap: 0.35rem;
+    }
+
+    .todo-card .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .mobile-hide {
+        display: none;
+    }
+
+    .todo-meta-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .todo-meta-grid strong {
+        margin-right: 0.25rem;
     }
 
     .page-title {
@@ -680,6 +769,39 @@ select.priority-high {
 
     .alert {
         padding: 0.75rem 1rem;
+    }
+
+    .todo-card {
+        padding: 0.75rem;
+    }
+
+    .todo-list {
+        grid-template-columns: 1fr;
+    }
+
+    .todo-meta-compact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+    }
+
+    .todo-meta-compact p {
+        margin: 0;
+    }
+
+    .todo-card .actions {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .todo-card .actions > div {
+        display: flex;
+        gap: 0.25rem;
+    }
+
+    .btn {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.8rem;
     }
 }
 

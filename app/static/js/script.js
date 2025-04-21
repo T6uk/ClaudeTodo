@@ -45,6 +45,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Add subtle animations
     setupAnimations();
+
+    // Setup expandable descriptions
+    setupExpandableDescriptions();
 });
 
 function formatDatesAndCheckDue() {
@@ -211,6 +214,16 @@ function setupAnimations() {
 
         input.addEventListener('blur', function () {
             this.parentElement.classList.remove('input-focused');
+        });
+    });
+}
+
+// Setup expandable descriptions for mobile
+function setupExpandableDescriptions() {
+    const expandables = document.querySelectorAll('.expandable');
+    expandables.forEach(elem => {
+        elem.addEventListener('click', function() {
+            this.classList.toggle('expanded');
         });
     });
 }
