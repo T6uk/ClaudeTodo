@@ -1,17 +1,253 @@
 {% extends 'base.html' %}
 
-{% block title %}Events - TaskMaster App{% endblock %}
+{% block title %}Calendar - TaskMaster App{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calendar-container {
+        margin: 20px 0;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .calendar-nav {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .calendar-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .calendar-views {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .view-btn {
+        padding: 0.4rem 0.75rem;
+        border-radius: var(--border-radius-sm);
+        background-color: var(--gray-200);
+        color: var(--gray-700);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+
+    .view-btn:hover, .view-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    table.calendar {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 3px;
+    }
+
+    .calendar th {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 10px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+    }
+
+    .calendar td {
+        height: 100px;
+        vertical-align: top;
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius-sm);
+        padding: 5px;
+        position: relative;
+        border: 1px solid var(--border-color);
+    }
+
+    .calendar .day-number {
+        font-weight: 600;
+        position: absolute;
+        top: 5px;
+        right: 8px;
+        font-size: 0.9rem;
+        color: var(--gray-500);
+    }
+
+    .calendar .today {
+        background-color: rgba(99, 102, 241, 0.1);
+        border: 2px solid var(--primary-color);
+    }
+
+    .calendar .today .day-number {
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .calendar td .events {
+        margin-top: 25px;
+    }
+
+    .calendar-event {
+        margin-bottom: 3px;
+        padding: 3px 5px;
+        border-radius: 3px;
+        font-size: 0.75rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        cursor: pointer;
+        color: white;
+        transition: var(--transition);
+    }
+
+    .calendar-event:hover {
+        opacity: 0.8;
+        transform: translateY(-1px);
+    }
+
+    .event-blue { background-color: #3b82f6; }
+    .event-green { background-color: #10b981; }
+    .event-red { background-color: #ef4444; }
+    .event-yellow { background-color: #f59e0b; color: #111827; }
+    .event-purple { background-color: #8b5cf6; }
+
+    .empty-day {
+        background-color: var(--gray-100);
+        opacity: 0.6;
+    }
+
+    .calendar td:hover {
+        background-color: var(--gray-100);
+    }
+
+    .add-event-btn {
+        font-size: 0.8rem;
+        background-color: var(--gray-200);
+        color: var(--gray-600);
+        padding: 2px 5px;
+        border-radius: 3px;
+        text-decoration: none;
+        opacity: 0;
+        transition: var(--transition);
+        position: absolute;
+        bottom: 5px;
+        right: 5px;
+    }
+
+    .calendar td:hover .add-event-btn {
+        opacity: 1;
+    }
+
+    .add-event-btn:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .calendar-header {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .calendar th {
+            font-size: 0.75rem;
+            padding: 5px;
+        }
+
+        .calendar td {
+            height: 80px;
+            padding: 2px;
+        }
+
+        .calendar .day-number {
+            font-size: 0.8rem;
+        }
+
+        .calendar-event {
+            font-size: 0.65rem;
+            padding: 2px;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="page-title">
-    <h1>Your Events</h1>
-    <a href="#" class="btn btn-primary">Create Event</a>
+    <h1>Calendar</h1>
+    <a href="{{ url_for('main.create_event') }}" class="btn btn-primary">Create Event</a>
 </div>
 
-<div class="empty-state">
-    <p>Event management coming soon!</p>
-    <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--gray-500);">
-        This feature is currently under development. You'll be able to schedule and track events here.
-    </p>
+<div class="calendar-container">
+    <div class="calendar-header">
+        <div class="calendar-nav">
+            <a href="{{ url_for('main.events', date=prev_month.strftime('%Y-%m-%d'), view='month') }}" class="btn btn-icon">
+                <i>◀</i>
+            </a>
+            <h2 class="calendar-title">{{ month_name }} {{ current_date.year }}</h2>
+            <a href="{{ url_for('main.events', date=next_month.strftime('%Y-%m-%d'), view='month') }}" class="btn btn-icon">
+                <i>▶</i>
+            </a>
+        </div>
+
+        <div class="calendar-views">
+            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='day') }}" class="view-btn">Day</a>
+            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='week') }}" class="view-btn">Week</a>
+            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='month') }}" class="view-btn active">Month</a>
+        </div>
+    </div>
+
+    <table class="calendar">
+        <thead>
+            <tr>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+                <th>Saturday</th>
+                <th>Sunday</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in calendar %}
+            <tr>
+                {% for day in week %}
+                {% if day != 0 %}
+                {% set current_calendar_date = current_date.replace(day=day) %}
+                <td class="{% if current_calendar_date == today %}today{% endif %}">
+                    <div class="day-number">{{ day }}</div>
+                    <div class="events">
+                        {% for event in events %}
+                        {% if event.start_datetime.day == day and event.start_datetime.month == current_date.month %}
+                        <div class="calendar-event event-{{ event.color }}"
+                             onclick="window.location.href='{{ url_for('main.event_detail', id=event.id) }}'">
+                            {{ event.title }}
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <a href="{{ url_for('main.create_event', date=current_calendar_date.strftime('%Y-%m-%d')) }}" class="add-event-btn">+ Event</a>
+                </td>
+                {% else %}
+                <td class="empty-day"></td>
+                {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}

@@ -1,0 +1,228 @@
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem 1rem;
+    }
+
+    .todo-list {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 0.5rem;
+    }
+
+    .mobile-nav-toggle {
+        display: flex;
+    }
+
+    .theme-toggle {
+        margin-left: 0;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .todo-card {
+        padding: 0.75rem 0.5rem;
+    }
+
+    .todo-card h3 {
+        font-size: 1rem;
+        margin-top: 0.4rem;
+    }
+
+    .todo-card p {
+        font-size: 0.8rem;
+        max-height: 3.6em;
+        -webkit-line-clamp: 3;
+    }
+
+    .todo-card .actions {
+        margin-top: 0.5rem;
+    }
+
+    .btn-icon {
+        padding: 0.35rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .btn span.btn-text {
+        display: none;
+    }
+
+    .todo-card .actions > div {
+        gap: 0.35rem;
+    }
+
+    .todo-card .badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .mobile-hide {
+        display: none;
+    }
+
+    .page-title {
+        text-align: center;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .page-title h1:after {
+        margin: 0.5rem auto 0;
+    }
+
+    /* Calendar responsive */
+    .calendar-header {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .calendar th {
+        font-size: 0.75rem;
+        padding: 5px;
+    }
+
+    .calendar td {
+        height: 80px;
+        padding: 2px;
+    }
+
+    .calendar .day-number {
+        font-size: 0.8rem;
+    }
+
+    .calendar-event {
+        font-size: 0.65rem;
+        padding: 2px;
+    }
+
+    .week-calendar {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .week-calendar th,
+    .week-calendar td {
+        font-size: 0.7rem;
+        padding: 5px 3px;
+    }
+
+    /* Navbar responsive */
+    .navbar {
+        flex-wrap: wrap;
+    }
+
+    .navbar-logo {
+        flex: 1;
+    }
+
+    .mobile-nav-toggle {
+        display: flex;
+        order: 2;
+    }
+
+    .theme-toggle {
+        order: 3;
+    }
+
+    .navbar-links {
+        order: 4;
+        flex-basis: 100%;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin: 0;
+        height: 0;
+        overflow: hidden;
+        transition: height 0.3s ease;
+        width: 100%;
+        padding: 0;
+        opacity: 0;
+    }
+
+    .navbar-links.active {
+        height: auto;
+        margin-top: 1rem;
+        padding: 0.5rem;
+        opacity: 1;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: var(--border-radius-sm);
+    }
+
+    .nav-link {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 0.75rem 1rem;
+    }
+
+    .navbar-actions {
+        gap: 0.25rem;
+    }
+
+    /* Event detail responsive */
+    .event-meta {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .event-meta-value {
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 1.5rem 1rem;
+    }
+
+    .page-title h1 {
+        font-size: 1.5rem;
+    }
+
+    .login-form {
+        padding: 1.5rem;
+    }
+
+    .todo-form {
+        padding: 1.25rem;
+    }
+
+    .alert {
+        padding: 0.75rem 1rem;
+    }
+
+    .todo-card {
+        padding: 0.75rem;
+    }
+
+    .todo-list {
+        grid-template-columns: 1fr;
+    }
+
+    .navbar-brand {
+        font-size: 1.25rem;
+    }
+
+    .brand-icon {
+        width: 1.75rem;
+        height: 1.75rem;
+        margin-right: 0.5rem;
+    }
+
+    .nav-link {
+        padding: 0.75rem 0.75rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1100px) {
+    .todo-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    .todo-list {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+}

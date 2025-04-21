@@ -75,10 +75,10 @@ function formatDatesAndCheckDue() {
 
             if (dueDate < today) {
                 element.classList.add('overdue');
-                element.parentElement.insertAdjacentHTML('beforeend', ' <span class="badge priority-high">Overdue</span>');
+                element.parentElement.insertAdjacentHTML('afterbegin', '<span class="badge priority-high">Overdue</span> ');
             } else if (dueDate.getTime() === today.getTime()) {
                 element.classList.add('today');
-                element.parentElement.insertAdjacentHTML('beforeend', ' <span class="badge priority-medium">Today</span>');
+                element.parentElement.insertAdjacentHTML('afterbegin', '<span class="badge priority-medium">Today</span> ');
             } else {
                 element.classList.add('upcoming');
             }

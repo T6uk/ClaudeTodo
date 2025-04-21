@@ -10,6 +10,8 @@ class User(db.Model):
                             foreign_keys='Todo.user_id')
     created_todos = db.relationship('Todo', backref='creator', lazy='dynamic',
                                     foreign_keys='Todo.created_by_id')
+    events = db.relationship('Event', backref='creator', lazy='dynamic',
+                             foreign_keys='Event.created_by_id')
 
     def __repr__(self):
         return f'<User {self.name}>'
@@ -29,3 +31,19 @@ class Todo(db.Model):
 
     def __repr__(self):
         return f'<Todo {self.title}>'
+
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(120), nullable=False)
+    description = db.Column(db.Text)
+    start_datetime = db.Column(db.DateTime, nullable=False)
+    end_datetime = db.Column(db.DateTime, nullable=False)
+    all_day = db.Column(db.Boolean, default=False)
+    color = db.Column(db.String(20), default='blue')  # For event styling
+    created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'<Event {self.title}>'

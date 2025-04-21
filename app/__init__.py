@@ -23,6 +23,13 @@ def create_app(config_class=Config):
             return datetime.now().year
         return datetime.now()
 
+    @app.template_filter('datetime')
+    def filter_datetime(date_str):
+        try:
+            return datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
+        except:
+            return datetime.now()
+
     # Import and register blueprints
     from app.routes import bp as routes_bp
     app.register_blueprint(routes_bp)

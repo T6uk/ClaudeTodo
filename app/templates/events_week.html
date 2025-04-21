@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+
+{% block title %}Weekly Calendar - TaskMaster App{% endblock %}
+
+{% block extra_head %}
+<style>
+    .calendar-container {
+        margin: 20px 0;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .calendar-nav {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .calendar-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .calendar-views {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .view-btn {
+        padding: 0.4rem 0.75rem;
+        border-radius: var(--border-radius-sm);
+        background-color: var(--gray-200);
+        color: var(--gray-700);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: var(--transition);
+    }
+
+    .view-btn:hover, .view-btn.active {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .week-calendar {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 3px;
+        table-layout: fixed;
+    }
+
+    .week-calendar th {
+        background-color: var(--primary-color);
+        color: white;
+        padding: 8px;
+        text-align: center;
+        font-size: 0.9rem;
+        border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+    }
+
+    .week-calendar th.time-col {
+        width: 60px;
+    }
+
+    .week-calendar td {
+        vertical-align: top;
+        background-color: var(--card-bg);
+        border-radius: var(--border-radius-sm);
+        position: relative;
+        border: 1px solid var(--border-color);
+        height: 60px;
+    }
+
+    .week-calendar td.time-label {
+        width: 60px;
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-align: center;
+        font-weight: 500;
+        background-color: var(--gray-100);
+        border: none;
+    }
+
+    .week-date {
+        display: block;
+        margin-top: 5px;
+        font-size: 0.8rem;
+        color: var(--gray-700);
+    }
+
+    .week-calendar th.today {
+        background-color: var(--success-color);
+    }
+
+    .week-calendar td.today {
+        background-color: rgba(16, 185, 129, 0.1);
+    }
+
+    .week-event {
+        position: absolute;
+        background-color: #3b82f6;
+        color: white;
+        border-radius: 3px;
+        padding: 3px 5px;
+        font-size: 0.7rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: calc(100% - 6px);
+        cursor: pointer;
+        transition: var(--transition);
+        top: 3px;
+        left: 3px;
+        z-index: 5;
+    }
+
+    .week-event:hover {
+        transform: scale(1.02);
+        z-index: 10;
+    }
+
+    .event-blue { background-color: #3b82f6; }
+    .event-green { background-color: #10b981; }
+    .event-red { background-color: #ef4444; }
+    .event-yellow { background-color: #f59e0b; color: #111827; }
+    .event-purple { background-color: #8b5cf6; }
+
+    .all-day-row {
+        height: auto !important;
+        padding: 5px;
+    }
+
+    .all-day-row .week-event {
+        position: relative;
+        display: block;
+        width: auto;
+        margin-bottom: 3px;
+        top: 0;
+        left: 0;
+    }
+
+    @media (max-width: 768px) {
+        .calendar-header {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .week-calendar {
+            display: block;
+            overflow-x: auto;
+        }
+
+        .week-calendar th,
+        .week-calendar td {
+            font-size: 0.7rem;
+            padding: 5px 3px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <h1>Weekly Calendar</h1>
+    <a href="{{ url_for('main.create_event', date=current_date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">Create Event</a>
+</div>
+
+<div class="calendar-container">
+    <div class="calendar-header">
+        <div class="calendar-nav">
+            <a href="{{ url_for('main.events', date=(week_dates[0] - timedelta(days=7)).strftime('%Y-%m-%d'), view='week') }}" class="btn btn-icon">
+                <i>◀</i>
+            </a>
+            <h2 class="calendar-title">{{ week_dates[0].strftime('%b %d') }} - {{ week_dates[6].strftime('%b %d, %Y') }}</h2>
+            <a href="{{ url_for('main.events', date=(week_dates[0] + timedelta(days=7)).strftime('%Y-%m-%d'), view='week') }}" class="btn btn-icon">
+                <i>▶</i>
+            </a>
+        </div>
+
+        <div class="calendar-views">
+            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='day') }}" class="view-btn">Day</a>
+            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='week') }}" class="view-btn active">Week</a>
+            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='month') }}" class="view-btn">Month</a>
+        </div>
+    </div>
+
+    <table class="week-calendar">
+        <thead>
+            <tr>
+                <th class="time-col"></th>
+                {% for day in week_dates %}
+                <th class="{% if day == today %}today{% endif %}">
+                    {{ day.strftime('%A') }}
+                    <span class="week-date">{{ day.strftime('%b %d') }}</span>
+                </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <!-- All-day events -->
+            <tr>
+                <td class="time-label">All-day</td>
+                {% for day in week_dates %}
+                <td class="all-day-row {% if day == today %}today{% endif %}">
+                    {% for event in events %}
+                    {% if event.all_day and event.start_datetime.date() == day %}
+                    <div class="week-event event-{{ event.color }}" onclick="window.location.href='{{ url_for('main.event_detail', id=event.id) }}'">
+                        {{ event.title }}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+                {% endfor %}
+            </tr>
+
+            <!-- Regular hourly schedule -->
+            {% for hour in range(8, 19) %}  <!-- Standard business hours 8 AM - 7 PM -->
+            <tr>
+                <td class="time-label">{{ "%02d:00"|format(hour) }}</td>
+                {% for day in week_dates %}
+                <td class="{% if day == today %}today{% endif %}">
+                    {% for event in events %}
+                    {% if not event.all_day and event.start_datetime.date() == day and event.start_datetime.hour == hour %}
+                    <div class="week-event event-{{ event.color }}" onclick="window.location.href='{{ url_for('main.event_detail', id=event.id) }}'">
+                        {{ event.start_datetime.strftime('%H:%M') }} {{ event.title }}
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

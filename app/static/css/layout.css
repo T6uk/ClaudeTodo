@@ -1,0 +1,50 @@
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.page-title {
+    margin-bottom: 2rem;
+    font-weight: 700;
+    color: var(--gray-800);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.page-title h1 {
+    font-size: 1.875rem;
+    letter-spacing: -0.025em;
+    position: relative;
+    margin: 0;
+}
+
+.page-title h1:after {
+    content: '';
+    display: block;
+    width: 50px;
+    height: 4px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+    margin-top: 0.5rem;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
+}
+
+.empty-state p {
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+    color: var(--gray-500);
+}

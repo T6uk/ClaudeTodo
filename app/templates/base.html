@@ -28,7 +28,7 @@
                         <span class="nav-icon">📋</span>
                         <span class="nav-text">Todo</span>
                     </a>
-                    <a href="#" class="nav-link">
+                    <a href="{{ url_for('main.events') }}" class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
                         <span class="nav-icon">📅</span>
                         <span class="nav-text">Events</span>
                     </a>
