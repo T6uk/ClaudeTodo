@@ -3,31 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Todo App{% endblock %}</title>
+    <title>{% block title %}TaskMaster App{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✓</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     <header class="header">
-        <nav class="navbar">
-            <a href="{{ url_for('main.index') }}" class="navbar-brand">TaskMaster</a>
-            {% if session.logged_in %}
-            <div class="navbar-links">
-                <a href="{{ url_for('main.index') }}">Dashboard</a>
-                <a href="{{ url_for('main.create_todo') }}">New Task</a>
-                <a href="{{ url_for('main.logout') }}">Logout</a>
-            </div>
-            {% endif %}
-            <!-- Theme toggle button will be inserted here by JavaScript -->
-        </nav>
+        <div class="navbar-container">
+            <nav class="navbar">
+                <div class="navbar-logo">
+                    <a href="{{ url_for('main.index') }}" class="navbar-brand">
+                        <span class="brand-icon">✓</span>
+                        TaskMaster
+                    </a>
+                </div>
+
+                {% if session.logged_in %}
+                <div class="navbar-links">
+                    <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+                        <span class="nav-icon">📋</span>
+                        <span class="nav-text">Todo</span>
+                    </a>
+                    <a href="#" class="nav-link">
+                        <span class="nav-icon">📅</span>
+                        <span class="nav-text">Events</span>
+                    </a>
+                    <a href="{{ url_for('main.logout') }}" class="nav-link">
+                        <span class="nav-icon">🚪</span>
+                        <span class="nav-text">Logout</span>
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="navbar-actions">
+                    <!-- Mobile toggle and theme toggle will be inserted here by JavaScript -->
+                </div>
+            </nav>
+        </div>
     </header>
 
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
+                    <div class="alert alert-{{ category }}" role="alert">
                         {{ message }}
                     </div>
                 {% endfor %}

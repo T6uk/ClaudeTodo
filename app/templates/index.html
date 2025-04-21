@@ -5,7 +5,7 @@
 {% block content %}
 <div class="page-title">
     <h1>Your Tasks</h1>
-    <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">New Task</a>
+    <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Create Task</a>
 </div>
 
 {% if todos %}
@@ -14,7 +14,9 @@
             <div class="todo-card {% if todo.completed %}completed{% endif %}">
                 <span class="badge priority-{{ todo.priority }}">{{ todo.priority | title }}</span>
                 <h3>{{ todo.title }}</h3>
+                {% if todo.description %}
                 <p>{{ todo.description }}</p>
+                {% endif %}
                 <div class="todo-meta">
                     <div>
                         <p><strong>Due:</strong> <span class="due-date date-format">{{ todo.due_date }}</span></p>

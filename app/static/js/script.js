@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Flash message dismissal with animation
     const alerts = document.querySelectorAll('.alert');
     alerts.forEach(alert => {
@@ -39,6 +39,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Add custom styling to completed checkbox
     setupCompletedCheckbox();
+
+    // Setup mobile navigation
+    setupMobileNav();
+
+    // Add subtle animations
+    setupAnimations();
 });
 
 function formatDatesAndCheckDue() {
@@ -107,14 +113,15 @@ function setupPrioritySelect() {
 }
 
 function setupThemeToggle() {
-    // Add theme toggle button to navbar if it doesn't exist
-    const navbar = document.querySelector('.navbar');
-    if (navbar && !document.querySelector('.theme-toggle')) {
+    // Add theme toggle button to navbar actions if it doesn't exist
+    const navbarActions = document.querySelector('.navbar-actions');
+    if (navbarActions && !document.querySelector('.theme-toggle')) {
         const themeToggle = document.createElement('button');
         themeToggle.className = 'theme-toggle';
         themeToggle.innerHTML = '🌙'; // Moon emoji for initial state
         themeToggle.setAttribute('title', 'Toggle dark/light mode');
-        navbar.appendChild(themeToggle);
+        themeToggle.setAttribute('aria-label', 'Toggle dark mode');
+        navbarActions.appendChild(themeToggle);
 
         // Check for saved theme preference
         const darkMode = localStorage.getItem('darkMode') === 'true';
@@ -129,6 +136,12 @@ function setupThemeToggle() {
             const isDarkMode = document.body.classList.contains('dark-mode');
             localStorage.setItem('darkMode', isDarkMode);
             this.innerHTML = isDarkMode ? '☀️' : '🌙';
+
+            // Add a subtle animation to the entire page when theme changes
+            document.body.style.transition = 'background-color 0.5s ease, color 0.5s ease';
+            setTimeout(() => {
+                document.body.style.transition = '';
+            }, 500);
         });
     }
 }
@@ -142,6 +155,66 @@ function setupCompletedCheckbox() {
     }
 }
 
+function setupMobileNav() {
+    const navbar = document.querySelector('.navbar');
+    const navLinks = document.querySelector('.navbar-links');
+    const navbarActions = document.querySelector('.navbar-actions');
+
+    if (navbar && navLinks && navbarActions) {
+        // Create mobile toggle button if it doesn't exist
+        if (!document.querySelector('.mobile-nav-toggle')) {
+            const mobileToggle = document.createElement('button');
+            mobileToggle.className = 'mobile-nav-toggle';
+            mobileToggle.innerHTML = '☰';
+            mobileToggle.setAttribute('aria-label', 'Toggle navigation');
+            mobileToggle.setAttribute('aria-expanded', 'false');
+
+            // Add to navbar actions
+            navbarActions.appendChild(mobileToggle);
+
+            // Toggle mobile menu
+            mobileToggle.addEventListener('click', function() {
+                navLinks.classList.toggle('active');
+                const isExpanded = navLinks.classList.contains('active');
+                this.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+                this.innerHTML = isExpanded ? '✕' : '☰';
+            });
+
+            // Close menu when clicking a link
+            const links = navLinks.querySelectorAll('a');
+            links.forEach(link => {
+                link.addEventListener('click', function() {
+                    navLinks.classList.remove('active');
+                    mobileToggle.innerHTML = '☰';
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                });
+            });
+        }
+    }
+}
+
+function setupAnimations() {
+    // Subtle hover effects for buttons
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function () {
+            this.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        });
+    });
+
+    // Enhance form inputs with focus animation
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function () {
+            this.parentElement.classList.add('input-focused');
+        });
+
+        input.addEventListener('blur', function () {
+            this.parentElement.classList.remove('input-focused');
+        });
+    });
+}
+
 // Add subtle animations to todo cards
 function animateTodoCards() {
     const cards = document.querySelectorAll('.todo-card');
@@ -150,7 +223,7 @@ function animateTodoCards() {
         card.style.transform = 'translateY(20px)';
 
         setTimeout(() => {
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
         }, 100 * index); // Stagger the animations
@@ -158,6 +231,6 @@ function animateTodoCards() {
 }
 
 // Run animation when page is fully loaded
-window.onload = function() {
+window.onload = function () {
     animateTodoCards();
 };

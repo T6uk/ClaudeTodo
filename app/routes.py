@@ -116,3 +116,9 @@ def toggle_complete(id):
     status = "completed" if todo.completed else "marked as active"
     flash(f'Task {status}!', 'success')
     return redirect(url_for('main.index'))
+
+@bp.route('/events')
+@login_required
+def events():
+    # This is a placeholder for the Events feature
+    return render_template('events.html')
