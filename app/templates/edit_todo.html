@@ -59,10 +59,52 @@
             </div>
         </div>
 
+        <div class="form-row">
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="category_id">Category (Optional)</label>
+                    <select id="category_id" name="category_id" class="form-control">
+                        <option value="">None</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" class="color-{{ category.color }}" {% if todo.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-col">
+                <div class="form-group">
+                    <label for="tags">Tags (Comma separated)</label>
+                    <input type="text" id="tags" name="tags" class="form-control" value="{{ tags_string }}" placeholder="work, urgent, follow-up">
+                </div>
+            </div>
+        </div>
+
         <div class="form-row" style="justify-content: space-between;">
             <button type="submit" class="btn btn-primary">Update Task</button>
             <a href="{{ url_for('main.index') }}" class="btn btn-danger">Cancel</a>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sync category color with selection
+    const categorySelect = document.getElementById('category_id');
+
+    function updateCategoryColor() {
+        categorySelect.className = 'form-control';
+        const selectedOption = categorySelect.options[categorySelect.selectedIndex];
+        if (selectedOption.value) {
+            const colorClass = selectedOption.className;
+            categorySelect.classList.add(colorClass);
+        }
+    }
+
+    categorySelect.addEventListener('change', updateCategoryColor);
+    updateCategoryColor(); // Initial state
+});
+</script>
 {% endblock %}

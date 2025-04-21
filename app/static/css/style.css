@@ -6,5 +6,7 @@
 @import 'alerts.css';
 @import 'todo-cards.css';
 @import 'calendar.css';
+@import 'dashboard.css';
 @import 'utilities.css';
 @import 'responsive.css';
+@import 'filters.css';

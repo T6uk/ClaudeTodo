@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - TaskMaster App{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <h1>Dashboard</h1>
+    <div>
+        <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Create Task</a>
+        <a href="{{ url_for('main.create_event') }}" class="btn btn-secondary">Create Event</a>
+    </div>
+</div>
+
+<div class="dashboard-container">
+    <!-- Statistics cards -->
+    <div class="stats-container">
+        <div class="stat-card">
+            <div class="stat-icon">📋</div>
+            <div class="stat-content">
+                <h3>{{ stats.total_todos }}</h3>
+                <p>Total Tasks</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: var(--success-color);">✓</div>
+            <div class="stat-content">
+                <h3>{{ stats.completed_todos }}</h3>
+                <p>Completed</p>
+                <div class="progress-bar">
+                    <div class="progress" style="width: {{ stats.completion_rate }}%;"></div>
+                </div>
+                <div class="progress-text">{{ stats.completion_rate }}% completion rate</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: var(--warning-color);">⏰</div>
+            <div class="stat-content">
+                <h3>{{ stats.due_soon }}</h3>
+                <p>Due Soon</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="color: var(--danger-color);">⚠️</div>
+            <div class="stat-content">
+                <h3>{{ stats.overdue }}</h3>
+                <p>Overdue</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upcoming Tasks and Events -->
+    <div class="dashboard-row">
+        <div class="dashboard-column">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2>Upcoming Tasks</h2>
+                    <a href="{{ url_for('main.index') }}" class="btn-link">View All</a>
+                </div>
+                {% if upcoming_todos %}
+                <div class="task-list">
+                    {% for todo in upcoming_todos %}
+                    <div class="task-item {% if todo.completed %}completed{% endif %}">
+                        <div class="task-checkbox">
+                            <a href="{{ url_for('main.toggle_complete', id=todo.id) }}" class="checkbox-link">
+                                {% if todo.completed %}
+                                <span class="check-complete">✓</span>
+                                {% else %}
+                                <span class="check-incomplete"></span>
+                                {% endif %}
+                            </a>
+                        </div>
+                        <div class="task-content">
+                            <div class="task-header">
+                                <h3>{{ todo.title }}</h3>
+                                <span class="badge priority-{{ todo.priority }}">{{ todo.priority | title }}</span>
+                            </div>
+                            <p class="task-due">
+                                <span class="due-date date-format">{{ todo.due_date }}</span>
+                            </p>
+                            {% if todo.category %}
+                            <span class="category-badge color-{{ todo.category.color }}">{{ todo.category.name }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-list">
+                    <p>No upcoming tasks</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="dashboard-column">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2>Upcoming Events</h2>
+                    <a href="{{ url_for('main.events') }}" class="btn-link">View All</a>
+                </div>
+                {% if upcoming_events %}
+                <div class="event-list">
+                    {% for event in upcoming_events %}
+                    <div class="event-item">
+                        <div class="event-dot color-{{ event.color }}"></div>
+                        <div class="event-content">
+                            <h3>{{ event.title }}</h3>
+                            <p class="event-time">
+                                <span class="date-format">{{ event.start_datetime }}</span>
+                                {% if event.all_day %}
+                                (All day)
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-list">
+                    <p>No upcoming events</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- By Priority and By Category -->
+    <div class="dashboard-row">
+        <div class="dashboard-column">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2>Tasks by Priority</h2>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-bars">
+                        <div class="chart-bar-container">
+                            <div class="chart-label">High</div>
+                            <div class="chart-bar">
+                                <div class="bar priority-high" style="width: {{ stats.priority_percentages.high }}%;"></div>
+                            </div>
+                            <div class="chart-value">{{ stats.priority_counts.high }}</div>
+                        </div>
+                        <div class="chart-bar-container">
+                            <div class="chart-label">Medium</div>
+                            <div class="chart-bar">
+                                <div class="bar priority-medium" style="width: {{ stats.priority_percentages.medium }}%;"></div>
+                            </div>
+                            <div class="chart-value">{{ stats.priority_counts.medium }}</div>
+                        </div>
+                        <div class="chart-bar-container">
+                            <div class="chart-label">Low</div>
+                            <div class="chart-bar">
+                                <div class="bar priority-low" style="width: {{ stats.priority_percentages.low }}%;"></div>
+                            </div>
+                            <div class="chart-value">{{ stats.priority_counts.low }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-column">
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h2>Tasks by Category</h2>
+                </div>
+                {% if categories_with_counts %}
+                <div class="category-list">
+                    {% for category in categories_with_counts %}
+                    <div class="category-item">
+                        <div class="category-badge color-{{ category.color }}">{{ category.name }}</div>
+                        <div class="category-count">{{ category.count }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-list">
+                    <p>No categorized tasks</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Format dates
+        formatDatesAndCheckDue();
+    });
+</script>
+{% endblock %}

@@ -1,3 +1,4 @@
+# app/__init__.py
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -38,13 +39,26 @@ def create_app(config_class=Config):
     with app.app_context():
         db.create_all()
         # Import models inside app context to avoid circular imports
-        from app.models import User
+        from app.models import User, Category, Tag
+
         # Create default users if they don't exist
         if User.query.count() == 0:
-            user1 = User(name='Romet')
-            user2 = User(name='Eliis')
+            user1 = User(name='Romet', avatar_color='blue', email='romet@example.com')
+            user2 = User(name='Eliis', avatar_color='purple', email='eliis@example.com')
             db.session.add(user1)
             db.session.add(user2)
+            db.session.commit()
+
+        # Create default categories if they don't exist
+        if Category.query.count() == 0:
+            categories = [
+                Category(name='Work', color='blue'),
+                Category(name='Personal', color='green'),
+                Category(name='Health', color='red'),
+                Category(name='Education', color='purple'),
+                Category(name='Errands', color='yellow')
+            ]
+            db.session.add_all(categories)
             db.session.commit()
 
     return app

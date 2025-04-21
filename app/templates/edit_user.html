@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User - TaskMaster App{% endblock %}
+
+{% block content %}
+<div class="todo-form">
+    <h2>Edit User</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" class="form-control" value="{{ user.name }}" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ user.email if user.email else '' }}" placeholder="user@example.com">
+        </div>
+
+        <div class="form-group">
+            <label for="avatar_color">Avatar Color</label>
+            <select id="avatar_color" name="avatar_color" class="form-control color-{{ user.avatar_color }}">
+                <option value="blue" class="color-blue" {% if user.avatar_color == 'blue' %}selected{% endif %}>Blue</option>
+                <option value="green" class="color-green" {% if user.avatar_color == 'green' %}selected{% endif %}>Green</option>
+                <option value="red" class="color-red" {% if user.avatar_color == 'red' %}selected{% endif %}>Red</option>
+                <option value="purple" class="color-purple" {% if user.avatar_color == 'purple' %}selected{% endif %}>Purple</option>
+                <option value="yellow" class="color-yellow" {% if user.avatar_color == 'yellow' %}selected{% endif %}>Yellow</option>
+            </select>
+        </div>
+
+        <div class="form-row" style="justify-content: space-between;">
+            <button type="submit" class="btn btn-primary">Update User</button>
+            <a href="{{ url_for('main.users') }}" class="btn btn-danger">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sync avatar color with selection
+    const colorSelect = document.getElementById('avatar_color');
+
+    function updateColor() {
+        colorSelect.className = 'form-control';
+        const selectedOption = colorSelect.options[colorSelect.selectedIndex];
+        const colorClass = selectedOption.className;
+        colorSelect.classList.add(colorClass);
+    }
+
+    colorSelect.addEventListener('change', updateColor);
+    updateColor(); // Initial state
+});
+</script>
+{% endblock %}
