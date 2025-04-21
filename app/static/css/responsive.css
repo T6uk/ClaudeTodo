@@ -77,87 +77,142 @@
     .calendar-header {
         flex-direction: column;
         gap: 10px;
+        align-items: center;
     }
 
+    .calendar-title {
+        font-size: 1.25rem;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .calendar-nav {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .calendar-views {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .view-btn {
+        flex: 1;
+        text-align: center;
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem;
+    }
+
+    /* Month view improvements */
     .calendar th {
-        font-size: 0.75rem;
-        padding: 5px;
+        font-size: 0.65rem;
+        padding: 5px 2px;
     }
 
     .calendar td {
-        height: 80px;
+        height: 60px;
         padding: 2px;
     }
 
     .calendar .day-number {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
+        top: 2px;
+        right: 4px;
+    }
+
+    .calendar td .events {
+        margin-top: 18px;
+        max-height: 40px;
+        overflow-y: auto;
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .calendar td .events::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Edge */
     }
 
     .calendar-event {
         font-size: 0.65rem;
-        padding: 2px;
+        padding: 2px 3px;
+        margin-bottom: 2px;
     }
 
+    .add-event-btn {
+        font-size: 0.7rem;
+        padding: 1px 3px;
+    }
+
+    /* Week calendar responsive */
     .week-calendar {
         display: block;
         overflow-x: auto;
+        white-space: nowrap;
+        width: 100%;
+        -webkit-overflow-scrolling: touch;
     }
 
     .week-calendar th,
     .week-calendar td {
         font-size: 0.7rem;
         padding: 5px 3px;
+        min-width: 80px;
     }
 
-    /* Navbar responsive */
-    .navbar {
-        flex-wrap: wrap;
+    .week-calendar th:first-child,
+    .week-calendar td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 10;
+        background-color: var(--bg-color);
     }
 
-    .navbar-logo {
-        flex: 1;
+    .week-calendar td.time-label {
+        width: 50px;
+        min-width: 50px;
+        font-size: 0.65rem;
     }
 
-    .mobile-nav-toggle {
-        display: flex;
-        order: 2;
+    .week-date {
+        font-size: 0.7rem;
     }
 
-    .theme-toggle {
-        order: 3;
+    .week-event {
+        font-size: 0.6rem;
+        padding: 2px;
     }
 
-    .navbar-links {
-        order: 4;
-        flex-basis: 100%;
-        flex-direction: column;
-        gap: 0.5rem;
-        margin: 0;
-        height: 0;
-        overflow: hidden;
-        transition: height 0.3s ease;
-        width: 100%;
-        padding: 0;
-        opacity: 0;
-    }
-
-    .navbar-links.active {
-        height: auto;
-        margin-top: 1rem;
+    /* Day view responsive */
+    .day-schedule {
         padding: 0.5rem;
-        opacity: 1;
-        background-color: rgba(255, 255, 255, 0.1);
-        border-radius: var(--border-radius-sm);
     }
 
-    .nav-link {
-        width: 100%;
-        justify-content: flex-start;
-        padding: 0.75rem 1rem;
+    .time-slot {
+        min-height: 50px;
     }
 
-    .navbar-actions {
-        gap: 0.25rem;
+    .time-label {
+        width: 40px;
+        font-size: 0.7rem;
+        padding-right: 5px;
+    }
+
+    .time-events {
+        padding: 2px 0;
+    }
+
+    .day-event {
+        padding: 3px 5px;
+        font-size: 0.75rem;
+    }
+
+    .all-day-events {
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+
+    .all-day-label {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
     }
 
     /* Event detail responsive */
@@ -213,16 +268,96 @@
     .nav-link {
         padding: 0.75rem 0.75rem;
     }
+
+    /* Extra small screen calendar adjustments */
+    .calendar th {
+        font-size: 0.6rem;
+        padding: 3px 1px;
+    }
+
+    .calendar td {
+        height: 50px;
+    }
+
+    .calendar .day-number {
+        font-size: 0.7rem;
+    }
+
+    .calendar-event {
+        font-size: 0.55rem;
+        padding: 1px 2px;
+        margin-bottom: 1px;
+    }
+
+    .calendar td .events {
+        margin-top: 15px;
+        max-height: 30px;
+    }
+
+    .view-btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.7rem;
+    }
+
+    /* Day view extra adjustments */
+    .time-label {
+        width: 35px;
+        font-size: 0.65rem;
+    }
+
+    .day-event {
+        font-size: 0.7rem;
+        padding: 2px 4px;
+    }
+
+    /* Week view extra adjustments */
+    .week-calendar th,
+    .week-calendar td {
+        min-width: 70px;
+        font-size: 0.65rem;
+    }
+
+    .week-calendar td.time-label {
+        width: 40px;
+        min-width: 40px;
+    }
 }
 
 @media (min-width: 769px) and (max-width: 1100px) {
     .todo-list {
         grid-template-columns: repeat(2, 1fr);
     }
+
+    /* Medium screen calendar adjustments */
+    .calendar td {
+        height: 80px;
+    }
+
+    .week-calendar th,
+    .week-calendar td {
+        font-size: 0.85rem;
+        padding: 5px;
+    }
 }
 
 @media (min-width: 1200px) {
     .todo-list {
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+}
+
+/* Landscape orientation specific styles */
+@media (max-width: 850px) and (orientation: landscape) {
+    .calendar td {
+        height: 50px;
+    }
+
+    .calendar td .events {
+        margin-top: 15px;
+        max-height: 30px;
+    }
+
+    .time-slot {
+        min-height: 40px;
     }
 }

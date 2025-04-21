@@ -1,232 +1,76 @@
 {% extends 'base.html' %}
 
-{% block title %}Daily Calendar - TaskMaster App{% endblock %}
-
-{% block extra_head %}
-<style>
-    .calendar-container {
-        margin: 20px 0;
-    }
-
-    .calendar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-
-    .calendar-nav {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .calendar-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
-
-    .calendar-views {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .view-btn {
-        padding: 0.4rem 0.75rem;
-        border-radius: var(--border-radius-sm);
-        background-color: var(--gray-200);
-        color: var(--gray-700);
-        text-decoration: none;
-        font-size: 0.9rem;
-        transition: var(--transition);
-    }
-
-    .view-btn:hover, .view-btn.active {
-        background-color: var(--primary-color);
-        color: white;
-    }
-
-    .day-schedule {
-        background-color: var(--card-bg);
-        border-radius: var(--border-radius);
-        padding: 1rem;
-        border: 1px solid var(--border-color);
-    }
-
-    .time-slot {
-        display: flex;
-        min-height: 60px;
-        border-bottom: 1px solid var(--gray-200);
-    }
-
-    .time-label {
-        width: 60px;
-        padding: 10px 5px;
-        font-size: 0.8rem;
-        color: var(--gray-500);
-        text-align: right;
-        padding-right: 10px;
-        font-weight: 500;
-    }
-
-    .time-events {
-        flex: 1;
-        padding: 5px 0;
-        position: relative;
-    }
-
-    .day-event {
-        background-color: #3b82f6;
-        color: white;
-        border-radius: var(--border-radius-sm);
-        padding: 5px 8px;
-        margin-bottom: 5px;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: var(--transition);
-    }
-
-    .day-event:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--box-shadow);
-    }
-
-    .day-event.event-blue { background-color: #3b82f6; }
-    .day-event.event-green { background-color: #10b981; }
-    .day-event.event-red { background-color: #ef4444; }
-    .day-event.event-yellow { background-color: #f59e0b; color: #111827; }
-    .day-event.event-purple { background-color: #8b5cf6; }
-
-    .all-day-events {
-        background-color: var(--gray-100);
-        border-radius: var(--border-radius-sm);
-        padding: 10px;
-        margin-bottom: 15px;
-    }
-
-    .all-day-label {
-        font-weight: 600;
-        font-size: 0.9rem;
-        margin-bottom: 10px;
-        color: var(--gray-700);
-    }
-
-    .empty-day-message {
-        text-align: center;
-        padding: 3rem 0;
-        color: var(--gray-500);
-    }
-
-    .current-time-marker {
-        position: absolute;
-        left: 0;
-        right: 0;
-        border-top: 2px dashed var(--danger-color);
-        z-index: 5;
-    }
-
-    .current-time-marker::before {
-        content: '';
-        position: absolute;
-        top: -4px;
-        left: 0;
-        width: 8px;
-        height: 8px;
-        background-color: var(--danger-color);
-        border-radius: 50%;
-    }
-</style>
-{% endblock %}
+{% block title %}Daily Events - TaskMaster App{% endblock %}
 
 {% block content %}
 <div class="page-title">
-    <h1>Daily Calendar</h1>
+    <h1>Daily Events</h1>
     <a href="{{ url_for('main.create_event', date=current_date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">Create Event</a>
 </div>
 
 <div class="calendar-container">
     <div class="calendar-header">
         <div class="calendar-nav">
-            <a href="{{ url_for('main.events', date=(current_date - timedelta(days=1)).strftime('%Y-%m-%d'), view='day') }}" class="btn btn-icon">
+            <a href="{{ url_for('main.events', view='day', date=(current_date - timedelta(days=1)).strftime('%Y-%m-%d')) }}" class="btn btn-secondary btn-icon">
                 <i>◀</i>
             </a>
-            <h2 class="calendar-title">{{ current_date.strftime('%A, %B %d, %Y') }}</h2>
-            <a href="{{ url_for('main.events', date=(current_date + timedelta(days=1)).strftime('%Y-%m-%d'), view='day') }}" class="btn btn-icon">
+            <div class="calendar-title">
+                {{ current_date.strftime('%A, %d %B %Y') }}
+            </div>
+            <a href="{{ url_for('main.events', view='day', date=(current_date + timedelta(days=1)).strftime('%Y-%m-%d')) }}" class="btn btn-secondary btn-icon">
                 <i>▶</i>
             </a>
         </div>
-
         <div class="calendar-views">
-            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='day') }}" class="view-btn active">Day</a>
-            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='week') }}" class="view-btn">Week</a>
-            <a href="{{ url_for('main.events', date=current_date.strftime('%Y-%m-%d'), view='month') }}" class="view-btn">Month</a>
+            <a href="{{ url_for('main.events', view='month', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Month</a>
+            <a href="{{ url_for('main.events', view='week', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Week</a>
+            <a href="{{ url_for('main.events', view='day', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn active">Day</a>
         </div>
     </div>
 
     <div class="day-schedule">
         <!-- All-day events section -->
-        {% set has_all_day = false %}
+        {% set has_all_day_events = false %}
         {% for event in events %}
             {% if event.all_day %}
-                {% set has_all_day = true %}
+                {% if not has_all_day_events %}
+                    {% set has_all_day_events = true %}
+                    <div class="all-day-events">
+                        <div class="all-day-label">All Day Events</div>
+                {% endif %}
+                <a href="{{ url_for('main.event_detail', id=event.id) }}" class="day-event event-{{ event.color }}">
+                    {{ event.title }}
+                </a>
             {% endif %}
         {% endfor %}
-
-        {% if has_all_day %}
-        <div class="all-day-events">
-            <div class="all-day-label">All-day Events</div>
-            {% for event in events %}
-                {% if event.all_day %}
-                <div class="day-event event-{{ event.color }}" onclick="window.location.href='{{ url_for('main.event_detail', id=event.id) }}'">
-                    {{ event.title }}
-                </div>
-                {% endif %}
-            {% endfor %}
-        </div>
+        {% if has_all_day_events %}
+            </div>
         {% endif %}
 
-        <!-- Regular events by hour -->
-        {% set has_timed_events = false %}
-        {% for event in events %}
-            {% if not event.all_day %}
-                {% set has_timed_events = true %}
-            {% endif %}
+        <!-- Hourly events -->
+        {% set current_time = now() %}
+        {% for hour in range(8, 21) %}
+        <div class="time-slot">
+            <div class="time-label">{{ hour }}:00</div>
+            <div class="time-events">
+                {% if current_date == today and current_time.hour == hour %}
+                <div class="current-time-marker" style="top: {{ (current_time.minute / 60) * 100 }}%;"></div>
+                {% endif %}
+
+                {% for event in events %}
+                    {% if not event.all_day and event.start_datetime.hour == hour %}
+                    <a href="{{ url_for('main.event_detail', id=event.id) }}" class="day-event event-{{ event.color }}">
+                        {{ event.start_datetime.strftime('%H:%M') }} - {{ event.title }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
         {% endfor %}
 
-        {% if has_timed_events %}
-            {% for hour in range(0, 24) %}
-            <div class="time-slot">
-                <div class="time-label">{{ "%02d:00"|format(hour) }}</div>
-                <div class="time-events">
-                    {% for event in events %}
-                        {% if not event.all_day and event.start_datetime.hour == hour %}
-                        <div class="day-event event-{{ event.color }}" onclick="window.location.href='{{ url_for('main.event_detail', id=event.id) }}'">
-                            {{ event.start_datetime.strftime('%H:%M') }} - {{ event.title }}
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if current_date == today and hour == now().hour %}
-                    <div class="current-time-marker" style="top: {{ now().minute / 60 * 100 }}%;"></div>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        {% elif not has_all_day %}
-            <div class="empty-day-message">
-                <p>No events scheduled for this day.</p>
-                <a href="{{ url_for('main.create_event', date=current_date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">Add Event</a>
-            </div>
+        {% if events|length == 0 %}
+        <div class="empty-day-message">No events scheduled for this day</div>
         {% endif %}
     </div>
 </div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script>
-    // Helper to get current time for template
-    function now() {
-        return new Date();
-    }
-</script>
 {% endblock %}

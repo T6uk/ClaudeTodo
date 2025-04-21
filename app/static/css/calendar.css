@@ -1,6 +1,7 @@
 /* Calendar Container */
 .calendar-container {
     margin: 20px 0;
+    overflow-x: auto;
 }
 
 /* Calendar Header */
@@ -9,6 +10,7 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
 }
 
 .calendar-nav {
@@ -35,6 +37,7 @@
     text-decoration: none;
     font-size: 0.9rem;
     transition: var(--transition);
+    text-align: center;
 }
 
 .view-btn:hover, .view-btn.active {
@@ -47,6 +50,7 @@ table.calendar {
     width: 100%;
     border-collapse: separate;
     border-spacing: 3px;
+    table-layout: fixed;
 }
 
 .calendar th {
@@ -95,6 +99,10 @@ table.calendar {
 
 .calendar td .events {
     margin-top: 25px;
+    max-height: 70px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
 }
 
 .calendar-event {
@@ -159,6 +167,7 @@ table.calendar {
     border-radius: var(--border-radius);
     padding: 1rem;
     border: 1px solid var(--border-color);
+    overflow-x: hidden;
 }
 
 .time-slot {
@@ -175,12 +184,14 @@ table.calendar {
     text-align: right;
     padding-right: 10px;
     font-weight: 500;
+    flex-shrink: 0;
 }
 
 .time-events {
     flex: 1;
     padding: 5px 0;
     position: relative;
+    min-width: 0; /* Allows the container to shrink below content size */
 }
 
 .day-event {
@@ -192,6 +203,9 @@ table.calendar {
     font-size: 0.85rem;
     cursor: pointer;
     transition: var(--transition);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .day-event:hover {
@@ -246,6 +260,12 @@ table.calendar {
     table-layout: fixed;
 }
 
+.week-calendar-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+}
+
 .week-calendar th {
     background-color: var(--primary-color);
     color: white;
@@ -253,10 +273,12 @@ table.calendar {
     text-align: center;
     font-size: 0.9rem;
     border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+    white-space: nowrap;
 }
 
 .week-calendar th.time-col {
     width: 60px;
+    min-width: 60px;
 }
 
 .week-calendar td {
@@ -270,6 +292,7 @@ table.calendar {
 
 .week-calendar td.time-label {
     width: 60px;
+    min-width: 60px;
     font-size: 0.75rem;
     color: var(--gray-500);
     text-align: center;

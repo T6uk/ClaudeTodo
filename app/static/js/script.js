@@ -48,6 +48,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Setup expandable descriptions
     setupExpandableDescriptions();
+
+    // Setup mobile-friendly calendar
+    setupMobileCalendar();
 });
 
 function formatDatesAndCheckDue() {
@@ -240,6 +243,67 @@ function animateTodoCards() {
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
         }, 100 * index); // Stagger the animations
+    });
+}
+
+// Setup mobile-friendly calendar interactions
+function setupMobileCalendar() {
+    // Add better touch interactions for week calendar
+    const weekCalendar = document.querySelector('.week-calendar-wrapper');
+    if (weekCalendar) {
+        // Add visual indicator for scrollable area on small screens
+        if (window.innerWidth <= 768) {
+            const indicator = document.createElement('div');
+            indicator.className = 'scroll-indicator';
+            indicator.innerHTML = '← Scroll →';
+            indicator.style.textAlign = 'center';
+            indicator.style.fontSize = '0.8rem';
+            indicator.style.color = 'var(--gray-500)';
+            indicator.style.padding = '5px 0';
+            indicator.style.marginBottom = '5px';
+            weekCalendar.parentNode.insertBefore(indicator, weekCalendar);
+
+            // Remove the indicator after user has scrolled
+            weekCalendar.addEventListener('scroll', function() {
+                indicator.style.opacity = '0';
+                setTimeout(() => {
+                    indicator.remove();
+                }, 300);
+            }, { once: true });
+        }
+    }
+
+    // Make calendar cells more touch-friendly
+    const calendarCells = document.querySelectorAll('.calendar td');
+    calendarCells.forEach(cell => {
+        // Make the entire cell clickable to add event
+        if (!cell.classList.contains('empty-day')) {
+            const addBtn = cell.querySelector('.add-event-btn');
+            if (addBtn) {
+                const dayDate = addBtn.getAttribute('href');
+
+                // Add touch feedback
+                cell.addEventListener('click', function(e) {
+                    // Only respond if clicked directly on the cell (not on an event)
+                    if (e.target === cell || e.target === cell.querySelector('.day-number') || e.target === cell.querySelector('.events')) {
+                        window.location.href = dayDate;
+                    }
+                });
+            }
+        }
+    });
+
+    // Enhance calendar events for touch
+    const calendarEvents = document.querySelectorAll('.calendar-event, .day-event, .week-event');
+    calendarEvents.forEach(event => {
+        // Add touch feedback
+        event.addEventListener('touchstart', function() {
+            this.style.opacity = '0.7';
+        });
+
+        event.addEventListener('touchend', function() {
+            this.style.opacity = '1';
+        });
     });
 }
 
