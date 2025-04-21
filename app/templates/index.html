@@ -1,47 +1,49 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Todo App{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✓</text></svg>">
-    {% block extra_head %}{% endblock %}
-</head>
-<body>
-    <header class="header">
-        <nav class="navbar">
-            <a href="{{ url_for('main.index') }}" class="navbar-brand">TaskMaster</a>
-            {% if session.logged_in %}
-            <div class="navbar-links">
-                <a href="{{ url_for('main.index') }}">Dashboard</a>
-                <a href="{{ url_for('main.create_todo') }}">New Task</a>
-                <a href="{{ url_for('main.logout') }}">Logout</a>
-            </div>
-            {% endif %}
-            <!-- Theme toggle button will be inserted here by JavaScript -->
-        </nav>
-    </header>
-    
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">
-                        {{ message }}
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - TaskMaster App{% endblock %}
+
+{% block content %}
+<div class="page-title">
+    <h1>Your Tasks</h1>
+    <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">New Task</a>
+</div>
+
+{% if todos %}
+    <div class="todo-list">
+        {% for todo in todos %}
+            <div class="todo-card {% if todo.completed %}completed{% endif %}">
+                <span class="badge priority-{{ todo.priority }}">{{ todo.priority | title }}</span>
+                <h3>{{ todo.title }}</h3>
+                <p>{{ todo.description }}</p>
+                <div class="todo-meta">
+                    <div>
+                        <p><strong>Due:</strong> <span class="due-date date-format">{{ todo.due_date }}</span></p>
+                        <p><strong>Assigned to:</strong> {{ todo.assigned_to.name }} 
+                            <span class="user-badge {{ todo.assigned_to.name | lower }}">{{ todo.assigned_to.name[0] }}</span>
+                        </p>
                     </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        
-        {% block content %}{% endblock %}
+                    <div>
+                        <p><strong>Created by:</strong> {{ todo.creator.name }}</p>
+                        <p><strong>Created:</strong> <span class="date-format">{{ todo.created_at }}</span></p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <a href="{{ url_for('main.toggle_complete', id=todo.id) }}" class="btn {% if todo.completed %}btn-warning{% else %}btn-success{% endif %}">
+                        {% if todo.completed %}Mark Incomplete{% else %}Complete{% endif %}
+                    </a>
+                    <div>
+                        <a href="{{ url_for('main.edit_todo', id=todo.id) }}" class="btn btn-primary">Edit</a>
+                        <a href="{{ url_for('main.delete_todo', id=todo.id) }}" class="btn btn-danger" 
+                           onclick="return confirm('Are you sure you want to delete this task?')">Delete</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
-    
-    <footer class="footer">
-        <p>TaskMaster App &copy; {% now year %} | Built with Flask</p>
-    </footer>
-    
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    {% block extra_scripts %}{% endblock %}
-</body>
-</html>
+{% else %}
+    <div class="empty-state">
+        <p>You don't have any tasks yet.</p>
+        <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Create your first task</a>
+    </div>
+{% endif %}
+{% endblock %}
