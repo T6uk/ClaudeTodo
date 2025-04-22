@@ -3,16 +3,44 @@
 {% block title %}Login - TaskMaster App{% endblock %}
 
 {% block content %}
-<div class="login-form">
-    <h2>Welcome to TaskMaster</h2>
-    <p style="text-align: center; margin-bottom: 1.5rem; color: var(--gray-500);">Enter the app password to continue</p>
-    
-    <form method="POST">
-        <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" class="form-control" required autofocus>
-        </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
-    </form>
+<div class="login-container">
+    <div class="login-form">
+
+        <form method="POST" class="login-form-inputs">
+            <div class="form-group">
+                <h1>Logi sisse</h1>
+                <div class="password-input-container">
+                    <input type="password" id="password" name="password" class="form-control" required autofocus>
+                    <button type="button" class="password-toggle-btn" aria-label="Toggle password visibility">
+                        <span class="eye-icon">👁️</span>
+                    </button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary login-btn">Sign In</button>
+        </form>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password visibility toggle
+        const passwordToggle = document.querySelector('.password-toggle-btn');
+        const passwordInput = document.getElementById('password');
+
+        if (passwordToggle && passwordInput) {
+            passwordToggle.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.classList.toggle('active');
+            });
+        }
+
+        // Auto-focus password field
+        if (passwordInput) {
+            passwordInput.focus();
+        }
+    });
+</script>
 {% endblock %}

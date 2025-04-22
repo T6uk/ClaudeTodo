@@ -1,23 +1,25 @@
 /* Todo List and Cards */
 .todo-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 0.75rem;
-    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
 }
 
 .todo-card {
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     position: relative;
     transition: var(--transition);
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+    width: 100%;
     border: 1px solid var(--border-color);
     overflow: hidden;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    align-items: center;
+    gap: 1rem;
 }
 
 .todo-card:before {
@@ -25,13 +27,13 @@
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
 }
 
 .todo-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
     box-shadow: var(--box-shadow-md);
 }
 
@@ -43,40 +45,31 @@
     background: var(--gray-400);
 }
 
-.todo-card.completed h3 {
+.todo-card.completed .todo-title {
     text-decoration: line-through;
     color: var(--gray-500);
 }
 
-.todo-card h3 {
-    margin: 0.5rem 0 0.5rem;
-    color: var(--gray-800);
+.todo-title {
     font-weight: 600;
-    word-break: break-word;
-    font-size: 1.1rem;
-    line-height: 1.3;
+    color: var(--gray-800);
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 0;
+    padding: 0;
 }
 
-.todo-card p {
-    margin: 0.25rem 0 0.5rem;
-    color: var(--gray-600);
-    word-break: break-word;
-    font-size: 0.85rem;
-    line-height: 1.5;
-}
-
-.todo-card .badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
+.todo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.6rem;
     border-radius: 9999px;
     font-size: 0.7rem;
     font-weight: 600;
     color: #fff;
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    letter-spacing: 0.025em;
     text-transform: uppercase;
+    white-space: nowrap;
 }
 
 .priority-low {
@@ -92,61 +85,14 @@
     background-color: var(--priority-high);
 }
 
-.todo-meta {
-    margin-top: auto;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--gray-200);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.todo-due {
     font-size: 0.8rem;
-    color: var(--gray-500);
-}
-
-.todo-meta > div {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.todo-meta-compact {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-}
-
-.todo-meta-compact p {
-    margin: 0;
-}
-
-/* Left-aligned badges for Due Date status */
-.todo-meta-compact .badge {
-    position: static;
-    margin-right: 5px;
-    vertical-align: middle;
-    font-size: 0.65rem;
-    padding: 0.2rem 0.4rem;
-}
-
-.todo-card .actions {
-    margin-top: 0.75rem;
-    display: flex;
-    gap: 0.5rem;
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-.todo-card .actions > div {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-/* Due date indicator */
-.due-date {
+    white-space: nowrap;
+    color: var(--gray-600);
     font-weight: 500;
 }
 
+/* Just color styling without labels */
 .due-date.overdue {
     color: var(--danger-color);
 }
@@ -157,6 +103,15 @@
 
 .due-date.upcoming {
     color: var(--success-color);
+}
+
+.todo-assigned {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--gray-600);
 }
 
 /* User badge */
@@ -171,7 +126,6 @@
     font-weight: 600;
     background-color: var(--primary-color);
     color: white;
-    margin-left: 0.25rem;
 }
 
 .user-badge.romet {
@@ -182,102 +136,107 @@
     background-color: var(--secondary-color);
 }
 
-/* Card hover effect */
-.todo-card {
-    position: relative;
-    overflow: hidden;
+.todo-actions {
+    display: flex;
+    gap: 0.4rem;
+    white-space: nowrap;
 }
 
-.todo-card:after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent);
-    transform: translateX(-100%);
-    transition: transform 1s ease;
+.btn-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
 }
 
-.todo-card:hover:after {
-    transform: translateX(100%);
+.btn-icon i {
+    font-style: normal;
 }
 
-/* Expandable content for mobile */
-.expandable {
-    cursor: pointer;
-    position: relative;
-    max-height: 3.6em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
+.btn-icon .btn-text {
+    display: none;
 }
 
-.expandable:after {
-    content: '⤵';
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    font-size: 0.75rem;
+/* Description toggle (hidden by default) */
+.todo-description {
+    display: none;
+    grid-column: 1 / -1;
+    font-size: 0.9rem;
+    color: var(--gray-600);
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--gray-300);
+}
+
+.todo-card.expanded .todo-description {
+    display: block;
+}
+
+.todo-expand-button {
+    background: none;
+    border: none;
     color: var(--primary-color);
-    opacity: 0.8;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0.2rem 0.4rem;
+    border-radius: var(--border-radius-sm);
 }
 
-.expanded {
-    max-height: none !important;
-    -webkit-line-clamp: initial !important;
+.todo-expand-button:hover {
+    background-color: rgba(99, 102, 241, 0.1);
 }
 
-.expanded:after {
-    content: '⤴';
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .todo-card {
+        grid-template-columns: 1fr auto;
+        gap: 0.5rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .todo-title-area {
+        grid-column: span 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .todo-info {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        font-size: 0.75rem;
+    }
+
+    .todo-actions {
+        grid-column: span 2;
+        justify-content: flex-end;
+        padding-top: 0.4rem;
+    }
 }
 
-/* Priority select styling */
-select.priority-low {
-    color: #fff;
-    background-color: var(--priority-low);
+@media (max-width: 480px) {
+    .todo-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    .todo-badge {
+        font-size: 0.65rem;
+        padding: 0.15rem 0.4rem;
+    }
+
+    .btn-icon {
+        padding: 0.25rem 0.4rem;
+    }
 }
 
-select.priority-medium {
-    color: #111827;
-    background-color: var(--priority-medium);
-}
-
-select.priority-high {
-    color: #fff;
-    background-color: var(--priority-high);
-}
-
-/* Color selectors for events */
-.color-blue,
-select.color-blue {
-    background-color: #3b82f6;
-    color: white;
-}
-
-.color-green,
-select.color-green {
-    background-color: #10b981;
-    color: white;
-}
-
-.color-red,
-select.color-red {
-    background-color: #ef4444;
-    color: white;
-}
-
-.color-yellow,
-select.color-yellow {
-    background-color: #f59e0b;
-    color: #111827;
-}
-
-.color-purple,
-select.color-purple {
-    background-color: #8b5cf6;
-    color: white;
+/* For screens where we can fit more info */
+@media (min-width: 769px) {
+    .todo-expand-button {
+        margin-left: 0.5rem;
+    }
 }

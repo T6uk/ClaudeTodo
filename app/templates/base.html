@@ -12,13 +12,14 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    {% if request.endpoint != 'main.login' %}
     <header class="header">
         <div class="navbar-container">
             <nav class="navbar">
                 <div class="navbar-logo">
                     <a href="{{ url_for('main.index') }}" class="navbar-brand">
                         <span class="brand-icon">✓</span>
-                        MMM?
+                        TaskMaster
                     </a>
                 </div>
 
@@ -116,6 +117,7 @@
             </a>
         </div>
     </div>
+    {% endif %}
     {% endif %}
 
     <div class="container">

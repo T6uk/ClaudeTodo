@@ -39,7 +39,10 @@ def login():
             return redirect(url_for('main.index'))
         else:
             flash('Invalid password', 'danger')
-    return render_template('login.html')
+
+    # Pass current year to the template
+    current_year = datetime.now().year
+    return render_template('login.html', current_year=current_year)
 
 
 @bp.route('/logout')
