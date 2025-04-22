@@ -33,8 +33,6 @@ def login():
 
             # Make the session permanent
             session.permanent = True
-            # Session will expire after 30 days
-            current_app.permanent_session_lifetime = timedelta(days=30)
 
             return redirect(url_for('main.index'))
         else:
