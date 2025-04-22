@@ -1,20 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - TaskMaster App{% endblock %}
+{% block title %}Töölaud - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="page-title">
-    <h1>Your Tasks</h1>
+    <h1>Sinu Ülesanded</h1>
     <div class="page-actions">
         <button id="filters-toggle" class="btn btn-secondary">
-            <span class="icon">🔍</span> Filters
+            <span class="icon">🔍</span> Filtrid
             {% if search_query or status_filter != 'all' or priority_filter != 'all' or category_filter != 'all' or
             assigned_filter != 'all' or sort_by != 'due_date' %}
             <span class="active-filters-indicator"></span>
             {% endif %}
         </button>
-        <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Dashboard</a>
-        <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Create Task</a>
     </div>
 </div>
 
@@ -22,35 +20,35 @@
 <div class="filters-container collapsed">
     <form method="GET" action="{{ url_for('main.index') }}" class="filters-form">
         <div class="search-container">
-            <input type="text" name="search" placeholder="Search tasks..." value="{{ search_query }}"
+            <input type="text" name="search" placeholder="Otsi ülesandeid..." value="{{ search_query }}"
                    class="search-input">
             <button type="submit" class="search-btn">🔍</button>
         </div>
 
         <div class="filters-row">
             <div class="filter-group">
-                <label for="status">Status</label>
+                <label for="status">Olek</label>
                 <select name="status" id="status" class="filter-select" onchange="this.form.submit()">
-                    <option value="all" {% if status_filter=='all' %}selected{% endif %}>All</option>
-                    <option value="active" {% if status_filter=='active' %}selected{% endif %}>Active</option>
-                    <option value="completed" {% if status_filter=='completed' %}selected{% endif %}>Completed</option>
+                    <option value="all" {% if status_filter=='all' %}selected{% endif %}>Kõik</option>
+                    <option value="active" {% if status_filter=='active' %}selected{% endif %}>Aktiivsed</option>
+                    <option value="completed" {% if status_filter=='completed' %}selected{% endif %}>Lõpetatud</option>
                 </select>
             </div>
 
             <div class="filter-group">
-                <label for="priority">Priority</label>
+                <label for="priority">Prioriteet</label>
                 <select name="priority" id="priority" class="filter-select" onchange="this.form.submit()">
-                    <option value="all" {% if priority_filter=='all' %}selected{% endif %}>All</option>
-                    <option value="high" {% if priority_filter=='high' %}selected{% endif %}>High</option>
-                    <option value="medium" {% if priority_filter=='medium' %}selected{% endif %}>Medium</option>
-                    <option value="low" {% if priority_filter=='low' %}selected{% endif %}>Low</option>
+                    <option value="all" {% if priority_filter=='all' %}selected{% endif %}>Kõik</option>
+                    <option value="high" {% if priority_filter=='high' %}selected{% endif %}>Kõrge</option>
+                    <option value="medium" {% if priority_filter=='medium' %}selected{% endif %}>Keskmine</option>
+                    <option value="low" {% if priority_filter=='low' %}selected{% endif %}>Madal</option>
                 </select>
             </div>
 
             <div class="filter-group">
-                <label for="category">Category</label>
+                <label for="category">Kategooria</label>
                 <select name="category" id="category" class="filter-select" onchange="this.form.submit()">
-                    <option value="all" {% if category_filter=='all' %}selected{% endif %}>All</option>
+                    <option value="all" {% if category_filter=='all' %}selected{% endif %}>Kõik</option>
                     {% for category in categories %}
                     <option value="{{ category.id }}" {% if category_filter|int==category.id %}selected{% endif %}>
                         {{ category.name }}
@@ -60,9 +58,9 @@
             </div>
 
             <div class="filter-group">
-                <label for="assigned">Assigned To</label>
+                <label for="assigned">Määratud</label>
                 <select name="assigned" id="assigned" class="filter-select" onchange="this.form.submit()">
-                    <option value="all" {% if assigned_filter=='all' %}selected{% endif %}>All</option>
+                    <option value="all" {% if assigned_filter=='all' %}selected{% endif %}>Kõik</option>
                     {% for user in users %}
                     <option value="{{ user.id }}" {% if assigned_filter|int==user.id %}selected{% endif %}>
                         {{ user.name }}
@@ -72,20 +70,20 @@
             </div>
 
             <div class="filter-group">
-                <label for="sort">Sort By</label>
+                <label for="sort">Sorteeri</label>
                 <select name="sort" id="sort" class="filter-select" onchange="this.form.submit()">
-                    <option value="due_date" {% if sort_by=='due_date' %}selected{% endif %}>Due Date</option>
-                    <option value="priority" {% if sort_by=='priority' %}selected{% endif %}>Priority</option>
-                    <option value="title" {% if sort_by=='title' %}selected{% endif %}>Title</option>
-                    <option value="created_at" {% if sort_by=='created_at' %}selected{% endif %}>Created Date</option>
-                    <option value="updated_at" {% if sort_by=='updated_at' %}selected{% endif %}>Updated Date</option>
+                    <option value="due_date" {% if sort_by=='due_date' %}selected{% endif %}>Tähtaeg</option>
+                    <option value="priority" {% if sort_by=='priority' %}selected{% endif %}>Prioriteet</option>
+                    <option value="title" {% if sort_by=='title' %}selected{% endif %}>Pealkiri</option>
+                    <option value="created_at" {% if sort_by=='created_at' %}selected{% endif %}>Loomise Kuupäev</option>
+                    <option value="updated_at" {% if sort_by=='updated_at' %}selected{% endif %}>Muutmise Kuupäev</option>
                 </select>
             </div>
 
             {% if search_query or status_filter != 'all' or priority_filter != 'all' or category_filter != 'all' or
             assigned_filter != 'all' or sort_by != 'due_date' %}
             <div class="filter-group filter-actions">
-                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Clear Filters</a>
+                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Tühista Filtrid</a>
             </div>
             {% endif %}
         </div>
@@ -103,7 +101,9 @@
             <span class="user-badge" style="background-color: var(--{{ todo.assigned_to.avatar_color }});">{{ todo.assigned_to.name[0] }}</span>
         </div>
 
-        <span class="todo-badge priority-{{ todo.priority }}">{{ todo.priority | title }}</span>
+        <span class="todo-badge priority-{{ todo.priority }}">
+            {% if todo.priority == 'high' %}Kõrge{% elif todo.priority == 'medium' %}Keskmine{% else %}Madal{% endif %}
+        </span>
 
         <div class="todo-due">
             <span class="due-date date-format">{{ todo.due_date }}</span>
@@ -118,11 +118,11 @@
                 <i>✏️</i>
             </a>
             <a href="{{ url_for('main.delete_todo', id=todo.id) }}" class="btn btn-icon btn-danger"
-               onclick="return confirm('Are you sure you want to delete this task?')">
+               onclick="return confirm('Kas olete kindel, et soovite selle ülesande kustutada?')">
                 <i>🗑️</i>
             </a>
             {% if todo.description %}
-            <button type="button" class="todo-expand-button" onclick="toggleDescription(this)">Details</button>
+            <button type="button" class="todo-expand-button" onclick="toggleDescription(this)">Detailid</button>
             {% endif %}
         </div>
 
@@ -136,8 +136,8 @@
 </div>
 {% else %}
 <div class="empty-state">
-    <p>No tasks found matching your criteria.</p>
-    <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Create a new task</a>
+    <p>Teie kriteeriumitele vastavaid ülesandeid ei leitud.</p>
+    <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Loo uus ülesanne</a>
 </div>
 {% endif %}
 {% endblock %}
@@ -192,7 +192,7 @@
     function toggleDescription(button) {
         const todoCard = button.closest('.todo-card');
         todoCard.classList.toggle('expanded');
-        button.textContent = todoCard.classList.contains('expanded') ? 'Hide' : 'Details';
+        button.textContent = todoCard.classList.contains('expanded') ? 'Peida' : 'Detailid';
     }
 
     // Format dates with color coding but no label text
@@ -211,7 +211,7 @@
                 hour: '2-digit',
                 minute: '2-digit'
             };
-            element.textContent = date.toLocaleDateString(undefined, options);
+            element.textContent = date.toLocaleDateString('et-EE', options);
 
             // Add due date status classes but no text
             if (element.classList.contains('due-date')) {

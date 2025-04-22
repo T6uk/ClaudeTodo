@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="et">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}TaskMaster App{% endblock %}</title>
+    <title>{% block title %}MMM?{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,14 +12,13 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    {% if request.endpoint != 'main.login' %}
     <header class="header">
         <div class="navbar-container">
             <nav class="navbar">
                 <div class="navbar-logo">
                     <a href="{{ url_for('main.index') }}" class="navbar-brand">
                         <span class="brand-icon">✓</span>
-                        TaskMaster
+                        MMM?
                     </a>
                 </div>
 
@@ -27,15 +26,15 @@
                 <div class="navbar-links">
                     <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
                         <span class="nav-icon">📋</span>
-                        <span class="nav-text">Tasks</span>
+                        <span class="nav-text">Ülesanded</span>
                     </a>
                     <a href="{{ url_for('main.events') }}" class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
                         <span class="nav-icon">📅</span>
-                        <span class="nav-text">Calendar</span>
+                        <span class="nav-text">Kalender</span>
                     </a>
                     <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
                         <span class="nav-icon">📊</span>
-                        <span class="nav-text">Dashboard</span>
+                        <span class="nav-text">Töölaud</span>
                     </a>
                 </div>
                 {% endif %}
@@ -44,7 +43,7 @@
                     {% if session.logged_in %}
                     <a href="{{ url_for('main.create_todo') }}" class="nav-link">
                         <span class="nav-icon">➕</span>
-                        <span class="nav-text mobile-hide">New</span>
+                        <span class="nav-text mobile-hide">Uus</span>
                     </a>
                     {% endif %}
                     <!-- Theme toggle will be inserted here by JavaScript -->
@@ -60,7 +59,7 @@
         <div class="mobile-drawer-header">
             <div class="navbar-brand">
                 <span class="brand-icon">✓</span>
-                TaskMaster
+                ÜlesandeHaldur
             </div>
             <button class="mobile-drawer-close">✕</button>
         </div>
@@ -69,43 +68,43 @@
                 <li>
                     <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
                         <span class="nav-icon">📋</span>
-                        <span>Tasks</span>
+                        <span>Ülesanded</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('main.events') }}" class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
                         <span class="nav-icon">📅</span>
-                        <span>Calendar</span>
+                        <span>Kalender</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
                         <span class="nav-icon">📊</span>
-                        <span>Dashboard</span>
+                        <span>Töölaud</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('main.users') }}" class="nav-link {% if request.endpoint and 'users' in request.endpoint %}active{% endif %}">
                         <span class="nav-icon">👥</span>
-                        <span>Users</span>
+                        <span>Kasutajad</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('main.categories') }}" class="nav-link {% if request.endpoint and 'categories' in request.endpoint %}active{% endif %}">
                         <span class="nav-icon">🏷️</span>
-                        <span>Categories</span>
+                        <span>Kategooriad</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('main.create_todo') }}" class="nav-link">
                         <span class="nav-icon">➕</span>
-                        <span>New Task</span>
+                        <span>Uus Ülesanne</span>
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('main.create_event') }}" class="nav-link">
                         <span class="nav-icon">🗓️</span>
-                        <span>New Event</span>
+                        <span>Uus Sündmus</span>
                     </a>
                 </li>
             </ul>
@@ -113,11 +112,10 @@
         <div class="mobile-drawer-footer">
             <a href="{{ url_for('main.logout') }}" class="nav-link">
                 <span class="nav-icon">🚪</span>
-                <span>Logout</span>
+                <span>Logi välja</span>
             </a>
         </div>
     </div>
-    {% endif %}
     {% endif %}
 
     <div class="container">

@@ -1,43 +1,40 @@
 {% extends 'base.html' %}
 
-{% block title %}Events Calendar - TaskMaster App{% endblock %}
+{% block title %}Kalender - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="page-title">
-    <h1>Calendar</h1>
-    <a href="{{ url_for('main.create_event') }}" class="btn btn-primary">Create Event</a>
+    <h1>Kalender</h1>
+    <div>
+        <a href="{{ url_for('main.create_event') }}" class="btn btn-primary">Lisa Sündmus</a>
+    </div>
 </div>
 
 <div class="calendar-container">
     <div class="calendar-header">
         <div class="calendar-nav">
-            <a href="{{ url_for('main.events', date=prev_month.strftime('%Y-%m-%d')) }}" class="btn btn-secondary btn-icon">
-                <i>◀</i>
-            </a>
-            <div class="calendar-title">
-                {{ month_name }} {{ current_date.year }}
-            </div>
-            <a href="{{ url_for('main.events', date=next_month.strftime('%Y-%m-%d')) }}" class="btn btn-secondary btn-icon">
-                <i>▶</i>
-            </a>
+            <a href="{{ url_for('main.events', date=prev_month.strftime('%Y-%m-%d')) }}" class="btn btn-secondary">&laquo; Eelmine kuu</a>
+            <h2 class="calendar-title">{{ month_name }} {{ current_date.year }}</h2>
+            <a href="{{ url_for('main.events', date=next_month.strftime('%Y-%m-%d')) }}" class="btn btn-secondary">Järgmine kuu &raquo;</a>
         </div>
+
         <div class="calendar-views">
-            <a href="{{ url_for('main.events', view='month', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn active">Month</a>
-            <a href="{{ url_for('main.events', view='week', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Week</a>
-            <a href="{{ url_for('main.events', view='day', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Day</a>
+            <a href="{{ url_for('main.events', view='month', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn active">Kuu</a>
+            <a href="{{ url_for('main.events', view='week', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Nädal</a>
+            <a href="{{ url_for('main.events', view='day', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Päev</a>
         </div>
     </div>
 
     <table class="calendar">
         <thead>
             <tr>
-                <th>Mon</th>
-                <th>Tue</th>
-                <th>Wed</th>
-                <th>Thu</th>
-                <th>Fri</th>
-                <th>Sat</th>
-                <th>Sun</th>
+                <th>Esmaspäev</th>
+                <th>Teisipäev</th>
+                <th>Kolmapäev</th>
+                <th>Neljapäev</th>
+                <th>Reede</th>
+                <th>Laupäev</th>
+                <th>Pühapäev</th>
             </tr>
         </thead>
         <tbody>
@@ -45,20 +42,19 @@
             <tr>
                 {% for day in week %}
                 {% if day != 0 %}
-                {% set current_day = current_date.replace(day=day) %}
-                <td {% if current_day == today %}class="today"{% endif %}>
+                {% set date_obj = current_date.replace(day=day) %}
+                <td {% if date_obj == today %}class="today"{% endif %}>
                     <div class="day-number">{{ day }}</div>
                     <div class="events">
                         {% for event in events %}
-                            {% if event.start_datetime.day == day %}
-                            <a href="{{ url_for('main.event_detail', id=event.id) }}" class="calendar-event event-{{ event.color }}">
-                                {% if event.all_day %}All day: {% endif %}
-                                {{ event.title }}
-                            </a>
-                            {% endif %}
+                        {% if event.start_datetime.day == day and event.start_datetime.month == current_date.month %}
+                        <div class="calendar-event event-{{ event.color }}" onclick="window.location='{{ url_for('main.event_detail', id=event.id) }}'">
+                            {{ event.title }}
+                        </div>
+                        {% endif %}
                         {% endfor %}
                     </div>
-                    <a href="{{ url_for('main.create_event', date=current_day.strftime('%Y-%m-%d')) }}" class="add-event-btn">+</a>
+                    <a href="{{ url_for('main.create_event', date=date_obj.strftime('%Y-%m-%d')) }}" class="add-event-btn">+</a>
                 </td>
                 {% else %}
                 <td class="empty-day"></td>

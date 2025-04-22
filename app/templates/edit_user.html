@@ -1,35 +1,35 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit User - TaskMaster App{% endblock %}
+{% block title %}Muuda Kasutajat - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="todo-form">
-    <h2>Edit User</h2>
+    <h2>Muuda Kasutajat</h2>
     <form method="POST">
         <div class="form-group">
-            <label for="name">Name</label>
+            <label for="name">Nimi</label>
             <input type="text" id="name" name="name" class="form-control" value="{{ user.name }}" required autofocus>
         </div>
 
         <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" class="form-control" value="{{ user.email if user.email else '' }}" placeholder="user@example.com">
+            <label for="email">E-post</label>
+            <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
         </div>
 
         <div class="form-group">
-            <label for="avatar_color">Avatar Color</label>
+            <label for="avatar_color">Avatari värv</label>
             <select id="avatar_color" name="avatar_color" class="form-control color-{{ user.avatar_color }}">
-                <option value="blue" class="color-blue" {% if user.avatar_color == 'blue' %}selected{% endif %}>Blue</option>
-                <option value="green" class="color-green" {% if user.avatar_color == 'green' %}selected{% endif %}>Green</option>
-                <option value="red" class="color-red" {% if user.avatar_color == 'red' %}selected{% endif %}>Red</option>
-                <option value="purple" class="color-purple" {% if user.avatar_color == 'purple' %}selected{% endif %}>Purple</option>
-                <option value="yellow" class="color-yellow" {% if user.avatar_color == 'yellow' %}selected{% endif %}>Yellow</option>
+                <option value="blue" {% if user.avatar_color == 'blue' %}selected{% endif %}>Sinine</option>
+                <option value="green" {% if user.avatar_color == 'green' %}selected{% endif %}>Roheline</option>
+                <option value="red" {% if user.avatar_color == 'red' %}selected{% endif %}>Punane</option>
+                <option value="purple" {% if user.avatar_color == 'purple' %}selected{% endif %}>Lilla</option>
+                <option value="yellow" {% if user.avatar_color == 'yellow' %}selected{% endif %}>Kollane</option>
             </select>
         </div>
 
         <div class="form-row" style="justify-content: space-between;">
-            <button type="submit" class="btn btn-primary">Update User</button>
-            <a href="{{ url_for('main.users') }}" class="btn btn-danger">Cancel</a>
+            <button type="submit" class="btn btn-primary">Uuenda Kasutajat</button>
+            <a href="{{ url_for('main.users') }}" class="btn btn-danger">Tühista</a>
         </div>
     </form>
 </div>
@@ -38,18 +38,16 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Sync avatar color with selection
+    // Change select color based on selection
     const colorSelect = document.getElementById('avatar_color');
 
-    function updateColor() {
+    function updateColorSelect() {
         colorSelect.className = 'form-control';
-        const selectedOption = colorSelect.options[colorSelect.selectedIndex];
-        const colorClass = selectedOption.className;
-        colorSelect.classList.add(colorClass);
+        colorSelect.classList.add('color-' + colorSelect.value);
     }
 
-    colorSelect.addEventListener('change', updateColor);
-    updateColor(); // Initial state
+    colorSelect.addEventListener('change', updateColorSelect);
+    updateColorSelect(); // Initial state
 });
 </script>
 {% endblock %}

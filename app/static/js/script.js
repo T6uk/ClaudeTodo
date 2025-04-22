@@ -70,7 +70,7 @@ function formatDatesAndCheckDue() {
             hour: '2-digit',
             minute: '2-digit'
         };
-        element.textContent = date.toLocaleDateString(undefined, options);
+        element.textContent = date.toLocaleDateString('et-EE', options);
 
         // Add due date status classes
         if (element.classList.contains('due-date')) {
@@ -78,10 +78,10 @@ function formatDatesAndCheckDue() {
 
             if (dueDate < today) {
                 element.classList.add('overdue');
-                element.parentElement.insertAdjacentHTML('afterbegin', '<span class="badge priority-high">Overdue</span> ');
+                element.parentElement.insertAdjacentHTML('afterbegin', '<span class="badge priority-high">Hilinenud</span> ');
             } else if (dueDate.getTime() === today.getTime()) {
                 element.classList.add('today');
-                element.parentElement.insertAdjacentHTML('afterbegin', '<span class="badge priority-medium">Today</span> ');
+                element.parentElement.insertAdjacentHTML('afterbegin', '<span class="badge priority-medium">Täna</span> ');
             } else {
                 element.classList.add('upcoming');
             }
@@ -125,8 +125,8 @@ function setupThemeToggle() {
         const themeToggle = document.createElement('button');
         themeToggle.className = 'theme-toggle';
         themeToggle.innerHTML = '🌙'; // Moon emoji for initial state
-        themeToggle.setAttribute('title', 'Toggle dark/light mode');
-        themeToggle.setAttribute('aria-label', 'Toggle dark mode');
+        themeToggle.setAttribute('title', 'Lülita tume/hele režiim');
+        themeToggle.setAttribute('aria-label', 'Lülita tume režiim');
         navbarActions.appendChild(themeToggle);
 
         // Check for saved theme preference
@@ -197,7 +197,7 @@ function setupMobileNav() {
         const mobileToggle = document.createElement('button');
         mobileToggle.className = 'mobile-nav-toggle';
         mobileToggle.innerHTML = '☰';
-        mobileToggle.setAttribute('aria-label', 'Menu');
+        mobileToggle.setAttribute('aria-label', 'Menüü');
         navbarActions.appendChild(mobileToggle);
 
         // Handle mobile toggle click
@@ -298,7 +298,7 @@ function setupMobileCalendar() {
         if (window.innerWidth <= 768) {
             const indicator = document.createElement('div');
             indicator.className = 'scroll-indicator';
-            indicator.innerHTML = '← Scroll →';
+            indicator.innerHTML = '← Keri →';
             indicator.style.textAlign = 'center';
             indicator.style.fontSize = '0.8rem';
             indicator.style.color = 'var(--gray-500)';

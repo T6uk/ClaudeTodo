@@ -1,35 +1,35 @@
 {% extends 'base.html' %}
 
-{% block title %}Create User - TaskMaster App{% endblock %}
+{% block title %}Lisa Kasutaja - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="todo-form">
-    <h2>Create New User</h2>
+    <h2>Lisa Uus Kasutaja</h2>
     <form method="POST">
         <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" class="form-control" required autofocus placeholder="User's name">
+            <label for="name">Nimi</label>
+            <input type="text" id="name" name="name" class="form-control" required autofocus>
         </div>
 
         <div class="form-group">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" class="form-control" placeholder="user@example.com">
+            <label for="email">E-post</label>
+            <input type="email" id="email" name="email" class="form-control" required>
         </div>
 
         <div class="form-group">
-            <label for="avatar_color">Avatar Color</label>
-            <select id="avatar_color" name="avatar_color" class="form-control color-blue">
-                <option value="blue" class="color-blue">Blue</option>
-                <option value="green" class="color-green">Green</option>
-                <option value="red" class="color-red">Red</option>
-                <option value="purple" class="color-purple">Purple</option>
-                <option value="yellow" class="color-yellow">Yellow</option>
+            <label for="avatar_color">Avatari värv</label>
+            <select id="avatar_color" name="avatar_color" class="form-control">
+                <option value="blue" selected>Sinine</option>
+                <option value="green">Roheline</option>
+                <option value="red">Punane</option>
+                <option value="purple">Lilla</option>
+                <option value="yellow">Kollane</option>
             </select>
         </div>
 
         <div class="form-row" style="justify-content: space-between;">
-            <button type="submit" class="btn btn-primary">Create User</button>
-            <a href="{{ url_for('main.users') }}" class="btn btn-danger">Cancel</a>
+            <button type="submit" class="btn btn-primary">Lisa Kasutaja</button>
+            <a href="{{ url_for('main.users') }}" class="btn btn-danger">Tühista</a>
         </div>
     </form>
 </div>
@@ -38,18 +38,16 @@
 {% block extra_scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Sync avatar color with selection
+    // Change select color based on selection
     const colorSelect = document.getElementById('avatar_color');
 
-    function updateColor() {
+    function updateColorSelect() {
         colorSelect.className = 'form-control';
-        const selectedOption = colorSelect.options[colorSelect.selectedIndex];
-        const colorClass = selectedOption.className;
-        colorSelect.classList.add(colorClass);
+        colorSelect.classList.add('color-' + colorSelect.value);
     }
 
-    colorSelect.addEventListener('change', updateColor);
-    updateColor(); // Initial state
+    colorSelect.addEventListener('change', updateColorSelect);
+    updateColorSelect(); // Initial state
 });
 </script>
 {% endblock %}

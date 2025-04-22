@@ -1,36 +1,36 @@
 {% extends 'base.html' %}
 
-{% block title %}Create Task - TaskMaster App{% endblock %}
+{% block title %}Lisa Ülesanne - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="todo-form">
-    <h2>Create New Task</h2>
+    <h2>Lisa Uus Ülesanne</h2>
     <form method="POST">
         <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" class="form-control" required autofocus placeholder="What needs to be done?">
+            <label for="title">Pealkiri</label>
+            <input type="text" id="title" name="title" class="form-control" required autofocus placeholder="Mida on vaja teha?">
         </div>
 
         <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Add more details about this task..."></textarea>
+            <label for="description">Kirjeldus</label>
+            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Lisa täpsem kirjeldus..."></textarea>
         </div>
 
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="due_date">Due Date</label>
+                    <label for="due_date">Tähtaeg</label>
                     <input type="datetime-local" id="due_date" name="due_date" class="form-control" required>
                 </div>
             </div>
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="priority">Priority</label>
+                    <label for="priority">Prioriteet</label>
                     <select id="priority" name="priority" class="form-control" required>
-                        <option value="low">Low</option>
-                        <option value="medium" selected>Medium</option>
-                        <option value="high">High</option>
+                        <option value="low">Madal</option>
+                        <option value="medium" selected>Keskmine</option>
+                        <option value="high">Kõrge</option>
                     </select>
                 </div>
             </div>
@@ -39,7 +39,7 @@
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="user_id">Assigned To</label>
+                    <label for="user_id">Määratud</label>
                     <select id="user_id" name="user_id" class="form-control" required>
                         {% for user in users %}
                         <option value="{{ user.id }}">{{ user.name }}</option>
@@ -50,7 +50,7 @@
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="created_by_id">Created By</label>
+                    <label for="created_by_id">Looja</label>
                     <select id="created_by_id" name="created_by_id" class="form-control" required>
                         {% for user in users %}
                         <option value="{{ user.id }}">{{ user.name }}</option>
@@ -63,9 +63,9 @@
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="category_id">Category (Optional)</label>
+                    <label for="category_id">Kategooria (Valikuline)</label>
                     <select id="category_id" name="category_id" class="form-control">
-                        <option value="">None</option>
+                        <option value="">Puudub</option>
                         {% for category in categories %}
                         <option value="{{ category.id }}" class="color-{{ category.color }}">{{ category.name }}</option>
                         {% endfor %}
@@ -75,15 +75,15 @@
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="tags">Tags (Comma separated)</label>
-                    <input type="text" id="tags" name="tags" class="form-control" placeholder="work, urgent, follow-up">
+                    <label for="tags">Sildid (Komaga eraldatud)</label>
+                    <input type="text" id="tags" name="tags" class="form-control" placeholder="töö, kiire, jälgimine">
                 </div>
             </div>
         </div>
 
         <div class="form-row" style="justify-content: space-between;">
-            <button type="submit" class="btn btn-primary">Create Task</button>
-            <a href="{{ url_for('main.index') }}" class="btn btn-danger">Cancel</a>
+            <button type="submit" class="btn btn-primary">Lisa Ülesanne</button>
+            <a href="{{ url_for('main.index') }}" class="btn btn-danger">Tühista</a>
         </div>
     </form>
 </div>

@@ -38,11 +38,8 @@ def login():
 
             return redirect(url_for('main.index'))
         else:
-            flash('Invalid password', 'danger')
-
-    # Pass current year to the template
-    current_year = datetime.now().year
-    return render_template('login.html', current_year=current_year)
+            flash('Vale parool', 'danger')
+    return render_template('login.html')
 
 
 @bp.route('/logout')
@@ -261,7 +258,7 @@ def create_todo():
 
         db.session.add(todo)
         db.session.commit()
-        flash('Task created successfully!', 'success')
+        flash('Ülesanne edukalt loodud!', 'success')
         return redirect(url_for('main.index'))
 
     users = User.query.all()
@@ -307,7 +304,7 @@ def edit_todo(id):
                 todo.tags.append(tag)
 
         db.session.commit()
-        flash('Task updated successfully!', 'success')
+        flash('Ülesanne edukalt uuendatud!', 'success')
         return redirect(url_for('main.index'))
 
     users = User.query.all()
@@ -331,7 +328,7 @@ def delete_todo(id):
     todo = Todo.query.get_or_404(id)
     db.session.delete(todo)
     db.session.commit()
-    flash('Task deleted successfully!', 'success')
+    flash('Ülesanne edukalt kustutatud!', 'success')
     return redirect(url_for('main.index'))
 
 
@@ -341,8 +338,8 @@ def toggle_complete(id):
     todo = Todo.query.get_or_404(id)
     todo.completed = not todo.completed
     db.session.commit()
-    status = "completed" if todo.completed else "marked as active"
-    flash(f'Task {status}!', 'success')
+    status = "lõpetatud" if todo.completed else "märgitud aktiivseks"
+    flash(f'Ülesanne {status}!', 'success')
     return redirect(url_for('main.index'))
 
 
@@ -368,13 +365,13 @@ def create_user():
         ).first()
 
         if existing_user:
-            flash('A user with this name or email already exists.', 'danger')
+            flash('Sellise nime või e-postiga kasutaja on juba olemas.', 'danger')
             return render_template('create_user.html')
 
         user = User(name=name, email=email, avatar_color=avatar_color)
         db.session.add(user)
         db.session.commit()
-        flash('User created successfully!', 'success')
+        flash('Kasutaja edukalt loodud!', 'success')
         return redirect(url_for('main.users'))
 
     return render_template('create_user.html')
@@ -397,7 +394,7 @@ def edit_user(id):
         ).first()
 
         if existing_user:
-            flash('Another user with this name or email already exists.', 'danger')
+            flash('Teine kasutaja sama nime või e-postiga on juba olemas.', 'danger')
             return render_template('edit_user.html', user=user)
 
         user.name = name
@@ -405,7 +402,7 @@ def edit_user(id):
         user.avatar_color = avatar_color
 
         db.session.commit()
-        flash('User updated successfully!', 'success')
+        flash('Kasutaja edukalt uuendatud!', 'success')
         return redirect(url_for('main.users'))
 
     return render_template('edit_user.html', user=user)
@@ -424,12 +421,12 @@ def delete_user(id):
     has_events = Event.query.filter(Event.created_by_id == id).first() is not None
 
     if has_todos or has_events:
-        flash('Cannot delete user with assigned tasks or events.', 'danger')
+        flash('Ei saa kustutada kasutajat, kellel on ülesandeid või sündmusi.', 'danger')
         return redirect(url_for('main.users'))
 
     db.session.delete(user)
     db.session.commit()
-    flash('User deleted successfully!', 'success')
+    flash('Kasutaja edukalt kustutatud!', 'success')
     return redirect(url_for('main.users'))
 
 
@@ -452,13 +449,13 @@ def create_category():
         existing_category = Category.query.filter_by(name=name).first()
 
         if existing_category:
-            flash('A category with this name already exists.', 'danger')
+            flash('Sellise nimega kategooria on juba olemas.', 'danger')
             return render_template('create_category.html')
 
         category = Category(name=name, color=color)
         db.session.add(category)
         db.session.commit()
-        flash('Category created successfully!', 'success')
+        flash('Kategooria edukalt loodud!', 'success')
         return redirect(url_for('main.categories'))
 
     return render_template('create_category.html')
@@ -480,14 +477,14 @@ def edit_category(id):
         ).first()
 
         if existing_category:
-            flash('Another category with this name already exists.', 'danger')
+            flash('Teine kategooria sama nimega on juba olemas.', 'danger')
             return render_template('edit_category.html', category=category)
 
         category.name = name
         category.color = color
 
         db.session.commit()
-        flash('Category updated successfully!', 'success')
+        flash('Kategooria edukalt uuendatud!', 'success')
         return redirect(url_for('main.categories'))
 
     return render_template('edit_category.html', category=category)
@@ -502,12 +499,12 @@ def delete_category(id):
     has_todos = Todo.query.filter_by(category_id=id).first() is not None
 
     if has_todos:
-        flash('Cannot delete category with assigned tasks. Reassign tasks first.', 'danger')
+        flash('Ei saa kustutada kategooriat, mis on seotud ülesannetega. Esmalt määra ülesannetele teine kategooria.', 'danger')
         return redirect(url_for('main.categories'))
 
     db.session.delete(category)
     db.session.commit()
-    flash('Category deleted successfully!', 'success')
+    flash('Kategooria edukalt kustutatud!', 'success')
     return redirect(url_for('main.categories'))
 
 
@@ -649,7 +646,7 @@ def create_event():
 
         db.session.add(event)
         db.session.commit()
-        flash('Event created successfully!', 'success')
+        flash('Sündmus edukalt loodud!', 'success')
 
         # Determine where to redirect based on the date of the event
         target_date = start_datetime.date().strftime('%Y-%m-%d')
@@ -715,7 +712,7 @@ def edit_event(id):
                 event.end_datetime = datetime.strptime(end_datetime_str, '%Y-%m-%dT%H:%M')
 
         db.session.commit()
-        flash('Event updated successfully!', 'success')
+        flash('Sündmus edukalt uuendatud!', 'success')
 
         # Redirect to the event's date view
         target_date = event.start_datetime.date().strftime('%Y-%m-%d')
@@ -742,7 +739,7 @@ def delete_event(id):
 
     db.session.delete(event)
     db.session.commit()
-    flash('Event deleted successfully!', 'success')
+    flash('Sündmus edukalt kustutatud!', 'success')
     return redirect(url_for('main.events', date=target_date))
 
 

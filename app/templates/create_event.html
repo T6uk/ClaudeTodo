@@ -1,39 +1,32 @@
 {% extends 'base.html' %}
 
-{% block title %}Create Event - TaskMaster App{% endblock %}
+{% block title %}Lisa Sündmus - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="todo-form">
-    <h2>Create New Event</h2>
+    <h2>Lisa Uus Sündmus</h2>
     <form method="POST">
         <div class="form-group">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" class="form-control" required autofocus placeholder="Event title">
+            <label for="title">Pealkiri</label>
+            <input type="text" id="title" name="title" class="form-control" required autofocus placeholder="Sündmuse pealkiri">
         </div>
 
         <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Event details..."></textarea>
-        </div>
-
-        <div class="form-group">
-            <div class="checkbox">
-                <input type="checkbox" id="all_day" name="all_day">
-                <label for="all_day">All-day event</label>
-            </div>
+            <label for="description">Kirjeldus</label>
+            <textarea id="description" name="description" class="form-control" rows="3" placeholder="Lisa sündmuse kirjeldus..."></textarea>
         </div>
 
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="start_datetime">Start Date & Time</label>
+                    <label for="start_datetime">Algusaeg</label>
                     <input type="datetime-local" id="start_datetime" name="start_datetime" class="form-control" value="{{ default_start }}" required>
                 </div>
             </div>
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="end_datetime">End Date & Time</label>
+                    <label for="end_datetime">Lõpuaeg (valikuline)</label>
                     <input type="datetime-local" id="end_datetime" name="end_datetime" class="form-control" value="{{ default_end }}">
                 </div>
             </div>
@@ -42,20 +35,16 @@
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="color">Event Color</label>
-                    <select id="color" name="color" class="form-control" required>
-                        <option value="blue" selected>Blue</option>
-                        <option value="green">Green</option>
-                        <option value="red">Red</option>
-                        <option value="yellow">Yellow</option>
-                        <option value="purple">Purple</option>
-                    </select>
+                    <div class="checkbox">
+                        <input type="checkbox" id="all_day" name="all_day">
+                        <label for="all_day">Terve päev</label>
+                    </div>
                 </div>
             </div>
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="created_by_id">Created By</label>
+                    <label for="created_by_id">Looja</label>
                     <select id="created_by_id" name="created_by_id" class="form-control" required>
                         {% for user in users %}
                         <option value="{{ user.id }}">{{ user.name }}</option>
@@ -65,9 +54,20 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label for="color">Värv</label>
+            <select id="color" name="color" class="form-control">
+                <option value="blue" selected>Sinine</option>
+                <option value="green">Roheline</option>
+                <option value="red">Punane</option>
+                <option value="purple">Lilla</option>
+                <option value="yellow">Kollane</option>
+            </select>
+        </div>
+
         <div class="form-row" style="justify-content: space-between;">
-            <button type="submit" class="btn btn-primary">Create Event</button>
-            <a href="{{ url_for('main.events') }}" class="btn btn-danger">Cancel</a>
+            <button type="submit" class="btn btn-primary">Lisa Sündmus</button>
+            <a href="{{ url_for('main.events') }}" class="btn btn-danger">Tühista</a>
         </div>
     </form>
 </div>
@@ -75,17 +75,39 @@
 
 {% block extra_scripts %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const allDayCheckbox = document.getElementById('all_day');
-        const endDatetimeInput = document.getElementById('end_datetime');
+document.addEventListener('DOMContentLoaded', function() {
+    // Change select color based on selection
+    const colorSelect = document.getElementById('color');
 
-        // Toggle end time input based on all-day selection
-        allDayCheckbox.addEventListener('change', function() {
-            endDatetimeInput.disabled = this.checked;
-        });
+    function updateColorSelect() {
+        colorSelect.className = 'form-control';
+        colorSelect.classList.add('color-' + colorSelect.value);
+    }
 
-        // Set initial state
-        endDatetimeInput.disabled = allDayCheckbox.checked;
-    });
+    colorSelect.addEventListener('change', updateColorSelect);
+    updateColorSelect(); // Initial state
+
+    // Toggle end_datetime field based on all_day checkbox
+    const allDayCheckbox = document.getElementById('all_day');
+    const endDatetimeField = document.getElementById('end_datetime');
+    const endDatetimeLabel = endDatetimeField.parentElement.querySelector('label');
+
+    function toggleEndDatetime() {
+        if (allDayCheckbox.checked) {
+            endDatetimeLabel.textContent = 'Lõpukuupäev (valikuline)';
+            endDatetimeField.type = 'date';
+            // Extract date part only if it's a datetime
+            if (endDatetimeField.value && endDatetimeField.value.includes('T')) {
+                endDatetimeField.value = endDatetimeField.value.split('T')[0];
+            }
+        } else {
+            endDatetimeLabel.textContent = 'Lõpuaeg (valikuline)';
+            endDatetimeField.type = 'datetime-local';
+        }
+    }
+
+    allDayCheckbox.addEventListener('change', toggleEndDatetime);
+    toggleEndDatetime(); // Initial state
+});
 </script>
 {% endblock %}

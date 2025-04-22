@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - TaskMaster App{% endblock %}
+{% block title %}Töölaud - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="page-title">
-    <h1>Dashboard</h1>
+    <h1>Töölaud</h1>
     <div>
-        <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Create Task</a>
-        <a href="{{ url_for('main.create_event') }}" class="btn btn-secondary">Create Event</a>
+        <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Lisa Ülesanne</a>
+        <a href="{{ url_for('main.create_event') }}" class="btn btn-secondary">Lisa Sündmus</a>
     </div>
 </div>
 
@@ -18,32 +18,32 @@
             <div class="stat-icon">📋</div>
             <div class="stat-content">
                 <h3>{{ stats.total_todos }}</h3>
-                <p>Total Tasks</p>
+                <p>Ülesannete arv</p>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="color: var(--success-color);">✓</div>
             <div class="stat-content">
                 <h3>{{ stats.completed_todos }}</h3>
-                <p>Completed</p>
+                <p>Lõpetatud</p>
                 <div class="progress-bar">
                     <div class="progress" style="width: {{ stats.completion_rate }}%;"></div>
                 </div>
-                <div class="progress-text">{{ stats.completion_rate }}% completion rate</div>
+                <div class="progress-text">{{ stats.completion_rate }}% lõpetatud</div>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="color: var(--warning-color);">⏰</div>
             <div class="stat-content">
                 <h3>{{ stats.due_soon }}</h3>
-                <p>Due Soon</p>
+                <p>Peagi tähtajaks</p>
             </div>
         </div>
         <div class="stat-card">
             <div class="stat-icon" style="color: var(--danger-color);">⚠️</div>
             <div class="stat-content">
                 <h3>{{ stats.overdue }}</h3>
-                <p>Overdue</p>
+                <p>Tähtaeg möödas</p>
             </div>
         </div>
     </div>
@@ -53,8 +53,8 @@
         <div class="dashboard-column">
             <div class="dashboard-card">
                 <div class="dashboard-card-header">
-                    <h2>Upcoming Tasks</h2>
-                    <a href="{{ url_for('main.index') }}" class="btn-link">View All</a>
+                    <h2>Tulevased Ülesanded</h2>
+                    <a href="{{ url_for('main.index') }}" class="btn-link">Vaata kõiki</a>
                 </div>
                 {% if upcoming_todos %}
                 <div class="task-list">
@@ -72,7 +72,9 @@
                         <div class="task-content">
                             <div class="task-header">
                                 <h3>{{ todo.title }}</h3>
-                                <span class="badge priority-{{ todo.priority }}">{{ todo.priority | title }}</span>
+                                <span class="badge priority-{{ todo.priority }}">
+                                    {% if todo.priority == 'high' %}Kõrge{% elif todo.priority == 'medium' %}Keskmine{% else %}Madal{% endif %}
+                                </span>
                             </div>
                             <p class="task-due">
                                 <span class="due-date date-format">{{ todo.due_date }}</span>
@@ -86,7 +88,7 @@
                 </div>
                 {% else %}
                 <div class="empty-list">
-                    <p>No upcoming tasks</p>
+                    <p>Tulevasi ülesandeid pole</p>
                 </div>
                 {% endif %}
             </div>
@@ -95,8 +97,8 @@
         <div class="dashboard-column">
             <div class="dashboard-card">
                 <div class="dashboard-card-header">
-                    <h2>Upcoming Events</h2>
-                    <a href="{{ url_for('main.events') }}" class="btn-link">View All</a>
+                    <h2>Tulevased Sündmused</h2>
+                    <a href="{{ url_for('main.events') }}" class="btn-link">Vaata kõiki</a>
                 </div>
                 {% if upcoming_events %}
                 <div class="event-list">
@@ -108,7 +110,7 @@
                             <p class="event-time">
                                 <span class="date-format">{{ event.start_datetime }}</span>
                                 {% if event.all_day %}
-                                (All day)
+                                (Kogu päev)
                                 {% endif %}
                             </p>
                         </div>
@@ -117,7 +119,7 @@
                 </div>
                 {% else %}
                 <div class="empty-list">
-                    <p>No upcoming events</p>
+                    <p>Tulevasi sündmusi pole</p>
                 </div>
                 {% endif %}
             </div>
@@ -129,26 +131,26 @@
         <div class="dashboard-column">
             <div class="dashboard-card">
                 <div class="dashboard-card-header">
-                    <h2>Tasks by Priority</h2>
+                    <h2>Ülesanded prioriteedi järgi</h2>
                 </div>
                 <div class="chart-container">
                     <div class="chart-bars">
                         <div class="chart-bar-container">
-                            <div class="chart-label">High</div>
+                            <div class="chart-label">Kõrge</div>
                             <div class="chart-bar">
                                 <div class="bar priority-high" style="width: {{ stats.priority_percentages.high }}%;"></div>
                             </div>
                             <div class="chart-value">{{ stats.priority_counts.high }}</div>
                         </div>
                         <div class="chart-bar-container">
-                            <div class="chart-label">Medium</div>
+                            <div class="chart-label">Keskmine</div>
                             <div class="chart-bar">
                                 <div class="bar priority-medium" style="width: {{ stats.priority_percentages.medium }}%;"></div>
                             </div>
                             <div class="chart-value">{{ stats.priority_counts.medium }}</div>
                         </div>
                         <div class="chart-bar-container">
-                            <div class="chart-label">Low</div>
+                            <div class="chart-label">Madal</div>
                             <div class="chart-bar">
                                 <div class="bar priority-low" style="width: {{ stats.priority_percentages.low }}%;"></div>
                             </div>
@@ -162,7 +164,7 @@
         <div class="dashboard-column">
             <div class="dashboard-card">
                 <div class="dashboard-card-header">
-                    <h2>Tasks by Category</h2>
+                    <h2>Ülesanded kategooria järgi</h2>
                 </div>
                 {% if categories_with_counts %}
                 <div class="category-list">
@@ -175,7 +177,7 @@
                 </div>
                 {% else %}
                 <div class="empty-list">
-                    <p>No categorized tasks</p>
+                    <p>Ülesanded kategooriata</p>
                 </div>
                 {% endif %}
             </div>

@@ -1,36 +1,36 @@
 {% extends 'base.html' %}
 
-{% block title %}Edit Task - TaskMaster App{% endblock %}
+{% block title %}Muuda Ülesannet - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="todo-form">
-    <h2>Edit Task</h2>
+    <h2>Muuda Ülesannet</h2>
     <form method="POST">
         <div class="form-group">
-            <label for="title">Title</label>
+            <label for="title">Pealkiri</label>
             <input type="text" id="title" name="title" class="form-control" value="{{ todo.title }}" required>
         </div>
 
         <div class="form-group">
-            <label for="description">Description</label>
+            <label for="description">Kirjeldus</label>
             <textarea id="description" name="description" class="form-control" rows="3">{{ todo.description }}</textarea>
         </div>
 
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="due_date">Due Date</label>
+                    <label for="due_date">Tähtaeg</label>
                     <input type="datetime-local" id="due_date" name="due_date" class="form-control" value="{{ formatted_date }}" required>
                 </div>
             </div>
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="priority">Priority</label>
+                    <label for="priority">Prioriteet</label>
                     <select id="priority" name="priority" class="form-control priority-{{ todo.priority }}" required>
-                        <option value="low" {% if todo.priority == 'low' %}selected{% endif %}>Low</option>
-                        <option value="medium" {% if todo.priority == 'medium' %}selected{% endif %}>Medium</option>
-                        <option value="high" {% if todo.priority == 'high' %}selected{% endif %}>High</option>
+                        <option value="low" {% if todo.priority == 'low' %}selected{% endif %}>Madal</option>
+                        <option value="medium" {% if todo.priority == 'medium' %}selected{% endif %}>Keskmine</option>
+                        <option value="high" {% if todo.priority == 'high' %}selected{% endif %}>Kõrge</option>
                     </select>
                 </div>
             </div>
@@ -39,7 +39,7 @@
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="user_id">Assigned To</label>
+                    <label for="user_id">Määratud</label>
                     <select id="user_id" name="user_id" class="form-control" required>
                         {% for user in users %}
                         <option value="{{ user.id }}" {% if user.id == todo.user_id %}selected{% endif %}>{{ user.name }}</option>
@@ -50,10 +50,10 @@
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="completed">Status</label>
+                    <label for="completed">Olek</label>
                     <div class="checkbox">
                         <input type="checkbox" id="completed" name="completed" {% if todo.completed %}checked{% endif %}>
-                        <label for="completed">Completed</label>
+                        <label for="completed">Lõpetatud</label>
                     </div>
                 </div>
             </div>
@@ -62,9 +62,9 @@
         <div class="form-row">
             <div class="form-col">
                 <div class="form-group">
-                    <label for="category_id">Category (Optional)</label>
+                    <label for="category_id">Kategooria (Valikuline)</label>
                     <select id="category_id" name="category_id" class="form-control">
-                        <option value="">None</option>
+                        <option value="">Puudub</option>
                         {% for category in categories %}
                         <option value="{{ category.id }}" class="color-{{ category.color }}" {% if todo.category_id == category.id %}selected{% endif %}>{{ category.name }}</option>
                         {% endfor %}
@@ -74,15 +74,15 @@
 
             <div class="form-col">
                 <div class="form-group">
-                    <label for="tags">Tags (Comma separated)</label>
-                    <input type="text" id="tags" name="tags" class="form-control" value="{{ tags_string }}" placeholder="work, urgent, follow-up">
+                    <label for="tags">Sildid (Komaga eraldatud)</label>
+                    <input type="text" id="tags" name="tags" class="form-control" value="{{ tags_string }}" placeholder="töö, kiire, jälgimine">
                 </div>
             </div>
         </div>
 
         <div class="form-row" style="justify-content: space-between;">
-            <button type="submit" class="btn btn-primary">Update Task</button>
-            <a href="{{ url_for('main.index') }}" class="btn btn-danger">Cancel</a>
+            <button type="submit" class="btn btn-primary">Uuenda Ülesannet</button>
+            <a href="{{ url_for('main.index') }}" class="btn btn-danger">Tühista</a>
         </div>
     </form>
 </div>

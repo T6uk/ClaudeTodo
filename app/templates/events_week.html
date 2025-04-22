@@ -1,38 +1,27 @@
 {% extends 'base.html' %}
 
-{% block title %}Weekly Events - TaskMaster App{% endblock %}
+{% block title %}Nädala vaade - ÜlesandeHaldur{% endblock %}
 
 {% block content %}
 <div class="page-title">
-    <h1>Weekly Events</h1>
-    <a href="{{ url_for('main.create_event') }}" class="btn btn-primary">Create Event</a>
+    <h1>Kalender</h1>
+    <div>
+        <a href="{{ url_for('main.create_event', date=current_date.strftime('%Y-%m-%d')) }}" class="btn btn-primary">Lisa Sündmus</a>
+    </div>
 </div>
 
 <div class="calendar-container">
     <div class="calendar-header">
         <div class="calendar-nav">
-            <a href="{{ url_for('main.events', view='week', date=(current_date - timedelta(days=7)).strftime('%Y-%m-%d')) }}" class="btn btn-secondary btn-icon">
-                <i>◀</i>
-            </a>
-            <div class="calendar-title">
-                {% set first_day = week_dates[0] %}
-                {% set last_day = week_dates[-1] %}
-                {% if first_day.month == last_day.month %}
-                    {{ first_day.strftime('%d') }} - {{ last_day.strftime('%d %B %Y') }}
-                {% elif first_day.year == last_day.year %}
-                    {{ first_day.strftime('%d %b') }} - {{ last_day.strftime('%d %b %Y') }}
-                {% else %}
-                    {{ first_day.strftime('%d %b %Y') }} - {{ last_day.strftime('%d %b %Y') }}
-                {% endif %}
-            </div>
-            <a href="{{ url_for('main.events', view='week', date=(current_date + timedelta(days=7)).strftime('%Y-%m-%d')) }}" class="btn btn-secondary btn-icon">
-                <i>▶</i>
-            </a>
+            <a href="{{ url_for('main.events', view='week', date=(week_dates[0] - timedelta(days=7)).strftime('%Y-%m-%d')) }}" class="btn btn-secondary">&laquo; Eelmine nädal</a>
+            <h2 class="calendar-title">{{ week_dates[0].strftime('%d. %b') }} - {{ week_dates[6].strftime('%d. %b %Y') }}</h2>
+            <a href="{{ url_for('main.events', view='week', date=(week_dates[6] + timedelta(days=1)).strftime('%Y-%m-%d')) }}" class="btn btn-secondary">Järgmine nädal &raquo;</a>
         </div>
+
         <div class="calendar-views">
-            <a href="{{ url_for('main.events', view='month', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Month</a>
-            <a href="{{ url_for('main.events', view='week', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn active">Week</a>
-            <a href="{{ url_for('main.events', view='day', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Day</a>
+            <a href="{{ url_for('main.events', view='month', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Kuu</a>
+            <a href="{{ url_for('main.events', view='week', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn active">Nädal</a>
+            <a href="{{ url_for('main.events', view='day', date=current_date.strftime('%Y-%m-%d')) }}" class="view-btn">Päev</a>
         </div>
     </div>
 
@@ -44,40 +33,40 @@
                     {% for date in week_dates %}
                     <th {% if date == today %}class="today"{% endif %}>
                         {{ date.strftime('%a') }}
-                        <span class="week-date">{{ date.strftime('%d %b') }}</span>
+                        <span class="week-date">{{ date.strftime('%d. %b') }}</span>
                     </th>
                     {% endfor %}
                 </tr>
             </thead>
             <tbody>
-                <!-- All-day events row -->
-                <tr>
-                    <td class="time-label">All day</td>
+                <!-- All-day events -->
+                <tr class="all-day-row">
+                    <td class="time-label">Terve päev</td>
                     {% for date in week_dates %}
-                    <td class="all-day-row {% if date == today %}today{% endif %}">
+                    <td {% if date == today %}class="today"{% endif %}>
                         {% for event in events %}
-                            {% if event.all_day and event.start_datetime.date() == date %}
-                            <a href="{{ url_for('main.event_detail', id=event.id) }}" class="week-event event-{{ event.color }}">
-                                {{ event.title }}
-                            </a>
-                            {% endif %}
+                        {% if event.all_day and event.start_datetime.date() == date %}
+                        <div class="week-event event-{{ event.color }}" onclick="window.location='{{ url_for('main.event_detail', id=event.id) }}'">
+                            {{ event.title }}
+                        </div>
+                        {% endif %}
                         {% endfor %}
                     </td>
                     {% endfor %}
                 </tr>
 
-                <!-- Hourly rows -->
-                {% for hour in range(8, 21) %}
+                <!-- Hourly slots -->
+                {% for hour in range(8, 20) %}
                 <tr>
-                    <td class="time-label">{{ hour }}:00</td>
+                    <td class="time-label">{{ '%02d:00'|format(hour) }}</td>
                     {% for date in week_dates %}
                     <td {% if date == today %}class="today"{% endif %}>
                         {% for event in events %}
-                            {% if not event.all_day and event.start_datetime.date() == date and event.start_datetime.hour == hour %}
-                            <a href="{{ url_for('main.event_detail', id=event.id) }}" class="week-event event-{{ event.color }}">
-                                {{ event.start_datetime.strftime('%H:%M') }} {{ event.title }}
-                            </a>
-                            {% endif %}
+                        {% if not event.all_day and event.start_datetime.date() == date and event.start_datetime.hour == hour %}
+                        <div class="week-event event-{{ event.color }}" onclick="window.location='{{ url_for('main.event_detail', id=event.id) }}'">
+                            {{ event.start_datetime.strftime('%H:%M') }} {{ event.title }}
+                        </div>
+                        {% endif %}
                         {% endfor %}
                     </td>
                     {% endfor %}

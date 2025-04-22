@@ -52,11 +52,11 @@ def create_app(config_class=Config):
         # Create default categories if they don't exist
         if Category.query.count() == 0:
             categories = [
-                Category(name='Work', color='blue'),
-                Category(name='Personal', color='green'),
-                Category(name='Health', color='red'),
-                Category(name='Education', color='purple'),
-                Category(name='Errands', color='yellow')
+                Category(name='Töö', color='blue'),
+                Category(name='Isiklik', color='green'),
+                Category(name='Tervis', color='red'),
+                Category(name='Haridus', color='purple'),
+                Category(name='Asjatoimetused', color='yellow')
             ]
             db.session.add_all(categories)
             db.session.commit()
