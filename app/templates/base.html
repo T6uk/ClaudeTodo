@@ -2,137 +2,253 @@
 <html lang="et">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>{% block title %}MMM?{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✓</text></svg>">
+    <link rel="icon"
+          href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✓</text></svg>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MMM?">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <header class="header">
-        <div class="navbar-container">
-            <nav class="navbar">
-                <div class="navbar-logo">
-                    <a href="{{ url_for('main.index') }}" class="navbar-brand">
-                        <span class="brand-icon">✓</span>
-                        MMM?
-                    </a>
-                </div>
-
-                {% if session.logged_in %}
-                <div class="navbar-links">
-                    <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
-                        <span class="nav-icon">📋</span>
-                        <span class="nav-text">Ülesanded</span>
-                    </a>
-                    <a href="{{ url_for('main.events') }}" class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
-                        <span class="nav-icon">📅</span>
-                        <span class="nav-text">Kalender</span>
-                    </a>
-                    <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
-                        <span class="nav-icon">📊</span>
-                        <span class="nav-text">Töölaud</span>
-                    </a>
-                </div>
-                {% endif %}
-
-                <div class="navbar-actions">
-                    {% if session.logged_in %}
-                    <a href="{{ url_for('main.create_todo') }}" class="nav-link">
-                        <span class="nav-icon">➕</span>
-                        <span class="nav-text mobile-hide">Uus</span>
-                    </a>
-                    {% endif %}
-                    <!-- Theme toggle will be inserted here by JavaScript -->
-                </div>
-            </nav>
-        </div>
-    </header>
-
-    {% if session.logged_in %}
-    <!-- Mobile Drawer -->
-    <div class="mobile-drawer-overlay"></div>
-    <div class="mobile-drawer">
-        <div class="mobile-drawer-header">
-            <div class="navbar-brand">
-                <span class="brand-icon">✓</span>
-                ÜlesandeHaldur
+<header class="header">
+    <div class="navbar-container">
+        <nav class="navbar">
+            <div class="navbar-logo">
+                <a href="{{ url_for('main.index') }}" class="navbar-brand">
+                    <span class="brand-icon">✓</span>
+                    MMM?
+                </a>
             </div>
-            <button class="mobile-drawer-close">✕</button>
-        </div>
-        <div class="mobile-drawer-body">
-            <ul class="mobile-drawer-menu">
-                <li>
-                    <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
-                        <span class="nav-icon">📋</span>
-                        <span>Ülesanded</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('main.events') }}" class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
-                        <span class="nav-icon">📅</span>
-                        <span>Kalender</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('main.dashboard') }}" class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
-                        <span class="nav-icon">📊</span>
-                        <span>Töölaud</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('main.users') }}" class="nav-link {% if request.endpoint and 'users' in request.endpoint %}active{% endif %}">
-                        <span class="nav-icon">👥</span>
-                        <span>Kasutajad</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('main.categories') }}" class="nav-link {% if request.endpoint and 'categories' in request.endpoint %}active{% endif %}">
-                        <span class="nav-icon">🏷️</span>
-                        <span>Kategooriad</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('main.create_todo') }}" class="nav-link">
-                        <span class="nav-icon">➕</span>
-                        <span>Uus Ülesanne</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('main.create_event') }}" class="nav-link">
-                        <span class="nav-icon">🗓️</span>
-                        <span>Uus Sündmus</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <div class="mobile-drawer-footer">
-            <a href="{{ url_for('main.logout') }}" class="nav-link">
-                <span class="nav-icon">🚪</span>
-                <span>Logi välja</span>
-            </a>
-        </div>
-    </div>
-    {% endif %}
 
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+            {% if session.logged_in %}
+            <div class="navbar-links">
+                <a href="{{ url_for('main.index') }}"
+                   class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+                    <span class="nav-icon">📋</span>
+                    <span class="nav-text">Ülesanded</span>
+                </a>
+                <a href="{{ url_for('main.events') }}"
+                   class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
+                    <span class="nav-icon">📅</span>
+                    <span class="nav-text">Kalender</span>
+                </a>
+                <a href="{{ url_for('main.dashboard') }}"
+                   class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span class="nav-text">Töölaud</span>
+                </a>
+            </div>
             {% endif %}
-        {% endwith %}
 
-        {% block content %}{% endblock %}
+            <div class="navbar-actions">
+                {% if session.logged_in %}
+                <a href="{{ url_for('main.create_todo') }}" class="nav-link">
+                    <span class="nav-icon">➕</span>
+                    <span class="nav-text mobile-hide">Uus</span>
+                </a>
+                {% endif %}
+                <!-- Theme toggle will be inserted here by JavaScript -->
+            </div>
+        </nav>
     </div>
+</header>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    {% block extra_scripts %}{% endblock %}
+{% if session.logged_in %}
+<!-- Mobile Drawer -->
+<div class="mobile-drawer-overlay"></div>
+<div class="mobile-drawer">
+    <div class="mobile-drawer-header">
+        <div class="navbar-brand">
+            <span class="brand-icon">✓</span>
+            ÜlesandeHaldur
+        </div>
+        <button class="mobile-drawer-close">✕</button>
+    </div>
+    <div class="mobile-drawer-body">
+        <ul class="mobile-drawer-menu">
+            <li>
+                <a href="{{ url_for('main.index') }}"
+                   class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
+                    <span class="nav-icon">📋</span>
+                    <span>Ülesanded</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.events') }}"
+                   class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
+                    <span class="nav-icon">📅</span>
+                    <span>Kalender</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.dashboard') }}"
+                   class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                    <span class="nav-icon">📊</span>
+                    <span>Töölaud</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.users') }}"
+                   class="nav-link {% if request.endpoint and 'users' in request.endpoint %}active{% endif %}">
+                    <span class="nav-icon">👥</span>
+                    <span>Kasutajad</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.categories') }}"
+                   class="nav-link {% if request.endpoint and 'categories' in request.endpoint %}active{% endif %}">
+                    <span class="nav-icon">🏷️</span>
+                    <span>Kategooriad</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.create_todo') }}" class="nav-link">
+                    <span class="nav-icon">➕</span>
+                    <span>Uus Ülesanne</span>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url_for('main.create_event') }}" class="nav-link">
+                    <span class="nav-icon">🗓️</span>
+                    <span>Uus Sündmus</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    <div class="mobile-drawer-footer">
+        <a href="{{ url_for('main.logout') }}" class="nav-link">
+            <span class="nav-icon">🚪</span>
+            <span>Logi välja</span>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<div class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+<!-- Auto-refresh script -->
+<script>
+    // Set check interval (in milliseconds)
+    const CHECK_INTERVAL = 60 * 1000; // Check for updates every minute
+    const FULL_REFRESH_INTERVAL = 15 * 60 * 1000; // Force refresh every 15 minutes regardless
+
+    let lastUpdateTime = new Date().toISOString();
+    let checkTimer;
+    let forceRefreshTimer;
+
+    function checkForUpdates() {
+        // Only perform check if the page is visible
+        if (!document.hidden) {
+            fetch(`/api/check-updates?last_update=${encodeURIComponent(lastUpdateTime)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.has_updates) {
+                        // Don't refresh if user is in the middle of typing or using a form
+                        if (document.activeElement &&
+                            (document.activeElement.tagName === 'INPUT' ||
+                                document.activeElement.tagName === 'TEXTAREA' ||
+                                document.activeElement.tagName === 'SELECT')) {
+                            // User is active in a form field, check again soon
+                            console.log("Updates detected, but user is active in form. Delaying refresh.");
+                        } else {
+                            // User isn't interacting with a form, safe to refresh
+                            console.log("Updates detected, refreshing page.");
+                            window.location.reload();
+                            return;
+                        }
+                    }
+
+                    // Update the timestamp for the next check
+                    if (data.current_time) {
+                        lastUpdateTime = data.current_time;
+                    }
+
+                    // Schedule the next check
+                    checkTimer = setTimeout(checkForUpdates, CHECK_INTERVAL);
+                })
+                .catch(error => {
+                    console.error("Error checking for updates:", error);
+                    // Schedule the next check even if this one failed
+                    checkTimer = setTimeout(checkForUpdates, CHECK_INTERVAL);
+                });
+        } else {
+            // Page is hidden, check again after interval
+            checkTimer = setTimeout(checkForUpdates, CHECK_INTERVAL);
+        }
+    }
+
+    // Initialize check for updates
+    document.addEventListener('DOMContentLoaded', function () {
+        // Start checking for updates
+        checkTimer = setTimeout(checkForUpdates, CHECK_INTERVAL);
+
+        // Set up forced refresh every 15 minutes regardless of updates
+        forceRefreshTimer = setTimeout(function () {
+            if (!document.hidden && !(document.activeElement &&
+                (document.activeElement.tagName === 'INPUT' ||
+                    document.activeElement.tagName === 'TEXTAREA' ||
+                    document.activeElement.tagName === 'SELECT'))) {
+                window.location.reload();
+            } else {
+                // Reschedule if conditions not right
+                forceRefreshTimer = setTimeout(arguments.callee, 30000); // Try again in 30 seconds
+            }
+        }, FULL_REFRESH_INTERVAL);
+
+        // Reset timers when user interacts with the page
+        document.addEventListener('click', function () {
+            clearTimeout(checkTimer);
+            checkTimer = setTimeout(checkForUpdates, CHECK_INTERVAL);
+        });
+
+        // Check for updates when page becomes visible again
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                clearTimeout(checkTimer);
+                checkForUpdates();
+            }
+        });
+    });
+</script>
+
+<!-- PWA Service Worker Registration -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/static/sw.js').then(function (registration) {
+                console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function (err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+</script>
+
+{% block extra_scripts %}{% endblock %}
 </body>
 </html>

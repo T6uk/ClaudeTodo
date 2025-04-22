@@ -7,6 +7,7 @@ from functools import wraps
 import calendar
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, and_, func
+from flask import send_from_directory
 
 bp = Blueprint('main', __name__)
 
@@ -19,6 +20,14 @@ def login_required(f):
         return f(*args, **kwargs)
 
     return decorated_function
+
+
+@bp.route('/static/sw.js')
+def service_worker():
+    """Serve the service worker with the right content type"""
+    response = send_from_directory('static', 'sw.js')
+    response.headers['Content-Type'] = 'application/javascript'
+    return response
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -783,3 +792,28 @@ def get_events_api():
         })
 
     return jsonify(events_data)
+
+
+@bp.route('/api/check-updates')
+@login_required
+def check_updates():
+    """API endpoint to check if there are any updates"""
+    last_update_time = request.args.get('last_update')
+    if not last_update_time:
+        return jsonify({"has_updates": True})
+
+    try:
+        last_update = datetime.fromisoformat(last_update_time.replace('Z', '+00:00'))
+    except ValueError:
+        return jsonify({"has_updates": True})
+
+    # Check if there are any todos or events updated after the last update time
+    recent_todos = Todo.query.filter(Todo.updated_at > last_update).first()
+    recent_events = Event.query.filter(Event.updated_at > last_update).first()
+
+    has_updates = recent_todos is not None or recent_events is not None
+
+    return jsonify({
+        "has_updates": has_updates,
+        "current_time": datetime.utcnow().isoformat() + 'Z'
+    })
