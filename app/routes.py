@@ -58,6 +58,9 @@ def logout():
 @bp.route('/')
 @login_required
 def index():
+    # Get the active tab from query parameters, default to 'active'
+    active_tab = request.args.get('tab', 'active')
+
     # Get filter parameters
     status_filter = request.args.get('status', 'all')
     priority_filter = request.args.get('priority', 'all')
@@ -69,22 +72,26 @@ def index():
     # Base query
     query = Todo.query
 
-    # Apply filters
-    if status_filter == 'active':
-        query = query.filter(Todo.completed == False)
-    elif status_filter == 'completed':
-        query = query.filter(Todo.completed == True)
+    # Apply tab filter first
+    if active_tab == 'active':
+        query = query.filter(Todo.deleted == False, Todo.completed == False)
+    elif active_tab == 'completed':
+        query = query.filter(Todo.deleted == False, Todo.completed == True)
+    elif active_tab == 'deleted':
+        query = query.filter(Todo.deleted == True)
 
-    if priority_filter != 'all':
-        query = query.filter(Todo.priority == priority_filter)
+    # Apply other filters only if not in deleted tab
+    if active_tab != 'deleted':
+        if priority_filter != 'all':
+            query = query.filter(Todo.priority == priority_filter)
 
-    if category_filter != 'all' and category_filter.isdigit():
-        query = query.filter(Todo.category_id == int(category_filter))
+        if category_filter != 'all' and category_filter.isdigit():
+            query = query.filter(Todo.category_id == int(category_filter))
 
-    if assigned_filter != 'all' and assigned_filter.isdigit():
-        query = query.filter(Todo.user_id == int(assigned_filter))
+        if assigned_filter != 'all' and assigned_filter.isdigit():
+            query = query.filter(Todo.user_id == int(assigned_filter))
 
-    # Apply search
+    # Apply search to all tabs
     if search_query:
         search = f"%{search_query}%"
         query = query.filter(or_(
@@ -116,6 +123,11 @@ def index():
     # Execute query
     todos = query.all()
 
+    # Get tab counts for badges
+    active_count = Todo.query.filter(Todo.deleted == False, Todo.completed == False).count()
+    completed_count = Todo.query.filter(Todo.deleted == False, Todo.completed == True).count()
+    deleted_count = Todo.query.filter(Todo.deleted == True).count()
+
     # Get data for filters
     users = User.query.all()
     categories = Category.query.all()
@@ -129,7 +141,11 @@ def index():
                            category_filter=category_filter,
                            assigned_filter=assigned_filter,
                            search_query=search_query,
-                           sort_by=sort_by)
+                           sort_by=sort_by,
+                           active_tab=active_tab,
+                           active_count=active_count,
+                           completed_count=completed_count,
+                           deleted_count=deleted_count)
 
 
 @bp.route('/dashboard')
@@ -142,8 +158,9 @@ def dashboard():
     # Calculate upcoming tasks (next 7 days)
     upcoming_end = today + timedelta(days=7)
 
-    # Upcoming todos - limited to 5
+    # Upcoming todos - limited to 5, exclude deleted
     upcoming_todos = Todo.query.filter(
+        Todo.deleted == False,
         Todo.due_date >= now,
         Todo.due_date <= datetime.combine(upcoming_end, datetime.max.time())
     ).order_by(Todo.due_date).limit(5).all()
@@ -153,19 +170,21 @@ def dashboard():
         Event.start_datetime >= now
     ).order_by(Event.start_datetime).limit(5).all()
 
-    # Statistics calculations
-    total_todos = Todo.query.count()
-    completed_todos = Todo.query.filter(Todo.completed == True).count()
+    # Statistics calculations - exclude deleted todos
+    total_todos = Todo.query.filter(Todo.deleted == False).count()
+    completed_todos = Todo.query.filter(Todo.deleted == False, Todo.completed == True).count()
 
     # Calculate due soon (next 48 hours) and overdue
     due_soon_cutoff = now + timedelta(hours=48)
     due_soon = Todo.query.filter(
+        Todo.deleted == False,
         Todo.completed == False,
         Todo.due_date >= now,
         Todo.due_date <= due_soon_cutoff
     ).count()
 
     overdue = Todo.query.filter(
+        Todo.deleted == False,
         Todo.completed == False,
         Todo.due_date < now
     ).count()
@@ -173,11 +192,11 @@ def dashboard():
     # Calculate completion rate
     completion_rate = int((completed_todos / total_todos) * 100) if total_todos > 0 else 0
 
-    # Calculate priority distribution
+    # Calculate priority distribution - exclude deleted
     priority_counts = {
-        'high': Todo.query.filter(Todo.priority == 'high').count(),
-        'medium': Todo.query.filter(Todo.priority == 'medium').count(),
-        'low': Todo.query.filter(Todo.priority == 'low').count()
+        'high': Todo.query.filter(Todo.deleted == False, Todo.priority == 'high').count(),
+        'medium': Todo.query.filter(Todo.deleted == False, Todo.priority == 'medium').count(),
+        'low': Todo.query.filter(Todo.deleted == False, Todo.priority == 'low').count()
     }
 
     # Calculate priority percentages
@@ -187,12 +206,12 @@ def dashboard():
         'low': int((priority_counts['low'] / total_todos) * 100) if total_todos > 0 else 0
     }
 
-    # Categories with task counts
+    # Categories with task counts - exclude deleted todos
     categories = Category.query.all()
     categories_with_counts = []
 
     for category in categories:
-        count = Todo.query.filter(Todo.category_id == category.id).count()
+        count = Todo.query.filter(Todo.deleted == False, Todo.category_id == category.id).count()
         if count > 0:
             categories_with_counts.append({
                 'id': category.id,
@@ -249,7 +268,8 @@ def create_todo():
             user_id=user_id,
             created_by_id=created_by_id,
             priority=priority,
-            category_id=category_id
+            category_id=category_id,
+            deleted=False  # Explicitly set to False
         )
 
         # Process tags
@@ -277,6 +297,11 @@ def create_todo():
 @login_required
 def edit_todo(id):
     todo = Todo.query.get_or_404(id)
+
+    # Don't allow editing deleted todos
+    if todo.deleted:
+        flash('Kustutatud ülesandeid ei saa muuta. Taastage ülesanne enne muutmist.', 'danger')
+        return redirect(url_for('main.index', tab='deleted'))
 
     if request.method == 'POST':
         todo.title = request.form.get('title')
@@ -312,7 +337,12 @@ def edit_todo(id):
 
         db.session.commit()
         flash('Ülesanne edukalt uuendatud!', 'success')
-        return redirect(url_for('main.index'))
+
+        # Determine which tab to return to based on completion status
+        if todo.completed:
+            return redirect(url_for('main.index', tab='completed'))
+        else:
+            return redirect(url_for('main.index', tab='active'))
 
     users = User.query.all()
     categories = Category.query.all()
@@ -333,10 +363,30 @@ def edit_todo(id):
 @login_required
 def delete_todo(id):
     todo = Todo.query.get_or_404(id)
+    todo.deleted = True  # Soft delete
+    db.session.commit()
+    flash('Ülesanne liigutatud prügikasti!', 'success')
+    return redirect(url_for('main.index', tab=request.args.get('tab', 'active')))
+
+
+@bp.route('/restore/<int:id>')
+@login_required
+def restore_todo(id):
+    todo = Todo.query.get_or_404(id)
+    todo.deleted = False
+    db.session.commit()
+    flash('Ülesanne taastatud!', 'success')
+    return redirect(url_for('main.index', tab='deleted'))
+
+
+@bp.route('/permanent_delete/<int:id>')
+@login_required
+def permanent_delete_todo(id):
+    todo = Todo.query.get_or_404(id)
     db.session.delete(todo)
     db.session.commit()
-    flash('Ülesanne edukalt kustutatud!', 'success')
-    return redirect(url_for('main.index'))
+    flash('Ülesanne jäädavalt kustutatud!', 'success')
+    return redirect(url_for('main.index', tab='deleted'))
 
 
 @bp.route('/toggle_complete/<int:id>')
@@ -347,7 +397,10 @@ def toggle_complete(id):
     db.session.commit()
     status = "lõpetatud" if todo.completed else "märgitud aktiivseks"
     flash(f'Ülesanne {status}!', 'success')
-    return redirect(url_for('main.index'))
+
+    # Determine which tab to return to
+    tab = request.args.get('tab', 'active')
+    return redirect(url_for('main.index', tab=tab))
 
 
 # User management routes
@@ -506,7 +559,8 @@ def delete_category(id):
     has_todos = Todo.query.filter_by(category_id=id).first() is not None
 
     if has_todos:
-        flash('Ei saa kustutada kategooriat, mis on seotud ülesannetega. Esmalt määra ülesannetele teine kategooria.', 'danger')
+        flash('Ei saa kustutada kategooriat, mis on seotud ülesannetega. Esmalt määra ülesannetele teine kategooria.',
+              'danger')
         return redirect(url_for('main.categories'))
 
     db.session.delete(category)

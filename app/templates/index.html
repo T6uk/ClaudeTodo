@@ -16,9 +16,28 @@
     </div>
 </div>
 
-<!-- Search and filters -->
+<!-- Tabs Navigation -->
+<div class="tabs-container">
+    <div class="tabs">
+        <a href="{{ url_for('main.index', tab='active', search=search_query, priority=priority_filter, category=category_filter, assigned=assigned_filter, sort=sort_by) }}"
+           class="tab {% if active_tab == 'active' %}active{% endif %}">
+            Aktiivsed <span class="tab-count">{{ active_count }}</span>
+        </a>
+        <a href="{{ url_for('main.index', tab='completed', search=search_query, priority=priority_filter, category=category_filter, assigned=assigned_filter, sort=sort_by) }}"
+           class="tab {% if active_tab == 'completed' %}active{% endif %}">
+            Lõpetatud <span class="tab-count">{{ completed_count }}</span>
+        </a>
+        <a href="{{ url_for('main.index', tab='deleted', search=search_query, sort=sort_by) }}"
+           class="tab {% if active_tab == 'deleted' %}active{% endif %}">
+            Prügikast <span class="tab-count">{{ deleted_count }}</span>
+        </a>
+    </div>
+</div>
+
+<!-- Search and filters - don't show status filter in deleted tab -->
 <div class="filters-container collapsed">
     <form method="GET" action="{{ url_for('main.index') }}" class="filters-form">
+        <input type="hidden" name="tab" value="{{ active_tab }}">
         <div class="search-container">
             <input type="text" name="search" placeholder="Otsi ülesandeid..." value="{{ search_query }}"
                    class="search-input">
@@ -26,15 +45,7 @@
         </div>
 
         <div class="filters-row">
-            <div class="filter-group">
-                <label for="status">Olek</label>
-                <select name="status" id="status" class="filter-select" onchange="this.form.submit()">
-                    <option value="all" {% if status_filter=='all' %}selected{% endif %}>Kõik</option>
-                    <option value="active" {% if status_filter=='active' %}selected{% endif %}>Aktiivsed</option>
-                    <option value="completed" {% if status_filter=='completed' %}selected{% endif %}>Lõpetatud</option>
-                </select>
-            </div>
-
+            {% if active_tab != 'deleted' %}
             <div class="filter-group">
                 <label for="priority">Prioriteet</label>
                 <select name="priority" id="priority" class="filter-select" onchange="this.form.submit()">
@@ -68,6 +79,7 @@
                     {% endfor %}
                 </select>
             </div>
+            {% endif %}
 
             <div class="filter-group">
                 <label for="sort">Sorteeri</label>
@@ -80,10 +92,10 @@
                 </select>
             </div>
 
-            {% if search_query or status_filter != 'all' or priority_filter != 'all' or category_filter != 'all' or
+            {% if search_query or priority_filter != 'all' or category_filter != 'all' or
             assigned_filter != 'all' or sort_by != 'due_date' %}
             <div class="filter-group filter-actions">
-                <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Tühista Filtrid</a>
+                <a href="{{ url_for('main.index', tab=active_tab) }}" class="btn btn-secondary">Tühista Filtrid</a>
             </div>
             {% endif %}
         </div>
@@ -110,17 +122,39 @@
         </div>
 
         <div class="todo-actions">
-            <a href="{{ url_for('main.toggle_complete', id=todo.id) }}"
-               class="btn btn-icon {% if todo.completed %}btn-warning{% else %}btn-success{% endif %}">
-                <i>{% if todo.completed %}❌{% else %}✓{% endif %}</i>
-            </a>
-            <a href="{{ url_for('main.edit_todo', id=todo.id) }}" class="btn btn-icon btn-primary">
-                <i>✏️</i>
-            </a>
-            <a href="{{ url_for('main.delete_todo', id=todo.id) }}" class="btn btn-icon btn-danger"
-               onclick="return confirm('Kas olete kindel, et soovite selle ülesande kustutada?')">
-                <i>🗑️</i>
-            </a>
+            {% if active_tab == 'active' %}
+                <a href="{{ url_for('main.toggle_complete', id=todo.id, tab='active') }}"
+                   class="btn btn-icon btn-success">
+                    <i>✓</i>
+                </a>
+                <a href="{{ url_for('main.edit_todo', id=todo.id) }}" class="btn btn-icon btn-primary">
+                    <i>✏️</i>
+                </a>
+                <a href="{{ url_for('main.delete_todo', id=todo.id, tab='active') }}" class="btn btn-icon btn-danger"
+                   onclick="return confirm('Kas olete kindel, et soovite selle ülesande kustutada?')">
+                    <i>🗑️</i>
+                </a>
+            {% elif active_tab == 'completed' %}
+                <a href="{{ url_for('main.toggle_complete', id=todo.id, tab='completed') }}"
+                   class="btn btn-icon btn-warning">
+                    <i>❌</i>
+                </a>
+                <a href="{{ url_for('main.delete_todo', id=todo.id, tab='completed') }}" class="btn btn-icon btn-danger"
+                   onclick="return confirm('Kas olete kindel, et soovite selle ülesande kustutada?')">
+                    <i>🗑️</i>
+                </a>
+            {% elif active_tab == 'deleted' %}
+                <a href="{{ url_for('main.restore_todo', id=todo.id) }}" class="btn btn-icon btn-success"
+                   title="Taasta">
+                    <i>↩️</i>
+                </a>
+                <a href="{{ url_for('main.permanent_delete_todo', id=todo.id) }}" class="btn btn-icon btn-danger"
+                   onclick="return confirm('Kas olete kindel, et soovite selle ülesande jäädavalt kustutada? Seda toimingut ei saa tagasi võtta.')"
+                   title="Kustuta jäädavalt">
+                    <i>🗑️</i>
+                </a>
+            {% endif %}
+
             {% if todo.description %}
             <button type="button" class="todo-expand-button" onclick="toggleDescription(this)">Detailid</button>
             {% endif %}
@@ -136,8 +170,16 @@
 </div>
 {% else %}
 <div class="empty-state">
-    <p>Teie kriteeriumitele vastavaid ülesandeid ei leitud.</p>
-    <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Loo uus ülesanne</a>
+    {% if active_tab == 'active' %}
+        <p>Aktiivseid ülesandeid ei leitud.</p>
+        <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Lisa uus ülesanne</a>
+    {% elif active_tab == 'completed' %}
+        <p>Lõpetatud ülesandeid ei leitud.</p>
+        <a href="{{ url_for('main.index', tab='active') }}" class="btn btn-primary">Vaata aktiivseid ülesandeid</a>
+    {% elif active_tab == 'deleted' %}
+        <p>Prügikast on tühi.</p>
+        <a href="{{ url_for('main.index', tab='active') }}" class="btn btn-primary">Vaata aktiivseid ülesandeid</a>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}
@@ -172,7 +214,6 @@
             // Check if there are active filters
             const hasActiveFilters =
                 '{{ search_query }}' ||
-                '{{ status_filter }}' !== 'all' ||
                 '{{ priority_filter }}' !== 'all' ||
                 '{{ category_filter }}' !== 'all' ||
                 '{{ assigned_filter }}' !== 'all' ||

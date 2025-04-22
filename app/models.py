@@ -41,6 +41,7 @@ class Todo(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     completed = db.Column(db.Boolean, default=False)
+    deleted = db.Column(db.Boolean, default=False)  # Added deleted field for soft delete
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=True)
     tags = db.relationship('Tag', secondary='todo_tags', backref='todos')
 
