@@ -6,13 +6,19 @@
 <div class="page-title">
     <h1>Your Tasks</h1>
     <div class="page-actions">
+        <button id="filters-toggle" class="btn btn-secondary">
+            <span class="icon">🔍</span> Filters
+            {% if search_query or status_filter != 'all' or priority_filter != 'all' or category_filter != 'all' or assigned_filter != 'all' or sort_by != 'due_date' %}
+            <span class="active-filters-indicator"></span>
+            {% endif %}
+        </button>
         <a href="{{ url_for('main.dashboard') }}" class="btn btn-secondary">Dashboard</a>
         <a href="{{ url_for('main.create_todo') }}" class="btn btn-primary">Create Task</a>
     </div>
 </div>
 
 <!-- Search and filters -->
-<div class="filters-container">
+<div class="filters-container collapsed">
     <form method="GET" action="{{ url_for('main.index') }}" class="filters-form">
         <div class="search-container">
             <input type="text" name="search" placeholder="Search tasks..." value="{{ search_query }}"
@@ -119,7 +125,7 @@
 
         <div class="todo-meta">
             <div class="todo-meta-compact">
-                <p><strong><br>Due:</strong> <span class="due-date date-format">{{ todo.due_date }}</span></p>
+                <p><strong>Due:</strong> <span class="due-date date-format">{{ todo.due_date }}</span></p>
                 <p><strong>For:</strong> {{ todo.assigned_to.name }}
                     <span class="user-badge color-{{ todo.assigned_to.avatar_color }}">{{ todo.assigned_to.name[0] }}</span>
                 </p>
@@ -156,7 +162,219 @@
 {% endif %}
 {% endblock %}
 
-{% block extra_scripts %}
+I'll update the filters-container to be completely hidden when collapsed. Here are the necessary changes:
+File: app/static/css/filters.css
+css/* ======================
+   FILTERS COMPONENT
+   ====================== */
+
+/* Filters Container - Compact & Toggleable */
+.filters-container {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--box-shadow);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hide completely when collapsed */
+.filters-container.collapsed {
+    display: none;
+}
+
+/* Filters Form */
+.filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Search Section */
+.search-container {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    position: relative;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    transition: var(--transition);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.search-btn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-400);
+    font-size: 1rem;
+    padding: 0.5rem;
+    transition: var(--transition);
+}
+
+.search-btn:hover {
+    color: var(--primary-color);
+}
+
+/* Filters Grid Layout */
+.filters-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.filter-group {
+    margin-bottom: 0;
+}
+
+.filter-group label {
+    display: block;
+    font-size: 0.8rem;
+    margin-bottom: 0.3rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--border-radius-sm);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: var(--transition);
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1rem;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.filter-select:hover {
+    border-color: var(--gray-400);
+}
+
+/* Clear Filters Button */
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+}
+
+.filter-actions .btn-secondary {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+    width: 100%;
+}
+
+/* Filter toggle in page title */
+.page-actions #filters-toggle {
+    position: relative;
+}
+
+.active-filters-indicator {
+    display: inline-block;
+    background: var(--danger-color);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 8px;
+    position: absolute;
+    top: 6px;
+    right: 6px;
+}
+
+/* Animation for showing filters */
+.filters-container:not(.collapsed) {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Behavior */
+@media (max-width: 1024px) {
+    .filters-row {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .filter-group {
+        min-width: 100%;
+    }
+
+    .search-container {
+        margin-top: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .filters-container {
+        padding: 0.75rem;
+        border-radius: var(--border-radius);
+        margin-top: 0.5rem;
+    }
+
+    .search-input {
+        padding: 0.65rem 0.9rem;
+    }
+
+    .filter-select {
+        padding: 0.55rem 0.75rem;
+    }
+
+    .page-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}
+File: app/templates/index.html (just updating the JavaScript part):
+html{% block extra_scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Make descriptions expandable on click
@@ -166,35 +384,54 @@
                 this.classList.toggle('expanded');
             });
         });
-    });
-</script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const filtersToggle = document.createElement('button');
-        filtersToggle.className = 'filters-toggle';
-        filtersToggle.textContent = 'Filters';
-
+        // Setup filters toggle
+        const filtersToggle = document.getElementById('filters-toggle');
         const filtersContainer = document.querySelector('.filters-container');
-        filtersContainer.insertBefore(filtersToggle, filtersContainer.firstChild);
 
-        filtersToggle.addEventListener('click', function () {
-            filtersContainer.classList.toggle('collapsed');
-        });
+        if (filtersToggle && filtersContainer) {
+            filtersToggle.addEventListener('click', function() {
+                filtersContainer.classList.toggle('collapsed');
 
-        // Start collapsed on mobile
-        if (window.innerWidth <= 768) {
-            filtersContainer.classList.add('collapsed');
+                // Update button text based on state
+                if (filtersContainer.classList.contains('collapsed')) {
+                    filtersToggle.querySelector('.icon').innerText = '🔍';
+                } else {
+                    filtersToggle.querySelector('.icon').innerText = '🔽';
+                }
+            });
+
+            // Check if there are active filters
+            const hasActiveFilters =
+                '{{ search_query }}' ||
+                '{{ status_filter }}' !== 'all' ||
+                '{{ priority_filter }}' !== 'all' ||
+                '{{ category_filter }}' !== 'all' ||
+                '{{ assigned_filter }}' !== 'all' ||
+                '{{ sort_by }}' !== 'due_date';
+
+            // If there are active filters, expand the filters section automatically
+            if (hasActiveFilters) {
+                filtersContainer.classList.remove('collapsed');
+                filtersToggle.querySelector('.icon').innerText = '🔽';
+            }
         }
 
-        // Update on resize
-        window.addEventListener('resize', function () {
-            if (window.innerWidth > 768) {
-                filtersContainer.classList.remove('collapsed');
-            } else if (!filtersContainer.classList.contains('collapsed')) {
-                filtersContainer.classList.add('collapsed');
-            }
-        });
+        // On form submit, collapse filters on mobile
+        const filterForm = document.querySelector('.filters-form');
+        if (filterForm) {
+            filterForm.addEventListener('submit', function() {
+                // Don't collapse on desktop if there are values entered
+                if (window.innerWidth <= 768) {
+                    setTimeout(function() {
+                        filtersContainer.classList.add('collapsed');
+                        if (filtersToggle) {
+                            filtersToggle.querySelector('.icon').innerText = '🔍';
+                        }
+                    }, 100);
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

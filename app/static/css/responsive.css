@@ -9,6 +9,11 @@
         gap: 0.5rem;
     }
 
+    /* Updated mobile navigation styles */
+    .navbar-links {
+        display: none;
+    }
+
     .mobile-nav-toggle {
         display: flex;
     }
@@ -71,6 +76,25 @@
 
     .page-title h1:after {
         margin: 0.5rem auto 0;
+    }
+
+    /* Header improvements */
+    .header {
+        padding: 0.3rem 0;
+    }
+
+    .navbar {
+        padding: 0.2rem 0;
+    }
+
+    .navbar-brand {
+        font-size: 1.1rem;
+    }
+
+    .brand-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+        font-size: 0.9rem;
     }
 
     /* Calendar responsive */
@@ -228,7 +252,7 @@
 
 @media (max-width: 480px) {
     .container {
-        padding: 1.5rem 1rem;
+        padding: 1.5rem 0.75rem;
     }
 
     .page-title h1 {
@@ -256,17 +280,17 @@
     }
 
     .navbar-brand {
-        font-size: 1.25rem;
+        font-size: 1.1rem;
     }
 
     .brand-icon {
-        width: 1.75rem;
-        height: 1.75rem;
-        margin-right: 0.5rem;
+        width: 1.5rem;
+        height: 1.5rem;
+        margin-right: 0.4rem;
     }
 
-    .nav-link {
-        padding: 0.75rem 0.75rem;
+    .mobile-drawer {
+        width: 85%;
     }
 
     /* Extra small screen calendar adjustments */
