@@ -187,31 +187,20 @@ function setupCompletedCheckbox() {
 }
 
 function setupMobileNav() {
-    // Create mobile toggle if it doesn't exist
-    const navbar = document.querySelector('.navbar');
-    const navbarActions = document.querySelector('.navbar-actions');
+    // Setup mobile navigation toggle
+    const mobileToggle = document.querySelector('.mobile-nav-toggle');
     const mobileDrawer = document.querySelector('.mobile-drawer');
     const mobileOverlay = document.querySelector('.mobile-drawer-overlay');
 
-    if (navbar && navbarActions && !document.querySelector('.mobile-nav-toggle')) {
-        const mobileToggle = document.createElement('button');
-        mobileToggle.className = 'mobile-nav-toggle';
-        mobileToggle.innerHTML = '☰';
-        mobileToggle.setAttribute('aria-label', 'Menüü');
-        navbarActions.appendChild(mobileToggle);
-
+    if (mobileToggle && mobileDrawer && mobileOverlay) {
         // Handle mobile toggle click
         mobileToggle.addEventListener('click', function() {
-            if (mobileDrawer && mobileOverlay) {
-                mobileDrawer.classList.add('active');
-                mobileOverlay.classList.add('active');
-                document.body.style.overflow = 'hidden'; // Prevent scrolling
-            }
+            mobileDrawer.classList.add('active');
+            mobileOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
         });
-    }
 
-    // Setup mobile drawer close functionality
-    if (mobileDrawer && mobileOverlay) {
+        // Setup mobile drawer close functionality
         const closeBtn = mobileDrawer.querySelector('.mobile-drawer-close');
 
         if (closeBtn) {
@@ -233,12 +222,35 @@ function setupMobileNav() {
                 closeMobileMenu();
             }
         });
+
+        // Animation for menu items
+        const menuItems = mobileDrawer.querySelectorAll('.nav-link');
+        menuItems.forEach((item, index) => {
+            item.style.opacity = "0";
+            item.style.transform = "translateX(20px)";
+
+            mobileToggle.addEventListener('click', function() {
+                setTimeout(() => {
+                    item.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+                    item.style.opacity = "1";
+                    item.style.transform = "translateX(0)";
+                }, 100 + (index * 50)); // Staggered animation
+            });
+        });
     }
 
     function closeMobileMenu() {
         mobileDrawer.classList.remove('active');
         mobileOverlay.classList.remove('active');
         document.body.style.overflow = ''; // Restore scrolling
+
+        // Reset menu item animations
+        const menuItems = mobileDrawer.querySelectorAll('.nav-link');
+        menuItems.forEach(item => {
+            item.style.transition = "none";
+            item.style.opacity = "0";
+            item.style.transform = "translateX(20px)";
+        });
     }
 }
 

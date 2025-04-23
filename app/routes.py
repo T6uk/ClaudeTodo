@@ -871,3 +871,84 @@ def check_updates():
         "has_updates": has_updates,
         "current_time": datetime.utcnow().isoformat() + 'Z'
     })
+
+
+@bp.route('/tablet')
+@login_required
+def tablet_view():
+    # Get current date and time
+    now = datetime.now()
+    today = now.date()
+
+    # Get important todos (prioritized)
+    # 1. First, get overdue tasks
+    overdue_todos = Todo.query.filter(
+        Todo.completed == False,
+        Todo.due_date < now
+    ).order_by(Todo.due_date).limit(5).all()
+
+    # 2. Next, get tasks due today
+    today_todos = Todo.query.filter(
+        Todo.completed == False,
+        Todo.due_date >= now,
+        func.date(Todo.due_date) == today
+    ).order_by(Todo.due_date).limit(5).all()
+
+    # 3. Get high priority tasks
+    high_priority_todos = Todo.query.filter(
+        Todo.completed == False,
+        Todo.priority == 'high',
+        Todo.due_date >= now,
+        func.date(Todo.due_date) > today
+    ).order_by(Todo.due_date).limit(5).all()
+
+    # 4. Medium priority tasks
+    medium_priority_todos = Todo.query.filter(
+        Todo.completed == False,
+        Todo.priority == 'medium',
+        Todo.due_date >= now,
+        func.date(Todo.due_date) > today
+    ).order_by(Todo.due_date).limit(3).all()
+
+    # 5. Low priority tasks
+    low_priority_todos = Todo.query.filter(
+        Todo.completed == False,
+        Todo.priority == 'low',
+        Todo.due_date >= now,
+        func.date(Todo.due_date) > today
+    ).order_by(Todo.due_date).limit(3).all()
+
+    # Combine and prioritize todos
+    all_todos = []
+    all_todos.extend(overdue_todos)
+    all_todos.extend(today_todos)
+    all_todos.extend(high_priority_todos)
+    all_todos.extend(medium_priority_todos)
+    all_todos.extend(low_priority_todos)
+
+    # Limit to 3 tasks and mark their status
+    todos = all_todos[:3]
+    for todo in todos:
+        if todo.due_date < now:
+            todo.is_overdue = True
+            todo.is_today = False
+        elif todo.due_date.date() == today:
+            todo.is_overdue = False
+            todo.is_today = True
+        else:
+            todo.is_overdue = False
+            todo.is_today = False
+
+    # Get upcoming events (next 7 days)
+    upcoming_end = today + timedelta(days=7)
+    events = Event.query.filter(
+        Event.start_datetime >= now,
+        Event.start_datetime <= datetime.combine(upcoming_end, datetime.max.time())
+    ).order_by(Event.start_datetime).limit(3).all()
+
+    return render_template('tablet_view.html',
+                           todos=todos,
+                           events=events,
+                           now=now,
+                           today=today,
+                           timedelta=timedelta)

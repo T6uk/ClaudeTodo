@@ -1,152 +1,164 @@
-/* Header and Navbar */
+/* Modern, Compact Navbar */
 .header {
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: #fff;
-    padding: 0.4rem 0; /* Reduced padding */
-    box-shadow: var(--box-shadow);
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
     position: sticky;
     top: 0;
     z-index: 100;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
 }
 
 .navbar-container {
-    width: 100%;
     max-width: 1280px;
     margin: 0 auto;
-    padding: 0 1rem; /* Reduced padding */
+    padding: 0 1rem;
 }
 
 .navbar {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 0.35rem 0; /* Reduced padding */
-    position: relative;
+    height: 3.5rem;
+    gap: 1rem;
 }
 
+/* Brand styling */
 .navbar-logo {
     display: flex;
     align-items: center;
+    margin-right: 0.5rem;
 }
 
 .navbar-brand {
-    font-size: 1.2rem; /* Smaller font */
-    font-weight: 700;
-    color: #fff;
-    text-decoration: none;
     display: flex;
     align-items: center;
-    letter-spacing: -0.025em;
+    gap: 0.5rem;
+    color: white;
+    font-weight: 600;
+    font-size: 1.25rem;
+    text-decoration: none;
+    letter-spacing: -0.02em;
 }
 
 .brand-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.6rem; /* Smaller icon */
-    height: 1.6rem;
-    margin-right: 0.5rem;
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 50%;
     font-size: 1rem;
 }
 
+/* Main navigation */
 .navbar-links {
     display: flex;
+    align-items: center;
     gap: 0.25rem;
-    margin: 0 auto;
+    height: 100%;
+    flex: 1;
 }
 
 .nav-link {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    color: #fff;
+    gap: 0.35rem;
+    padding: 0.4rem 0.6rem;
+    color: rgba(255, 255, 255, 0.9);
     text-decoration: none;
-    padding: 0.35rem 0.65rem; /* Reduced padding */
-    border-radius: var(--border-radius-sm);
-    transition: var(--transition);
+    font-size: 0.9rem;
     font-weight: 500;
-    white-space: nowrap;
-    opacity: 0.85;
-    font-size: 0.9rem; /* Smaller font */
+    border-radius: 0.25rem;
+    transition: all 0.15s ease;
+    position: relative;
+    height: 2.25rem;
 }
 
-.nav-link:hover, .nav-link.active {
-    background-color: rgba(255, 255, 255, 0.15);
-    transform: translateY(-2px);
-    opacity: 1;
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    font-weight: 600;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -0.25rem;
+    left: 0.5rem;
+    right: 0.5rem;
+    height: 0.2rem;
+    background: white;
+    border-radius: 1rem 1rem 0 0;
 }
 
 .nav-icon {
-    font-size: 1.1rem; /* Smaller icon */
+    font-size: 1rem;
 }
 
+/* Action buttons area */
 .navbar-actions {
     display: flex;
-    gap: 0.4rem;
     align-items: center;
+    gap: 0.35rem;
+    margin-left: auto;
+}
+
+.navbar-actions .nav-link {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.85rem;
 }
 
 /* Theme toggle */
 .theme-toggle {
-    background: transparent;
+    background: none;
     border: none;
-    color: #fff;
-    cursor: pointer;
-    font-size: 1.1rem; /* Smaller icon */
-    padding: 0.35rem;
-    margin-left: 0.3rem;
-    width: 2rem; /* Smaller toggle */
+    display: grid;
+    place-items: center;
+    width: 2rem;
     height: 2rem;
+    color: white;
+    font-size: 1.1rem;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    padding: 0;
 }
 
 .theme-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.15);
 }
 
-/* Mobile navigation */
+/* Mobile menu toggle */
 .mobile-nav-toggle {
     display: none;
-    background: transparent;
+    background: rgba(255, 255, 255, 0.15);
     border: none;
-    color: white;
-    font-size: 1.2rem; /* Smaller icon */
-    cursor: pointer;
-    width: 2rem; /* Smaller toggle */
+    width: 2rem;
     height: 2rem;
-    border-radius: 50%;
-    align-items: center;
-    justify-content: center;
-    transition: var(--transition);
+    border-radius: 0.25rem;
+    font-size: 1.1rem;
+    color: white;
+    place-items: center;
+    cursor: pointer;
 }
 
-.mobile-nav-toggle:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Mobile drawer menu */
+/* Mobile drawer */
 .mobile-drawer {
     position: fixed;
     top: 0;
     right: -100%;
-    width: 80%;
-    max-width: 300px;
-    height: 100%;
-    background-color: var(--card-bg);
+    width: 16rem;
+    height: 100vh;
+    background: var(--card-bg);
     z-index: 1000;
-    box-shadow: var(--box-shadow-lg);
-    transition: all 0.3s ease;
+    transition: right 0.25s ease-in-out;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
 }
 
 .mobile-drawer.active {
@@ -155,15 +167,13 @@
 
 .mobile-drawer-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
     z-index: 999;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.25s ease;
 }
 
 .mobile-drawer-overlay.active {
@@ -173,64 +183,97 @@
 
 .mobile-drawer-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border-color);
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    color: white;
 }
 
 .mobile-drawer-header .navbar-brand {
-    color: var(--text-color);
+    font-size: 1.1rem;
 }
 
 .mobile-drawer-close {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.15);
     border: none;
-    color: var(--text-color);
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0.5rem;
+    width: 1.75rem;
+    height: 1.75rem;
     border-radius: 50%;
+    color: white;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
 }
 
 .mobile-drawer-body {
     flex: 1;
-    padding: 1rem 0;
+    overflow-y: auto;
 }
 
 .mobile-drawer-menu {
     list-style: none;
-    padding: 0;
     margin: 0;
+    padding: 0;
 }
 
 .mobile-drawer-menu .nav-link {
     color: var(--text-color);
-    padding: 0.8rem 1.2rem;
-    opacity: 1;
-    border-radius: 0;
-    display: flex;
-    justify-content: flex-start;
+    padding: 0.75rem 1rem;
     width: 100%;
-    transition: all 0.2s ease;
+    border-radius: 0;
+    border-left: 3px solid transparent;
 }
 
 .mobile-drawer-menu .nav-link:hover,
 .mobile-drawer-menu .nav-link.active {
-    background-color: var(--gray-100);
+    background: var(--gray-100);
     color: var(--primary-color);
-    transform: none;
+}
+
+.mobile-drawer-menu .nav-link.active {
+    border-left-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.mobile-drawer-menu .nav-link.active::after {
+    display: none;
 }
 
 .mobile-drawer-footer {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
     border-top: 1px solid var(--border-color);
     display: flex;
+    align-items: center;
     justify-content: space-between;
+    background: var(--gray-100);
 }
 
-/* Adjust theme toggle in drawer */
 .mobile-drawer .theme-toggle {
     color: var(--text-color);
-    margin-left: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .navbar-links {
+        display: none;
+    }
+
+    .mobile-nav-toggle {
+        display: grid;
+    }
+
+    .navbar-actions .nav-link .nav-text {
+        display: none;
+    }
+
+    .mobile-hide {
+        display: none;
+    }
+}
+
+/* Dark mode adjustments */
+.dark-mode .mobile-drawer {
+    box-shadow: -2px 0 15px rgba(0, 0, 0, 0.25);
 }

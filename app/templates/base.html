@@ -27,7 +27,7 @@
             <div class="navbar-logo">
                 <a href="{{ url_for('main.index') }}" class="navbar-brand">
                     <span class="brand-icon">✓</span>
-                    MMM?
+                    <span>MMM?</span>
                 </a>
             </div>
 
@@ -36,17 +36,27 @@
                 <a href="{{ url_for('main.index') }}"
                    class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}">
                     <span class="nav-icon">📋</span>
-                    <span class="nav-text">Ülesanded</span>
+                    <span>Ülesanded</span>
                 </a>
                 <a href="{{ url_for('main.events') }}"
                    class="nav-link {% if request.endpoint and 'events' in request.endpoint %}active{% endif %}">
                     <span class="nav-icon">📅</span>
-                    <span class="nav-text">Kalender</span>
+                    <span>Kalender</span>
                 </a>
                 <a href="{{ url_for('main.dashboard') }}"
                    class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
                     <span class="nav-icon">📊</span>
-                    <span class="nav-text">Töölaud</span>
+                    <span>Töölaud</span>
+                </a>
+                <a href="{{ url_for('main.users') }}"
+                   class="nav-link {% if request.endpoint == 'main.users' %}active{% endif %}">
+                    <span class="nav-icon">👥</span>
+                    <span>Kasutajad</span>
+                </a>
+                <a href="{{ url_for('main.categories') }}"
+                   class="nav-link {% if request.endpoint == 'main.categories' %}active{% endif %}">
+                    <span class="nav-icon">🏷️</span>
+                    <span>Kategooriad</span>
                 </a>
             </div>
             {% endif %}
@@ -55,11 +65,19 @@
                 {% if session.logged_in %}
                 <a href="{{ url_for('main.create_todo') }}" class="nav-link">
                     <span class="nav-icon">➕</span>
-                    <span class="nav-text mobile-hide">Uus</span>
+                    <span class="nav-text">Uus</span>
+                </a>
+                <a href="{{ url_for('main.logout') }}" class="nav-link mobile-hide">
+                    <span class="nav-icon">🚪</span>
+                    <span class="nav-text">Välju</span>
                 </a>
                 {% endif %}
                 <!-- Theme toggle will be inserted here by JavaScript -->
             </div>
+
+            {% if session.logged_in %}
+            <button class="mobile-nav-toggle" aria-label="Menu">☰</button>
+            {% endif %}
         </nav>
     </div>
 </header>
@@ -69,11 +87,11 @@
 <div class="mobile-drawer-overlay"></div>
 <div class="mobile-drawer">
     <div class="mobile-drawer-header">
-        <div class="navbar-brand">
+        <a href="{{ url_for('main.index') }}" class="navbar-brand">
             <span class="brand-icon">✓</span>
-            ÜlesandeHaldur
-        </div>
-        <button class="mobile-drawer-close">✕</button>
+            <span>ÜlesandeHaldur</span>
+        </a>
+        <button class="mobile-drawer-close" aria-label="Close">✕</button>
     </div>
     <div class="mobile-drawer-body">
         <ul class="mobile-drawer-menu">
@@ -131,6 +149,7 @@
             <span class="nav-icon">🚪</span>
             <span>Logi välja</span>
         </a>
+        <!-- Theme toggle will be added here via JavaScript -->
     </div>
 </div>
 {% endif %}
