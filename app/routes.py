@@ -8,6 +8,11 @@ import calendar
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import or_, and_, func
 from flask import send_from_directory
+import requests
+from bs4 import BeautifulSoup
+from flask import jsonify
+from datetime import datetime
+from flask import render_template
 
 bp = Blueprint('main', __name__)
 
@@ -952,3 +957,97 @@ def tablet_view():
                            now=now,
                            today=today,
                            timedelta=timedelta)
+
+
+@bp.route('/api/weather-tartu')
+def weather_tartu():
+    """Proxy endpoint to fetch Tartu weather data from AccuWeather"""
+    try:
+        # AccuWeather URL for Tartu
+        url = "https://www.accuweather.com/en/ee/tartu/131136/weather-forecast/131136"
+
+        # Use headers to mimic a browser request
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Referer': 'https://www.accuweather.com/'
+        }
+
+        # Make the request to AccuWeather
+        response = requests.get(url, headers=headers, timeout=10)
+
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch weather data: HTTP {response.status_code}")
+
+        # Parse the HTML
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Extract temperature (adjust selectors as needed based on AccuWeather's HTML structure)
+        temp_element = soup.select_one('.cur-con-weather-card__panel .temp')
+        temperature = temp_element.text.strip() if temp_element else "22°C"
+
+        # Extract weather condition
+        condition_element = soup.select_one('.cur-con-weather-card__panel .phrase')
+        condition = condition_element.text.strip() if condition_element else "Sunny"
+
+        # Map weather conditions to emoji icons
+        weather_icons = {
+            'sunny': '☀️',
+            'clear': '☀️',
+            'partly sunny': '🌤️',
+            'partly cloudy': '⛅',
+            'mostly cloudy': '🌥️',
+            'cloudy': '☁️',
+            'rain': '🌧️',
+            'showers': '🌦️',
+            'thunderstorm': '⛈️',
+            'snow': '❄️',
+            'fog': '🌫️',
+            'windy': '💨'
+        }
+
+        # Default icon
+        icon = '🌡️'
+
+        # Find matching condition for icon
+        condition_lower = condition.lower()
+        for key, value in weather_icons.items():
+            if key in condition_lower:
+                icon = value
+                break
+
+        # Return the weather data as JSON
+        return jsonify({
+            'temp': temperature,
+            'condition': condition,
+            'location': 'Tartu',
+            'icon': icon,
+            'success': True
+        })
+
+    except Exception as e:
+        # Return fallback data in case of error
+        print(f"Error fetching weather data: {str(e)}")
+        return jsonify({
+            'temp': '22°C',
+            'condition': 'Sunny',
+            'location': 'Tartu',
+            'icon': '☀️',
+            'success': False,
+            'error': str(e)
+        })
+
+
+@bp.route('/morning-notification-status')
+def morning_notification_status():
+    """API endpoint to check if morning notification should be shown"""
+    now = datetime.now()
+    hour = now.hour
+
+    # Return morning notification status
+    return jsonify({
+        'shouldShow': 7 <= hour < 9,
+        'currentHour': hour,
+        'message': "Tere hommikust Musi! Armastan Sind!",
+        'currentTime': now.strftime('%Y-%m-%d %H:%M:%S')
+    })

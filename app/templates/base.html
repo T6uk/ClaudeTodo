@@ -19,6 +19,7 @@
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
     {% block extra_head %}{% endblock %}
+
 </head>
 <body>
 <header class="header">
@@ -43,20 +44,10 @@
                     <span class="nav-icon">📅</span>
                     <span>Kalender</span>
                 </a>
-                <a href="{{ url_for('main.dashboard') }}"
-                   class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
-                    <span class="nav-icon">📊</span>
-                    <span>Töölaud</span>
-                </a>
-                <a href="{{ url_for('main.users') }}"
-                   class="nav-link {% if request.endpoint == 'main.users' %}active{% endif %}">
-                    <span class="nav-icon">👥</span>
-                    <span>Kasutajad</span>
-                </a>
-                <a href="{{ url_for('main.categories') }}"
-                   class="nav-link {% if request.endpoint == 'main.categories' %}active{% endif %}">
-                    <span class="nav-icon">🏷️</span>
-                    <span>Kategooriad</span>
+                <a href="{{ url_for('main.tablet_view') }}"
+                   class="nav-link {% if request.endpoint == 'main.tablet_view' %}active{% endif %}">
+                    <span class="nav-icon">👁️</span>
+                    <span>Ülevaade</span>
                 </a>
             </div>
             {% endif %}
@@ -267,7 +258,5 @@
         });
     }
 </script>
-
-{% block extra_scripts %}{% endblock %}
 </body>
 </html>

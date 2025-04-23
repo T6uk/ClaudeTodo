@@ -1,3 +1,4 @@
+<!-- app/templates/tablet_view.html -->
 <!DOCTYPE html>
 <html lang="et">
 <head>
@@ -44,6 +45,9 @@
 
         body {
             background-color: var(--background-color);
+            /* Subtle background pattern */
+            background-image: radial-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
             color: var(--text-color);
             font-family: 'Inter', sans-serif;
             margin: 0;
@@ -66,12 +70,19 @@
             gap: 1.5rem;
         }
 
-        /* Header */
+        /* Header - Improved with glass effect */
         .tablet-header {
             display: grid;
             grid-template-columns: 1fr auto 1fr;
             align-items: center;
             gap: 1rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.7);
         }
 
         .date-time {
@@ -88,6 +99,8 @@
             background-clip: text;
             color: transparent;
             margin: 0;
+            letter-spacing: -0.03em;
+            text-shadow: 0 2px 10px rgba(99, 102, 241, 0.2);
         }
 
         .current-date {
@@ -108,6 +121,7 @@
             border-radius: 0;
             box-shadow: none;
             border: none;
+            position: relative;
         }
 
         .logo-icon {
@@ -116,13 +130,24 @@
             justify-content: center;
             width: auto;
             height: auto;
-            background: none;
+            background: none; /* Removed background */
             border-radius: 0;
-            font-size: 2.5rem;
-            color: var(--highlight-color);
-            background-color: transparent !important;
-            box-shadow: none;
-            border: none;
+            font-size: 3.5rem; /* Increased size to compensate for no background */
+            color: var(--highlight-color); /* Changed to highlight color */
+            box-shadow: none; /* Removed shadow */
+            animation: float 3s infinite ease-in-out alternate;
+            /* Removed animation */
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+                transform: scale(1.05);
+            }
         }
 
         .logo-text {
@@ -135,60 +160,115 @@
             color: transparent;
         }
 
-        /* Weather placeholder (right side of header) */
+        /* Weather section - Now with card design */
         .weather-placeholder {
+            border-radius: var(--radius-md);
+            padding: 0.75rem 1.25rem;
             display: flex;
             align-items: center;
             justify-content: flex-end;
             gap: 1rem;
+            transition: all 0.3s ease;
         }
 
-        .weather-icon {
-            font-size: 2.5rem;
-            color: var(--highlight-color);
+        .weather-placeholder:hover {
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 15px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
         }
 
         .weather-info {
             text-align: right;
         }
 
-        .weather-temp {
+        #header-temp {
             font-size: 2rem;
             font-weight: 700;
             line-height: 1;
             margin: 0;
+            background: linear-gradient(135deg, #6366f1, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            transition: all 0.3s ease;
         }
 
-        .weather-condition {
+        #header-loc {
             font-size: 1rem;
             color: var(--text-secondary);
             margin-top: 0.25rem;
+            transition: all 0.3s ease;
         }
 
-        /* Main content */
+        #header-weather-icon {
+            font-size: 2.5rem;
+            transition: all 0.3s ease;
+            animation: floatIcon 3s infinite ease-in-out alternate;
+        }
+
+        @keyframes floatIcon {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Loading animation for weather section */
+        .weather-loading {
+            opacity: 0.7;
+        }
+
+        .weather-loading #header-temp::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Main content - Enhanced with better card style */
         .tablet-content {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
             overflow: hidden;
+            height: calc(100vh - 180px);
         }
 
         .tablet-section {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.9);
             border-radius: var(--radius-lg);
             padding: 1.5rem;
-            box-shadow: var(--shadow);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
             display: flex;
             flex-direction: column;
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(226, 232, 240, 0.8);
             transition: var(--transition);
             overflow: hidden;
             animation: fadeIn 0.8s ease-out forwards;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
 
         .tablet-section:hover {
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             transform: translateY(-3px);
+            border-color: rgba(99, 102, 241, 0.3);
         }
 
         .section-header {
@@ -198,38 +278,62 @@
             margin-bottom: 1.25rem;
             padding-bottom: 0.75rem;
             border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .section-header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--highlight-color), var(--highlight-secondary));
+            border-radius: 3px;
         }
 
         .section-title {
-            font-size: 1.35rem;
+            font-size: 1.5rem;
             font-weight: 600;
             color: var(--text-color);
             margin: 0;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
         .section-icon {
-            color: var(--highlight-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, var(--highlight-color), rgba(99, 102, 241, 0.8));
+            border-radius: 50%;
+            color: white;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.2);
         }
 
         .section-link {
-            font-size: 0.875rem;
+            font-size: 1rem;
             color: var(--highlight-color);
             text-decoration: none;
             font-weight: 500;
-            padding: 0.4rem 0.75rem;
+            padding: 0.5rem 1rem;
             border-radius: var(--radius-sm);
             transition: var(--transition);
             background-color: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.15);
         }
 
         .section-link:hover {
-            background-color: rgba(99, 102, 241, 0.2);
+            background-color: rgba(99, 102, 241, 0.15);
+            box-shadow: 0 2px 5px rgba(99, 102, 241, 0.1);
+            transform: translateY(-1px);
         }
 
-        /* Lists */
+        /* Lists - Improved scrolling experience */
         .list-container {
             flex: 1;
             overflow-y: auto;
@@ -237,12 +341,15 @@
             scrollbar-color: var(--border-color) transparent;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            padding: 0.25rem 0.25rem 0.25rem 0;
+            gap: 1rem;
+            padding: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+            mask-image: linear-gradient(to bottom, transparent, black 10px, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(to bottom, transparent, black 10px, black 90%, transparent);
         }
 
         .list-container::-webkit-scrollbar {
-            width: 5px;
+            width: 8px;
         }
 
         .list-container::-webkit-scrollbar-track {
@@ -252,226 +359,347 @@
         .list-container::-webkit-scrollbar-thumb {
             background-color: var(--border-color);
             border-radius: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.7);
         }
 
-        /* Todo items */
+        .list-container:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(99, 102, 241, 0.3);
+        }
+
+        /* Todo items - Improved card design */
         .todo-item {
-            padding: 1rem 1.25rem;
-            background: var(--background-color);
+            padding: 1.25rem 1.5rem;
+            background: linear-gradient(145deg, var(--card-bg), rgba(248, 250, 252, 0.7));
             border-radius: var(--radius);
-            transition: var(--transition);
-            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
-            border-left: 4px solid;
+            gap: 0.75rem;
+            border-left: 6px solid;
+            min-height: 120px;
         }
 
         .todo-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+        }
+
+        .todo-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            pointer-events: none;
+            border-radius: 0 var(--radius) var(--radius) 0;
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+            z-index: 3;
         }
 
         .todo-title {
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 600;
             line-height: 1.4;
             color: var(--text-color);
+            position: relative;
+            z-index: 2;
         }
 
         .todo-meta {
             display: flex;
             justify-content: space-between;
-            font-size: 0.85rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             align-items: center;
+            position: relative;
+            z-index: 2;
         }
 
         .todo-due {
             display: flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.5rem;
+            font-weight: 500;
+            padding: 0.4rem 0.75rem;
+            background-color: rgba(226, 232, 240, 0.5);
+            border-radius: 9999px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            font-size: 0.95rem;
         }
 
-        /* Priority styles */
+        .todo-due span {
+            font-size: 1.2rem;
+        }
+
+        /* Priority styles - Enhanced with gradients */
         .todo-item.overdue {
             border-color: var(--danger-color);
-            background-color: rgba(239, 68, 68, 0.05);
+            background: linear-gradient(145deg, var(--card-bg), rgba(254, 242, 242, 0.7));
         }
 
         .todo-item.today {
             border-color: var(--warning-color);
-            background-color: rgba(245, 158, 11, 0.05);
+            background: linear-gradient(145deg, var(--card-bg), rgba(255, 251, 235, 0.7));
         }
 
         .todo-item.high {
             border-color: var(--danger-color);
-            background-color: rgba(239, 68, 68, 0.05);
+            background: linear-gradient(145deg, var(--card-bg), rgba(254, 242, 242, 0.7));
         }
 
         .todo-item.medium {
             border-color: var(--warning-color);
-            background-color: rgba(245, 158, 11, 0.05);
+            background: linear-gradient(145deg, var(--card-bg), rgba(255, 251, 235, 0.7));
         }
 
         .todo-item.low {
             border-color: var(--success-color);
-            background-color: rgba(16, 185, 129, 0.05);
+            background: linear-gradient(145deg, var(--card-bg), rgba(236, 253, 245, 0.7));
         }
 
-        /* Event items */
+        /* Event items - Enhanced with gradients */
         .event-item {
             display: flex;
-            gap: 0.75rem;
-            padding: 1rem 1.25rem;
-            background: var(--background-color);
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
+            background: linear-gradient(145deg, var(--card-bg), rgba(248, 250, 252, 0.7));
             border-radius: var(--radius);
-            transition: var(--transition);
-            box-shadow: var(--shadow-sm);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
             position: relative;
             overflow: hidden;
+            min-height: 120px;
         }
 
         .event-item:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
+            transform: translateY(-3px) scale(1.01);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+            z-index: 10;
+        }
+
+        .event-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            pointer-events: none;
+            border-radius: var(--radius);
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+            z-index: 3;
         }
 
         .event-indicator {
-            width: 0.5rem;
+            width: 0.75rem;
             height: auto;
             border-radius: 9999px;
             flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
         .event-content {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
+            gap: 0.75rem;
+            position: relative;
+            z-index: 2;
         }
 
         .event-title {
             margin: 0;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 600;
             line-height: 1.4;
             color: var(--text-color);
         }
 
         .event-time {
-            font-size: 0.9rem;
+            font-size: 1rem;
             color: var(--text-secondary);
             display: flex;
             align-items: center;
-            gap: 0.35rem;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            background-color: rgba(226, 232, 240, 0.5);
+            border-radius: 9999px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            width: fit-content;
+            font-size: 0.95rem;
+        }
+
+        .event-time span {
+            font-size: 1.2rem;
         }
 
         .event-time strong {
             color: var(--text-color);
+            font-weight: 600;
         }
 
-        /* Badges */
+        /* Badges - Enhanced with glass morphism */
         .badge {
             display: inline-block;
-            padding: 0.2rem 0.6rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 9999px;
-            font-size: 0.75rem;
+            font-size: 0.9rem;
             font-weight: 600;
             color: white;
             margin-right: 0.25rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
         .badge-danger {
-            background-color: var(--danger-color);
+            background-color: rgba(239, 68, 68, 0.9);
         }
 
         .badge-warning {
-            background-color: var(--warning-color);
+            background-color: rgba(245, 158, 11, 0.9);
             color: var(--text-color);
         }
 
         .badge-high {
-            background-color: var(--danger-color);
+            background-color: rgba(239, 68, 68, 0.9);
         }
 
         .badge-medium {
-            background-color: var(--warning-color);
+            background-color: rgba(245, 158, 11, 0.9);
             color: var(--text-color);
         }
 
         .badge-low {
-            background-color: var(--success-color);
+            background-color: rgba(16, 185, 129, 0.9);
         }
 
-        /* Empty states */
+        /* Empty states - Enhanced design */
         .empty-message {
             text-align: center;
-            padding: 2.5rem 1rem;
+            padding: 3rem 1rem;
             color: var(--text-secondary);
             font-style: italic;
-            border: 2px dashed var(--border-color);
+            border: 2px dashed rgba(226, 232, 240, 0.7);
             border-radius: var(--radius);
             margin: 1rem 0;
-            background-color: rgba(99, 102, 241, 0.03);
+            background-color: rgba(248, 250, 252, 0.7);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .empty-message::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--highlight-color), var(--highlight-secondary));
+            opacity: 0.5;
         }
 
         .empty-icon {
-            font-size: 2rem;
+            font-size: 3rem;
             margin-bottom: 0.5rem;
             opacity: 0.7;
+            animation: float 3s infinite ease-in-out alternate;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-10px);
+            }
         }
 
         /* Footer */
         .tablet-footer {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
+            gap: 2rem;
             padding-bottom: 0.5rem;
         }
 
         .nav-button {
-            background: var(--card-bg);
+            background: rgba(255, 255, 255, 0.8);
             color: var(--text-color);
-            border: 1px solid var(--border-color);
+            border: 1px solid rgba(226, 232, 240, 0.8);
             border-radius: var(--radius);
-            padding: 0.75rem 1.75rem;
+            padding: 1rem 2rem;
             text-decoration: none;
             font-weight: 500;
-            transition: var(--transition);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             text-align: center;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            min-width: 180px;
+            min-width: 200px;
             justify-content: center;
+            font-size: 1.1rem;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--highlight-color), var(--highlight-secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 0;
         }
 
         .nav-button:hover {
-            background: linear-gradient(135deg, var(--highlight-color), var(--highlight-secondary));
             color: white;
             border-color: transparent;
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-button:hover::before {
+            opacity: 1;
         }
 
         .nav-button-icon {
-            font-size: 1.25rem;
+            font-size: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-button span:not(.nav-button-icon) {
+            position: relative;
+            z-index: 1;
         }
 
         /* Animations */
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(15px);
             }
             to {
                 opacity: 1;
@@ -479,28 +707,40 @@
             }
         }
 
-        @keyframes pulseGlow {
-            0% {
-                box-shadow: 0 0 5px rgba(99, 102, 241, 0.2);
-            }
-            50% {
-                box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
-            }
-            100% {
-                box-shadow: 0 0 5px rgba(99, 102, 241, 0.2);
-            }
-        }
-
-        /* Responsive styles */
-        @media (max-width: 1024px) {
+        /* Responsive styles - IMPROVED FOR TABLETS */
+        @media (max-width: 1024px) and (min-width: 768px) {
+            /* Tablet-specific optimizations */
             .tablet-view {
                 padding: 1.25rem;
                 gap: 1.25rem;
             }
 
             .tablet-content {
-                grid-template-columns: 1fr;
-                grid-template-rows: repeat(2, 1fr);
+                height: calc(100vh - 150px);
+            }
+
+            /* Keep the side-by-side layout for tablets */
+            .tablet-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* Adjust font sizes for better readability */
+            .section-title {
+                font-size: 1.4rem;
+            }
+
+            .todo-title, .event-title {
+                font-size: 1.25rem;
+            }
+
+            .todo-due, .event-time {
+                font-size: 0.95rem;
+            }
+
+            /* Ensure touch targets are large enough */
+            .todo-item, .event-item {
+                min-height: 110px;
+                padding: 1.2rem 1.4rem;
             }
 
             .weather-temp {
@@ -518,6 +758,8 @@
                 grid-template-rows: repeat(3, auto);
                 text-align: center;
                 justify-items: center;
+                gap: 0.75rem;
+                padding: 1rem;
             }
 
             .date-time {
@@ -527,6 +769,7 @@
             .weather-placeholder {
                 justify-content: center;
                 margin-top: 0.5rem;
+                width: 100%;
             }
 
             .weather-info {
@@ -537,12 +780,35 @@
                 font-size: 2.5rem;
             }
 
+            /* Switch to single column for phones */
+            .tablet-content {
+                grid-template-columns: 1fr;
+                height: calc(100vh - 200px);
+            }
+
             .todo-title, .event-title {
-                font-size: 1rem;
+                font-size: 1.15rem;
             }
 
             .tablet-section {
                 padding: 1.25rem;
+                max-height: calc((100vh - 270px) / 2);
+            }
+
+            /* Make cards shorter on phones */
+            .todo-item, .event-item {
+                min-height: unset;
+                padding: 1rem 1.25rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .section-icon {
+                width: 2rem;
+                height: 2rem;
+                font-size: 1rem;
             }
         }
 
@@ -561,9 +827,9 @@
             }
 
             .nav-button {
-                padding: 0.6rem 1rem;
-                min-width: 120px;
-                font-size: 0.9rem;
+                padding: 0.75rem 1.25rem;
+                min-width: 135px;
+                font-size: 1rem;
             }
 
             .logo-container {
@@ -571,9 +837,9 @@
             }
 
             .logo-icon {
-                width: 2rem;
-                height: 2rem;
-                font-size: 1.25rem;
+                width: 3rem;
+                height: 3rem;
+                font-size: 1.5rem;
             }
 
             .logo-text {
@@ -583,6 +849,175 @@
             .section-title {
                 font-size: 1.2rem;
             }
+
+            /* More compact mobile view */
+            .tablet-content {
+                gap: 1rem;
+            }
+
+            .todo-item, .event-item {
+                padding: 0.75rem 1rem;
+                gap: 0.5rem;
+            }
+
+            .todo-meta, .event-time {
+                font-size: 0.85rem;
+            }
+
+            .todo-due, .event-time {
+                padding: 0.25rem 0.5rem;
+            }
+        }
+
+        /* Landscape orientation specific styles */
+        @media (max-width: 1024px) and (orientation: landscape) {
+            .tablet-header {
+                grid-template-columns: 1fr auto 1fr;
+                grid-template-rows: auto;
+            }
+
+            .current-time {
+                font-size: 2.5rem;
+            }
+
+            .tablet-content {
+                grid-template-columns: repeat(2, 1fr);
+                height: calc(100vh - 150px);
+            }
+
+            .tablet-section {
+                max-height: calc(100vh - 180px);
+            }
+
+            /* More compact items in landscape */
+            .todo-item, .event-item {
+                min-height: 100px;
+                padding: 1rem 1.25rem;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+            }
+
+            .tablet-footer {
+                padding-bottom: 0.25rem;
+            }
+
+            .nav-button {
+                padding: 0.75rem 1.5rem;
+            }
+        }
+
+        /* Lovely notification styling */
+        .love-notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 600px;
+            background: linear-gradient(135deg, #ff7eb3, #ff758c);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(255, 105, 180, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .love-notification::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 75C60.3553 64.6447 75 50 75 37.5C75 28.4919 67.7844 20 58.75 20C54.6944 20 50.8314 21.5639 48.0393 24.1104C45.3701 21.5639 41.8056 20 37.75 20C27.4656 20 20 29.4656 20 37.5C20 50 37.3959 65.9979 50 75Z' fill='rgba(255,255,255,0.1)'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: 95% 20%;
+            opacity: 0.6;
+        }
+
+        .love-notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .love-notification-content {
+            display: flex;
+            padding: 16px;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .love-notification-icon {
+            font-size: 2.5rem;
+            margin-right: 12px;
+            animation: heartbeat 1.5s infinite;
+        }
+
+        @keyframes heartbeat {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .love-notification-text {
+            flex: 1;
+        }
+
+        .love-notification-text h3 {
+            margin: 0;
+            color: black;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .love-notification-text p {
+            margin: 4px 0 0 0;
+            color: black;
+            font-size: 1rem;
+        }
+
+        .love-notification-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            margin-left: 8px;
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .love-notification-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            opacity: 1;
+        }
+
+        .love-notification.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .love-notification {
+            pointer-events: none; /* Default: no interaction */
         }
     </style>
 </head>
@@ -599,12 +1034,13 @@
             <div class="logo-text"></div>
         </div>
 
-        <div class="weather-placeholder">
+        <div class="weather-placeholder" id="weather-container">
             <div class="weather-info">
-                <div class="weather-temp">22°C</div>
-                <div class="weather-condition">Tallinn, Päikseline</div>
+                <!-- Added specific IDs for AccuWeather integration -->
+                <div id="header-temp" class="weather-temp">22°C</div>
+                <div id="header-loc" class="weather-condition">Tartu, Päikseline</div>
             </div>
-            <div class="weather-icon">☀️</div>
+            <div id="header-weather-icon" class="weather-icon">☀️</div>
         </div>
     </div>
 
@@ -664,7 +1100,6 @@
             <div class="list-container">
                 {% for event in events %}
                 <div class="event-item">
-                    <div class="event-indicator" style="background-color: var(--{{ event.color }}-color);"></div>
                     <div class="event-content">
                         <h3 class="event-title">{{ event.title }}</h3>
                         <div class="event-time">
@@ -704,10 +1139,10 @@
 
     <div class="tablet-footer">
         <a href="{{ url_for('main.index') }}" class="nav-button">
-            <span class="nav-button-icon">📋</span> Ülesanded
+            <span class="nav-button-icon">📋</span> <span>Ülesanded</span>
         </a>
         <a href="{{ url_for('main.events') }}" class="nav-button">
-            <span class="nav-button-icon">📅</span> Kalender
+            <span class="nav-button-icon">📅</span> <span>Kalender</span>
         </a>
     </div>
 </div>
@@ -736,6 +1171,56 @@
         setTimeout(updateDateTime, nextMinute);
     }
 
+    // Fetch weather data from our proxy endpoint
+    function fetchWeatherData() {
+        // Add loading state
+        const weatherContainer = document.getElementById('weather-container');
+        weatherContainer.classList.add('weather-loading');
+
+        fetch('/api/weather-tartu')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update the weather information in the UI with a nice fade effect
+                const tempEl = document.getElementById('header-temp');
+                const locEl = document.getElementById('header-loc');
+                const iconEl = document.getElementById('header-weather-icon');
+
+                // Apply transition effect
+                [tempEl, locEl, iconEl].forEach(el => {
+                    el.style.opacity = '0';
+                    setTimeout(() => {
+                        if (el === tempEl) el.textContent = data.temp;
+                        if (el === locEl) el.textContent = `${data.location}, ${data.condition}`;
+                        if (el === iconEl) el.textContent = data.icon;
+
+                        el.style.opacity = '1';
+                    }, 300);
+                });
+
+                // Remove loading state
+                setTimeout(() => {
+                    weatherContainer.classList.remove('weather-loading');
+                }, 500);
+
+                console.log('Weather data updated successfully');
+            })
+            .catch(error => {
+                console.error('Error fetching weather data:', error);
+                // Set fallback values
+                document.getElementById('header-temp').textContent = '22°C';
+                document.getElementById('header-loc').textContent = 'Tartu, Päikseline';
+                document.getElementById('header-weather-icon').textContent = '☀️';
+
+                // Remove loading state
+                weatherContainer.classList.remove('weather-loading');
+            });
+    }
+
     // Auto refresh page every 5 minutes
     function setupAutoRefresh() {
         setTimeout(function () {
@@ -744,9 +1229,123 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
+        // Initialize time and date
         updateDateTime();
+
+        // Fetch weather data initially
+        fetchWeatherData();
+
+        // Then update weather data every 30 minutes
+        setInterval(fetchWeatherData, 30 * 60 * 1000);
+
+        // Setup auto-refresh
         setupAutoRefresh();
+
+        // Add staggered animation to items
+        const todoItems = document.querySelectorAll('.todo-item');
+        const eventItems = document.querySelectorAll('.event-item');
+
+        [...todoItems, ...eventItems].forEach((item, index) => {
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(20px)';
+
+            setTimeout(() => {
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            }, 100 + (index * 50));
+        });
     });
 </script>
+<script>
+    function getRandomLoveMessage() {
+        const messages = [
+            {title: "Tere hommikust Musi!💖", message: "Armastan Sind!"},
+            {title: "Ilusat päeva Kallis!✨", message: "Iga hetk Sinuga on nagu unistuste täitumine!"},
+            {title: "Hommikut, mu kaunis Printsess!👑", message: "Loodan et sul tuleb imeline päev!"},
+            {title: "Hommiku kallistus sulle! 💐", message: "Oled imeline!"},
+            {title: "Hei kenakene! 💞", message: "Oled imeline!"},
+            {title: "Ärka üles, mu südameröövel!💘", message: "Oled minu kõige kallim aare!"},
+            {title: "Oi, kesse üles ärkas!🌹", message: "KALLISTAN!!"},
+            {title: "Tere hommikust, mu armastus! 🌞", message: "Su naer on mu päikesevalgus!"},
+            {title: "Hommik, mu ilus! 🌸", message: "Tänan sind, et oled mu kõrval!"},
+            {title: "Tere, mu väike õnn! 🍀", message: "Oled kõige parem asi, mis mulle kunagi juhtunud on!"}
+        ];
+        return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function setupLoveNotification() {
+        const now = new Date();
+        const estonianTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Tallinn"}));
+        const currentHour = estonianTime.getHours();
+        const currentMinutes = estonianTime.getMinutes();
+        const totalMinutes = currentHour * 60 + currentMinutes;
+
+        // TESTING WINDOW: 00:00 (0) to 00:05 (5) Estonian time
+        const notificationStart = 7 * 60;    // 7:00 AM (420 minutes)
+        const notificationEnd = 9 * 60;     // 9:00 AM (540 minutes)
+
+        // Check if current time is within the testing window
+        const shouldShowNotification = totalMinutes >= notificationStart && totalMinutes < notificationEnd;
+
+        // For testing: Uncomment next line to always show notification regardless of time
+        // const shouldShowNotification = true;
+
+        const notification = document.getElementById('love-notification');
+        if (!notification) return;
+
+        // Setup close button
+        const closeButton = notification.querySelector('.love-notification-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', function () {
+                notification.classList.remove('show');
+                localStorage.setItem('notificationClosed', 'true');
+            });
+        }
+
+        if (shouldShowNotification && localStorage.getItem('notificationClosed') !== 'true') {
+            // Get random message
+            const loveMsg = getRandomLoveMessage();
+            const titleEl = notification.querySelector('.love-notification-text h3');
+            const messageEl = notification.querySelector('.love-notification-text p');
+
+            if (titleEl && messageEl) {
+                titleEl.textContent = loveMsg.title;
+                messageEl.textContent = loveMsg.message;
+            }
+
+            // Show notification
+            notification.classList.add('show');
+
+            // Calculate how many minutes left until 00:05
+            const minutesLeft = notificationEnd - totalMinutes;
+            const hideTimeout = minutesLeft * 60 * 1000; // Convert to milliseconds
+
+            // Auto-hide at 00:05
+            setTimeout(() => {
+                notification.classList.remove('show');
+                localStorage.removeItem('notificationClosed');
+            }, hideTimeout);
+        } else {
+            localStorage.removeItem('notificationClosed');
+        }
+    }
+
+    // Run on page load and check every minute
+    document.addEventListener('DOMContentLoaded', function () {
+        setupLoveNotification();
+        setInterval(setupLoveNotification, 60000); // Check every minute
+    });
+</script>
+{% block extra_scripts %}{% endblock %}
+<div id="love-notification" class="love-notification">
+    <div class="love-notification-content">
+        <div class="love-notification-icon">❤️</div>
+        <div class="love-notification-text">
+            <h3>Tere hommikust Musi!</h3>
+            <p>Armastan Sind!</p>
+        </div>
+        <button class="love-notification-close">×</button>
+    </div>
+</div>
 </body>
 </html>
