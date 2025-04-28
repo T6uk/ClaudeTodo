@@ -22,52 +22,28 @@ function updateDateTime() {
 }
 
 // Fetch weather data from our proxy endpoint
-function fetchWeatherData() {
-    // Add loading state
-    const weatherContainer = document.getElementById('weather-container');
-    weatherContainer.classList.add('weather-loading');
-
+function fetchWeather() {
     fetch('/api/weather-tartu')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            // Update the weather information in the UI with a nice fade effect
-            const tempEl = document.getElementById('header-temp');
-            const locEl = document.getElementById('header-loc');
-            const iconEl = document.getElementById('header-weather-icon');
-
-            // Apply transition effect
-            [tempEl, locEl, iconEl].forEach(el => {
-                el.style.opacity = '0';
-                setTimeout(() => {
-                    if (el === tempEl) el.textContent = data.temp;
-                    if (el === locEl) el.textContent = `${data.location}, ${data.condition}`;
-                    if (el === iconEl) el.textContent = data.icon;
-
-                    el.style.opacity = '1';
-                }, 300);
-            });
-
-            // Remove loading state
-            setTimeout(() => {
-                weatherContainer.classList.remove('weather-loading');
-            }, 500);
-
-            console.log('Weather data updated successfully');
+            if (data.success) {
+                document.getElementById('header-temp').textContent = data.temp;
+                document.getElementById('header-loc').textContent = data.condition;
+                document.getElementById('header-weather-icon').textContent = data.icon;
+            } else {
+                console.error('Weather fetch failed:', data.error);
+                // Use fallback values if API fails
+                document.getElementById('header-temp').textContent = '---';
+                document.getElementById('header-loc').textContent = 'Tartu';
+                document.getElementById('header-weather-icon').textContent = '👻';
+            }
         })
         .catch(error => {
-            console.error('Error fetching weather data:', error);
-            // Set fallback values
-            document.getElementById('header-temp').textContent = '22°C';
-            document.getElementById('header-loc').textContent = 'Tartu, Päikseline';
-            document.getElementById('header-weather-icon').textContent = '☀️';
-
-            // Remove loading state
-            weatherContainer.classList.remove('weather-loading');
+            console.error('Weather fetch error:', error);
+            // Use fallback values if fetch fails completely
+            document.getElementById('header-temp').textContent = '---';
+            document.getElementById('header-loc').textContent = 'Tartu';
+            document.getElementById('header-weather-icon').textContent = '👻';
         });
 }
 
@@ -81,12 +57,6 @@ function setupAutoRefresh() {
 document.addEventListener('DOMContentLoaded', function () {
     // Initialize time and date
     updateDateTime();
-
-    // Fetch weather data initially
-    fetchWeatherData();
-
-    // Then update weather data every 30 minutes
-    setInterval(fetchWeatherData, 120 * 60 * 1000);
 
     // Setup auto-refresh
     setupAutoRefresh();
@@ -112,14 +82,31 @@ function getRandomLoveMessage() {
         {title: "Ilusat päeva Kallis!✨", message: "Iga hetk Sinuga on nagu unistuste täitumine!"},
         {title: "Hommikut, mu kaunis Printsess!👑", message: "Loodan et sul tuleb imeline päev!"},
         {title: "Hommiku kallistus sulle! 💐", message: "Oled imeline!"},
-        {title: "Hei kenakene! 💞", message: "Oled imeline!"},
+        {title: "Hei kenakene! 💞", message: "Musid-Kallid-Õhupallid!"},
         {title: "Ärka üles, mu südameröövel!💘", message: "Oled minu kõige kallim aare!"},
         {title: "Oi, kesse üles ärkas!🌹", message: "KALLISTAN!!"},
         {title: "Tere hommikust, mu armastus! 🌞", message: "Su naer on mu päikesevalgus!"},
         {title: "Hommik, mu ilus! 🌸", message: "Tänan sind, et oled mu kõrval!"},
-        {title: "Tere, mu väike õnn! 🍀", message: "Oled kõige parem asi, mis mulle kunagi juhtunud on!"}
+        {title: "Meow Meow Kullakene! 😻😻", message: "MUSI OLED!!"},
+        {title: "Tere, mu väike õnn! 🍀", message: "Oled kõige parem asi, mis muinuga kunagi juhtunud on!"}
     ];
-    return messages[Math.floor(Math.random() * messages.length)];
+
+    // Get today's date in format YYYY-MM-DD as string
+    const today = new Date().toLocaleDateString('en-CA'); // Use Canadian locale for YYYY-MM-DD format
+
+    // Check if we already selected a message for today
+    let todaysMessageIndex = localStorage.getItem('loveMessageIndex_' + today);
+
+    // If no message selected for today, pick a random one and save it
+    if (todaysMessageIndex === null) {
+        todaysMessageIndex = Math.floor(Math.random() * messages.length);
+        localStorage.setItem('loveMessageIndex_' + today, todaysMessageIndex);
+    } else {
+        // Convert from string to number
+        todaysMessageIndex = parseInt(todaysMessageIndex);
+    }
+
+    return messages[todaysMessageIndex];
 }
 
 function setupLoveNotification() {
@@ -129,11 +116,11 @@ function setupLoveNotification() {
     const currentMinutes = estonianTime.getMinutes();
     const totalMinutes = currentHour * 60 + currentMinutes;
 
-    // TESTING WINDOW: 00:00 (0) to 00:05 (5) Estonian time
-    const notificationStart = 7 * 60;    // 7:00 AM (420 minutes)
-    const notificationEnd = 9 * 60;     // 9:00 AM (540 minutes)
+    // Define notification window: 20:25 (1225 minutes) to 20:30 (1230 minutes)
+    const notificationStart = 5 * 60 + 0;   // 5:00 AM (300 minutes)
+    const notificationEnd = 9 * 60 + 0;     // 9:00 AM (540 minutes)
 
-    // Check if current time is within the testing window
+    // Check if current time is within the notification window
     const shouldShowNotification = totalMinutes >= notificationStart && totalMinutes < notificationEnd;
 
     // For testing: Uncomment next line to always show notification regardless of time
@@ -145,14 +132,21 @@ function setupLoveNotification() {
     // Setup close button
     const closeButton = notification.querySelector('.love-notification-close');
     if (closeButton) {
-        closeButton.addEventListener('click', function () {
+        closeButton.addEventListener('click', function() {
             notification.classList.remove('show');
             localStorage.setItem('notificationClosed', 'true');
         });
     }
 
-    if (shouldShowNotification && localStorage.getItem('notificationClosed') !== 'true') {
-        // Get random message
+    // Get today's date as string for storage key
+    const today = new Date().toLocaleDateString('en-CA');
+    const notificationShownKey = 'notificationShown_' + today;
+
+    // Check if notification shown today and if we're in the time window
+    if (shouldShowNotification && localStorage.getItem(notificationShownKey) !== 'true' &&
+        localStorage.getItem('notificationClosed') !== 'true') {
+
+        // Get random message for today
         const loveMsg = getRandomLoveMessage();
         const titleEl = notification.querySelector('.love-notification-text h3');
         const messageEl = notification.querySelector('.love-notification-text p');
@@ -165,22 +159,38 @@ function setupLoveNotification() {
         // Show notification
         notification.classList.add('show');
 
-        // Calculate how many minutes left until 00:05
+        // Mark that we've shown notification today
+        localStorage.setItem(notificationShownKey, 'false');
+
+        // Calculate how many minutes left until 20:30
         const minutesLeft = notificationEnd - totalMinutes;
         const hideTimeout = minutesLeft * 60 * 1000; // Convert to milliseconds
 
-        // Auto-hide at 00:05
+        // Auto-hide at the end of time window
         setTimeout(() => {
             notification.classList.remove('show');
             localStorage.removeItem('notificationClosed');
         }, hideTimeout);
-    } else {
+    } else if (totalMinutes >= notificationEnd) {
+        // Reset closed state after the time window
         localStorage.removeItem('notificationClosed');
     }
 }
 
-// Run on page load and check every minute
-document.addEventListener('DOMContentLoaded', function () {
+// Run on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initial updates
+    updateDateTime();
     setupLoveNotification();
-    setInterval(setupLoveNotification, 60000); // Check every minute
+    fetchWeather(); // Initial fetch
+
+    // Update time every second
+    setInterval(updateDateTime, 1000);
+
+    // Check notification every minute
+    setInterval(setupLoveNotification, 60000);
+
+    // Refresh weather every 30 minutes (1800000 ms)
+    // Using 30min to stay well under the API limits
+    setInterval(fetchWeather, 1800000);
 });

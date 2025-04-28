@@ -963,42 +963,74 @@ def tablet_view():
 @bp.route('/api/weather-tartu')
 def weather_tartu():
     try:
-        API_KEY = "8hfajKkGs4NE6PzR8RUQ7pDLuWnUNNs9"  # <- use your actual API key
-        LOCATION_KEY = "131136"   # Tartu
+        API_KEY = "9c8db33a8b2d45fea7e172537252404"  # Get from weatherapi.com
+        CITY = "Tartu, Estonia"
 
-        # AccuWeather API URL
-        url = f"https://dataservice.accuweather.com/currentconditions/v1/{LOCATION_KEY}?apikey={API_KEY}"
+        # WeatherAPI.com URL - also works on PythonAnywhere free tier
+        url = f"https://api.weatherapi.com/v1/current.json?key={API_KEY}&q={CITY}&aqi=no"
 
         response = requests.get(url)
         data = response.json()
 
-        weather = data[0]
-        temperature = f"{weather['Temperature']['Metric']['Value']}°C"
-        condition = weather['WeatherText']
+        if response.status_code == 200:
+            temperature = f"{round(data['current']['temp_c'])}°C"
+            condition = data['current']['condition']['text']
 
-        # Weather icon mapping (optional)
-        icons = {
-            'Sunny': '☀️',
-            'Clear': '☀️',
-            'Partly Sunny': '🌤️',
-            'Partly Cloudy': '⛅',
-            'Cloudy': '☁️',
-            'Rain': '🌧️',
-            'Showers': '🌦️',
-            'Snow': '❄️',
-            'Fog': '🌫️',
-            'Windy': '💨',
-        }
+            # Weather icon mapping
+            icons = {
+                'Sunny': '☀️',
+                'Clear': '☀️',
+                'Partly cloudy': '⛅',
+                'Cloudy': '☁️',
+                'Overcast': '☁️',
+                'Mist': '🌫️',
+                'Fog': '🌫️',
+                'Patchy rain possible': '🌦️',
+                'Patchy snow possible': '🌨️',
+                'Patchy sleet possible': '🌨️',
+                'Patchy freezing drizzle possible': '🌨️',
+                'Thundery outbreaks possible': '⛈️',
+                'Light drizzle': '🌦️',
+                'Drizzle': '🌦️',
+                'Light rain': '🌦️',
+                'Moderate rain': '🌧️',
+                'Heavy rain': '🌧️',
+                'Light snow': '❄️',
+                'Snow': '❄️',
+                'Heavy snow': '❄️',
+                'Thunderstorm': '⛈️'
+            }
 
-        icon = icons.get(condition, '🌡️')
+            # Estonian translations
+            et_descriptions = {
+                'Sunny': 'Päikseline',
+                'Clear': 'Selge',
+                'Partly cloudy': 'Osaliselt pilves',
+                'Cloudy': 'Pilves',
+                'Overcast': 'Täiesti pilves',
+                'Mist': 'Udune',
+                'Fog': 'Udu',
+                'Light rain': 'Kerge vihm',
+                'Moderate rain': 'Mõõdukas vihm',
+                'Heavy rain': 'Tugev vihm',
+                'Light snow': 'Kerge lumi',
+                'Snow': 'Lumi',
+                'Heavy snow': 'Tugev lumesadu',
+                'Thunderstorm': 'Äike'
+            }
 
-        return jsonify({
-            'temp': temperature,
-            'condition': condition,
-            'location': 'Tartu',
-            'icon': icon,
-            'success': True
-        })
+            et_description = et_descriptions.get(condition, condition)
+            icon = icons.get(condition, '🌡️')
+
+            return jsonify({
+                'temp': temperature,
+                'condition': f"{CITY}, {et_description}",
+                'location': CITY,
+                'icon': icon,
+                'success': True
+            })
+        else:
+            raise Exception(f"API error: {data.get('message', 'Unknown error')}")
 
     except Exception as e:
         return jsonify({

@@ -403,7 +403,7 @@ body {
     align-items: center;
     gap: 0.5rem;
     font-weight: 500;
-    padding: 0.4rem 0.75rem;
+    padding: 0.1rem 0.35rem;
     background-color: rgba(226, 232, 240, 0.5);
     border-radius: 9999px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -504,7 +504,7 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.4rem 0.75rem;
+    padding: 0.1rem 0.35rem;
     background-color: rgba(226, 232, 240, 0.5);
     border-radius: 9999px;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
@@ -524,7 +524,7 @@ body {
 /* Badges - Enhanced with glass morphism */
 .badge {
     display: inline-block;
-    padding: 0.35rem 0.75rem;
+    padding: 0.15rem 0.35rem;
     border-radius: 9999px;
     font-size: 0.9rem;
     font-weight: 600;
