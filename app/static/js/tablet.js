@@ -395,6 +395,145 @@ function getNextLoveMessage() {
     return messages[selectedIndex];
 }
 
+// Updated slider functionality with enhanced animations
+function setupSlider() {
+    const sliderWrapper = document.getElementById('slider-wrapper');
+    const prevButton = document.getElementById('prev-button');
+    const nextButton = document.getElementById('next-button');
+    const indicators = document.querySelectorAll('.slider-indicator');
+    const slides = document.querySelectorAll('.slide');
+
+    let currentSlide = 0;
+    let autoSlideTimer;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const slideCount = slides.length;
+
+    // Initialize slides with classes
+    function initSlides() {
+        slides.forEach((slide, index) => {
+            if (index === currentSlide) {
+                slide.classList.add('slide-active');
+                slide.classList.remove('slide-entering', 'slide-exiting');
+            } else {
+                slide.classList.add('slide-entering');
+                slide.classList.remove('slide-active', 'slide-exiting');
+            }
+        });
+    }
+
+    // Start auto sliding
+    function startAutoSlide() {
+        // Clear any existing timer
+        if (autoSlideTimer) {
+            clearInterval(autoSlideTimer);
+        }
+
+        // Set up a new timer to slide every minute
+        autoSlideTimer = setInterval(() => {
+            goToSlide((currentSlide + 1) % slideCount, 'next');
+        }, 60000); // 60000ms = 1 minute
+    }
+
+    // Function to animate slide transitions
+    function animateSlideChange(newIndex, direction) {
+        // Get the current active slide
+        const currentSlideElement = slides[currentSlide];
+        const newSlideElement = slides[newIndex];
+
+        // Set the exit direction
+        currentSlideElement.classList.remove('slide-active');
+        currentSlideElement.classList.add('slide-exiting');
+
+        // Set the enter direction
+        newSlideElement.classList.remove('slide-entering');
+        newSlideElement.classList.add('slide-active');
+
+        // Wait for animation to complete, then clean up classes
+        setTimeout(() => {
+            currentSlideElement.classList.remove('slide-exiting');
+            currentSlideElement.classList.add('slide-entering');
+        }, 800); // Match transition duration
+    }
+
+    // Function to go to a specific slide
+    function goToSlide(slideIndex, direction = 'next') {
+        if (slideIndex < 0 || slideIndex >= slideCount) return;
+
+        // Animate the slide transition
+        animateSlideChange(slideIndex, direction);
+
+        // Update the transform for the slider wrapper
+        sliderWrapper.style.transform = `translateX(-${slideIndex * 100}%)`;
+
+        // Update the current slide index
+        currentSlide = slideIndex;
+
+        // Update indicators
+        indicators.forEach((indicator, index) => {
+            if (index === currentSlide) {
+                indicator.classList.add('active');
+            } else {
+                indicator.classList.remove('active');
+            }
+        });
+
+        // Reset the auto slide timer whenever we change slides
+        startAutoSlide();
+    }
+
+    // Set up event listeners for navigation buttons
+    if (prevButton) {
+        prevButton.addEventListener('click', () => {
+            goToSlide((currentSlide - 1 + slideCount) % slideCount, 'prev');
+        });
+    }
+
+    if (nextButton) {
+        nextButton.addEventListener('click', () => {
+            goToSlide((currentSlide + 1) % slideCount, 'next');
+        });
+    }
+
+    // Set up event listeners for indicators
+    indicators.forEach((indicator) => {
+        indicator.addEventListener('click', () => {
+            const slideIndex = parseInt(indicator.getAttribute('data-index'));
+            const direction = slideIndex > currentSlide ? 'next' : 'prev';
+            goToSlide(slideIndex, direction);
+        });
+    });
+
+    // Touch event handling for swipe functionality
+    if (sliderWrapper) {
+        sliderWrapper.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        sliderWrapper.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+    }
+
+    // Handle swipe gesture
+    function handleSwipe() {
+        const swipeThreshold = 50; // minimum distance for a swipe
+
+        if (touchEndX + swipeThreshold < touchStartX) {
+            // Swipe left - go to next slide
+            goToSlide((currentSlide + 1) % slideCount, 'next');
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+            // Swipe right - go to previous slide
+            goToSlide((currentSlide - 1 + slideCount) % slideCount, 'prev');
+        }
+    }
+
+    // Initialize the slider
+    initSlides();
+    startAutoSlide();
+}
+
 function setupLoveNotification() {
     const now = new Date();
     const estonianTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Tallinn"}));
@@ -465,18 +604,39 @@ function setupLoveNotification() {
 
 // Run on page load
 document.addEventListener('DOMContentLoaded', function() {
-    // Initial updates
+    // Existing code remains here
+
+    // Initialize time and date
     updateDateTime();
+
+    // Setup auto-refresh
+    setupAutoRefresh();
+
+    // Add staggered animation to items
+    const todoItems = document.querySelectorAll('.todo-item');
+    const eventItems = document.querySelectorAll('.event-item');
+
+    [...todoItems, ...eventItems].forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+
+        setTimeout(() => {
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, 100 + (index * 50));
+    });
+
+    // Initialize the slider
+    setupSlider();
+
+    // Check notification on load
     setupLoveNotification();
-    fetchWeather(); // Initial fetch
 
-    // Update time every second
+    // Fetch weather data
+    fetchWeather();
+
+    // Set up periodic checks
     setInterval(updateDateTime, 1000);
-
-    // Check notification every minute
     setInterval(setupLoveNotification, 60000);
-
-    // Refresh weather every 30 minutes (1800000 ms)
-    // Using 30min to stay well under the API limits
     setInterval(fetchWeather, 1800000);
 });

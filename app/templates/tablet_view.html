@@ -43,96 +43,117 @@
         </div>
     </div>
 
+    <!-- Modified tablet-content to include slider functionality -->
     <div class="tablet-content">
-        <div class="tablet-section" style="animation-delay: 0.1s;">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <span class="section-icon">📋</span>
-                    Olulised Ülesanded
-                </h2>
-                <a href="{{ url_for('main.index') }}" class="section-link">Vaata kõiki</a>
-            </div>
-
-            <div class="list-container">
-                {% for todo in todos %}
-                <div class="todo-item {% if todo.is_overdue %}overdue{% elif todo.is_today %}today{% else %}{{ todo.priority }}{% endif %}">
-                    <h3 class="todo-title">{{ todo.title }}</h3>
-                    <div class="todo-meta">
-                        <div class="todo-due">
-                            <span>⏰</span>
-                            {% if todo.is_overdue %}
-                            <span class="badge badge-danger">Hilinenud</span>
-                            {% elif todo.is_today %}
-                            <span class="badge badge-warning">Täna</span>
-                            {% elif (todo.due_date.date() - today).days == 1 %}
-                            <span class="badge badge-warning">Homme</span>
-                            {% else %}
-                            <span>{{ todo.due_date.strftime('%d. %b') }}</span>
-                            {% endif %}
-                            {{ todo.due_date.strftime('%H:%M') }}
+        <div class="slider-container">
+            <div class="slider-wrapper" id="slider-wrapper">
+                <!-- Slide 1: Todos -->
+                <div class="slide">
+                    <div class="tablet-section" style="animation-delay: 0.1s;">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <span class="section-icon">📋</span>
+                                Olulised Ülesanded
+                            </h2>
+                            <a href="{{ url_for('main.index') }}" class="section-link">Vaata kõiki</a>
                         </div>
-                        <span class="badge badge-{{ todo.priority }}">
-                                {% if todo.priority == 'high' %}Kõrge{% elif todo.priority == 'medium' %}Keskmine{% else %}Madal{% endif %}
-                            </span>
-                    </div>
-                </div>
-                {% endfor %}
 
-                {% if not todos %}
-                <div class="empty-message">
-                    <div class="empty-icon">✨</div>
-                    <div>Aktiivseid ülesandeid ei ole</div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+                        <div class="list-container">
+                            {% for todo in todos %}
+                            <div class="todo-item {% if todo.is_overdue %}overdue{% elif todo.is_today %}today{% else %}{{ todo.priority }}{% endif %}">
+                                <h3 class="todo-title">{{ todo.title }}</h3>
+                                <div class="todo-meta">
+                                    <div class="todo-due">
+                                        <span>⏰</span>
+                                        {% if todo.is_overdue %}
+                                        <span class="badge badge-danger">Hilinenud</span>
+                                        {% elif todo.is_today %}
+                                        <span class="badge badge-warning">Täna</span>
+                                        {% elif (todo.due_date.date() - today).days == 1 %}
+                                        <span class="badge badge-warning">Homme</span>
+                                        {% else %}
+                                        <span>{{ todo.due_date.strftime('%d. %b') }}</span>
+                                        {% endif %}
+                                        {{ todo.due_date.strftime('%H:%M') }}
+                                    </div>
+                                    <span class="badge badge-{{ todo.priority }}">
+                                        {% if todo.priority == 'high' %}Kõrge{% elif todo.priority == 'medium' %}Keskmine{% else %}Madal{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
 
-        <div class="tablet-section" style="animation-delay: 0.2s;">
-            <div class="section-header">
-                <h2 class="section-title">
-                    <span class="section-icon">📅</span>
-                    Tulevased Sündmused
-                </h2>
-                <a href="{{ url_for('main.events') }}" class="section-link">Vaata kõiki</a>
-            </div>
-
-            <div class="list-container">
-                {% for event in events %}
-                <div class="event-item">
-                    <div class="event-content">
-                        <h3 class="event-title">{{ event.title }}</h3>
-                        <div class="event-time">
-                            <span>🕒</span>
-                            {% if event.all_day %}
-                            {% if event.start_datetime.date() == today %}
-                            <strong>Täna</strong> (Kogu päev)
-                            {% elif (event.start_datetime.date() - today).days == 1 %}
-                            <strong>Homme</strong> (Kogu päev)
-                            {% else %}
-                            <strong>{{ event.start_datetime.strftime('%d. %b') }}</strong> (Kogu päev)
-                            {% endif %}
-                            {% else %}
-                            {% if event.start_datetime.date() == today %}
-                            <strong>Täna</strong>, {{ event.start_datetime.strftime('%H:%M') }}
-                            {% elif (event.start_datetime.date() - today).days == 1 %}
-                            <strong>Homme</strong>, {{ event.start_datetime.strftime('%H:%M') }}
-                            {% else %}
-                            <strong>{{ event.start_datetime.strftime('%d. %b') }}</strong>, {{
-                            event.start_datetime.strftime('%H:%M') }}
-                            {% endif %}
+                            {% if not todos %}
+                            <div class="empty-message">
+                                <div class="empty-icon">🙀</div>
+                                <div>Aktiivseid ülesandeid ei ole</div>
+                            </div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-                {% endfor %}
 
-                {% if not events %}
-                <div class="empty-message">
-                    <div class="empty-icon">🌈</div>
-                    <div>Tulevasi sündmusi ei ole</div>
+                <!-- Slide 2: Events -->
+                <div class="slide">
+                    <div class="tablet-section" style="animation-delay: 0.2s;">
+                        <div class="section-header">
+                            <h2 class="section-title">
+                                <span class="section-icon">📅</span>
+                                Tulevased Sündmused
+                            </h2>
+                            <a href="{{ url_for('main.events') }}" class="section-link">Vaata kõiki</a>
+                        </div>
+
+                        <div class="list-container">
+                            {% for event in events %}
+                            <div class="event-item">
+                                <div class="event-content">
+                                    <h3 class="event-title">{{ event.title }}</h3>
+                                    <div class="event-time">
+                                        <span>🕒</span>
+                                        {% if event.all_day %}
+                                        {% if event.start_datetime.date() == today %}
+                                        <strong>Täna</strong> (Kogu päev)
+                                        {% elif (event.start_datetime.date() - today).days == 1 %}
+                                        <strong>Homme</strong> (Kogu päev)
+                                        {% else %}
+                                        <strong>{{ event.start_datetime.strftime('%d. %b') }}</strong> (Kogu päev)
+                                        {% endif %}
+                                        {% else %}
+                                        {% if event.start_datetime.date() == today %}
+                                        <strong>Täna</strong>, {{ event.start_datetime.strftime('%H:%M') }}
+                                        {% elif (event.start_datetime.date() - today).days == 1 %}
+                                        <strong>Homme</strong>, {{ event.start_datetime.strftime('%H:%M') }}
+                                        {% else %}
+                                        <strong>{{ event.start_datetime.strftime('%d. %b') }}</strong>, {{
+                                        event.start_datetime.strftime('%H:%M') }}
+                                        {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+
+                            {% if not events %}
+                            <div class="empty-message">
+                                <div class="empty-icon">😼</div>
+                                <div>Tulevasi sündmusi ei ole</div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
-                {% endif %}
             </div>
+
+            <!-- Slider indicators -->
+            <div class="slider-indicators">
+                <span class="slider-indicator active" data-index="0">📋</span>
+                <span class="slider-indicator" data-index="1">📅</span>
+            </div>
+
+            <!-- Slider navigation buttons -->
+            <button class="slider-button prev" id="prev-button">❮</button>
+            <button class="slider-button next" id="next-button">❯</button>
         </div>
     </div>
 
