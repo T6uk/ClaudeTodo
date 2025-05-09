@@ -2,12 +2,15 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_session import Session  # Add this import
 from config import Config
 from datetime import datetime
+import os  # Add this import
 
 # Create extensions instances first, before any imports that might use them
 db = SQLAlchemy()
 migrate = Migrate()
+sess = Session()  # Add this
 
 
 def create_app(config_class=Config):
@@ -17,10 +20,17 @@ def create_app(config_class=Config):
     # Session configuration
     app.config['SESSION_TYPE'] = 'filesystem'
     app.config['SESSION_PERMANENT'] = True
+    app.config['SESSION_USE_SIGNER'] = True
+    app.config['SESSION_FILE_DIR'] = os.path.join(os.getcwd(), 'flask_session')
     app.config['PERMANENT_SESSION_LIFETIME'] = config_class.PERMANENT_SESSION_LIFETIME
 
+    # Initialize extensions
     db.init_app(app)
     migrate.init_app(app, db)
+    sess.init_app(app)  # Initialize the session extension
+
+    # Ensure session directory exists
+    os.makedirs(app.config['SESSION_FILE_DIR'], exist_ok=True)
 
     # Register custom template filters
     @app.template_filter('now')

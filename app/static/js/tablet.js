@@ -286,9 +286,10 @@ function checkForHoliday() {
 
 // Track which love messages have been shown, to ensure no repeats
 function getNextLoveMessage() {
-    // First check if today is a special holiday
+    // First check if today is a special holiday - this has highest priority
     const holidayMessage = checkForHoliday();
     if (holidayMessage) {
+        console.log("Today is a holiday! Showing holiday message.");
         return holidayMessage;
     }
 
@@ -333,6 +334,7 @@ function getNextLoveMessage() {
 
     // If we already have a message for today, use that
     if (todaysMessageIndex !== null) {
+        console.log(`Using today's already selected message (index: ${todaysMessageIndex})`);
         return messages[parseInt(todaysMessageIndex)];
     }
 
@@ -347,6 +349,7 @@ function getNextLoveMessage() {
             // Validate that each index is a number within our range
             shownSequence = shownSequence.filter(index =>
                 typeof index === 'number' && index >= 0 && index < messages.length);
+            console.log(`Retrieved shown message sequence: [${shownSequence.join(', ')}]`);
         } catch (e) {
             // Reset if there's an error parsing
             console.error('Error parsing shown message sequence:', e);
@@ -362,9 +365,9 @@ function getNextLoveMessage() {
         }
     }
 
-    // If all messages have been shown, reset sequence
+    // If all messages have been shown, reset sequence and shuffle for the next cycle
     if (availableIndices.length === 0) {
-        console.log('All messages have been shown, shuffling and starting again');
+        console.log('All messages have been shown, starting a new cycle with shuffled order');
         shownSequence = []; // Reset shown messages
 
         // All messages are available again
@@ -377,11 +380,15 @@ function getNextLoveMessage() {
             const j = Math.floor(Math.random() * (i + 1));
             [availableIndices[i], availableIndices[j]] = [availableIndices[j], availableIndices[i]];
         }
+
+        console.log(`Shuffled new message order: [${availableIndices.join(', ')}]`);
     }
 
     // Pick a random available index
     const randomIndex = Math.floor(Math.random() * availableIndices.length);
     const selectedIndex = availableIndices[randomIndex];
+
+    console.log(`Selected new message index ${selectedIndex} for today`);
 
     // Add the selected index to our shown sequence
     shownSequence.push(selectedIndex);
@@ -508,12 +515,12 @@ function setupSlider() {
     if (sliderWrapper) {
         sliderWrapper.addEventListener('touchstart', (e) => {
             touchStartX = e.changedTouches[0].screenX;
-        }, { passive: true });
+        }, {passive: true});
 
         sliderWrapper.addEventListener('touchend', (e) => {
             touchEndX = e.changedTouches[0].screenX;
             handleSwipe();
-        }, { passive: true });
+        }, {passive: true});
     }
 
     // Handle swipe gesture
@@ -534,6 +541,12 @@ function setupSlider() {
     startAutoSlide();
 }
 
+// Fixed love notification setup function
+// Fixed love notification setup function
+// Track notification state globally
+let isNotificationVisible = false;
+let notificationHideTimer = null;
+
 function setupLoveNotification() {
     const now = new Date();
     const estonianTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/Tallinn"}));
@@ -541,35 +554,43 @@ function setupLoveNotification() {
     const currentMinutes = estonianTime.getMinutes();
     const totalMinutes = currentHour * 60 + currentMinutes;
 
-    // Define notification window: 5:00 AM (300 minutes) to 9:00 AM (540 minutes)
-    const notificationStart = 5 * 60 + 0;   // 5:00 AM (300 minutes)
-    const notificationEnd = 10 * 60 + 0;     // 9:00 AM (540 minutes)
+    // Define notification window: 19:01 to 19:02
+    const notificationStart = (19 * 60) + 5;   // 19:01
+    const notificationEnd = (19 * 60) + 6;     // 19:02
+
+    console.log(`Current time: ${currentHour}:${currentMinutes}, Total minutes: ${totalMinutes}`);
+    console.log(`Notification window: ${notificationStart} to ${notificationEnd}`);
 
     // Check if current time is within the notification window
     const shouldShowNotification = totalMinutes >= notificationStart && totalMinutes < notificationEnd;
-
-    // For testing: Uncomment next line to always show notification regardless of time
-    // const shouldShowNotification = true;
+    console.log(`Should show notification: ${shouldShowNotification}`);
 
     const notification = document.getElementById('love-notification');
-    if (!notification) return;
+    if (!notification) {
+        console.error("Love notification element not found");
+        return;
+    }
 
-    // Setup close button
-    const closeButton = notification.querySelector('.love-notification-close');
-    if (closeButton) {
-        closeButton.addEventListener('click', function() {
-            notification.classList.remove('show');
-            localStorage.setItem('notificationClosed', 'true');
-        });
+    // Setup close button (only once)
+    if (!notification.closeButtonSet) {
+        const closeButton = notification.querySelector('.love-notification-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', function () {
+                hideNotification(notification);
+                // User manually closed, don't show again for this session
+                isNotificationVisible = false;
+            });
+            notification.closeButtonSet = true;
+        }
     }
 
     // Get today's date as string for storage key
     const today = new Date().toLocaleDateString('en-CA');
     const notificationShownKey = 'notificationShown_' + today;
 
-    // Check if notification shown today and if we're in the time window
-    if (shouldShowNotification && localStorage.getItem(notificationShownKey) !== 'true' &&
-        localStorage.getItem('notificationClosed') !== 'true') {
+    // Show notification if we should and it's not already visible
+    if (shouldShowNotification && !isNotificationVisible) {
+        console.log("Displaying notification...");
 
         // Get next message in non-repeating sequence
         const loveMsg = getNextLoveMessage();
@@ -581,31 +602,53 @@ function setupLoveNotification() {
             messageEl.textContent = loveMsg.message;
         }
 
-        // Show notification
-        notification.classList.add('show');
+        // Show the notification
+        showNotification(notification);
 
-        // Mark that we've shown notification today
+        // Mark that we've shown notification today (for message selection purposes only)
         localStorage.setItem(notificationShownKey, 'true');
 
         // Calculate how many minutes left until notification window ends
         const minutesLeft = notificationEnd - totalMinutes;
-        const hideTimeout = minutesLeft * 60 * 1000; // Convert to milliseconds
+        const hideTimeout = minutesLeft > 0 ? minutesLeft * 60 * 1000 : 12 * 60 * 1000;
 
-        // Auto-hide at the end of time window
-        setTimeout(() => {
-            notification.classList.remove('show');
-            localStorage.removeItem('notificationClosed');
+        console.log(`Notification will auto-hide in ${minutesLeft} minutes`);
+
+        // Clear any existing hide timer
+        if (notificationHideTimer) {
+            clearTimeout(notificationHideTimer);
+        }
+
+        // Set new hide timer
+        notificationHideTimer = setTimeout(() => {
+            hideNotification(notification);
         }, hideTimeout);
-    } else if (totalMinutes >= notificationEnd) {
-        // Reset closed state after the time window
-        localStorage.removeItem('notificationClosed');
+    }
+    // If we're outside the notification window and notification is visible, hide it
+    else if (!shouldShowNotification && isNotificationVisible) {
+        console.log("Outside notification window, hiding notification");
+        hideNotification(notification);
+    }
+}
+
+// Helper functions to show and hide notification
+function showNotification(notification) {
+    notification.classList.add('show');
+    isNotificationVisible = true;
+}
+
+function hideNotification(notification) {
+    notification.classList.remove('show');
+    isNotificationVisible = false;
+    // Clear any hide timer when hiding manually
+    if (notificationHideTimer) {
+        clearTimeout(notificationHideTimer);
+        notificationHideTimer = null;
     }
 }
 
 // Run on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Existing code remains here
-
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize time and date
     updateDateTime();
 
@@ -637,6 +680,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Set up periodic checks
     setInterval(updateDateTime, 1000);
-    setInterval(setupLoveNotification, 60000);
+    setInterval(setupLoveNotification, 5000); // Check every 5 seconds
     setInterval(fetchWeather, 1800000);
 });

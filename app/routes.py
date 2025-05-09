@@ -44,10 +44,12 @@ def login():
     if request.method == 'POST':
         password = request.form.get('password')
         if password == current_app.config['APP_PASSWORD']:
+            # Set session as permanent before adding data
+            session.permanent = True
             session['logged_in'] = True
 
-            # Make the session permanent
-            session.permanent = True
+            # Force session to be saved
+            session.modified = True
 
             return redirect(url_for('main.index'))
         else:
